@@ -25,6 +25,11 @@ class MyBpmUser(FastHttpUser):
     
     userCreds : creds.UserCredentials = None
     loggedIn : bool = False
+    authorizationBearerToken : str = None
+
+    baseQDN : str = ".itzroks-120000c7nk-ww08nj-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-gb.containers.appdomain.cloud"
+    iamHost : str = "https://cp-console-cp4ba"+baseQDN
+    cp4baHost : str = "https://cpd-cp4ba"+baseQDN
 
     #---------------------
     # user setup    
@@ -97,7 +102,7 @@ class MyBpmUser(FastHttpUser):
                 except KeyError:
                         response.failure("Response did not contain expected key 'greeting'")
             
-    @task
+    #@task
     def all_tokens(self):
         baseQDN : str = ".itzroks-120000c7nk-ww08nj-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-gb.containers.appdomain.cloud"
         iamHost : str = "https://cp-console-cp4ba"+baseQDN
@@ -115,5 +120,5 @@ class MyBpmUser(FastHttpUser):
     #---------------------
     # tasks
     # tasks = [ts_test]
-    # tasks = [ bpmTask.SequenceOfBpmTasks ]
-    tasks = [all_tokens]
+    # tasks = [all_tokens]
+    tasks = [ bpmTask.SequenceOfBpmTasks ]

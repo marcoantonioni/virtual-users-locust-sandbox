@@ -1,6 +1,6 @@
 # tasks
 
-import logging, time, random
+import logging, time, random, json
 from mytasks import loadCredentials
 from locust import task, tag, events, SequentialTaskSet
 from locust.runners import MasterRunner
@@ -12,10 +12,12 @@ from json import JSONDecodeError
 class BpmTask:
     id : str = None
     subject : str = None
+    status : str = None
 
-    def __init__(self, id, subject):
+    def __init__(self, id, subject, status):
         self.id = id
         self.subject = subject
+        self.status = status
 
     def getId(self):
         return self.id
@@ -23,6 +25,9 @@ class BpmTask:
     def getSubject(self):
         return self.subject
     
+    def getStatus(self):
+        return self.status
+
     pass
 
 class BpmTaskList:
@@ -42,7 +47,7 @@ class BpmTaskList:
     pass
 
 #-------------------------------------------
-# bpm authentication
+# bpm authentication tokens
 
 # IAM address (cp-console)
 def _accessToken(self, baseHost, userName, userPassword):
@@ -81,25 +86,56 @@ def _cp4baToken(self, baseHost, userName, iamToken):
 # bpm logic
 # self = MyUser
 
-def __buildTaskList(bpmData):
-    # test
+def _buildTaskList(tasksCount, tasksList):
+
+    logging.info("build tasks - tasksCount %s", tasksCount)
+    logging.info("build tasks - tasksList %d", len(tasksList))
+
+    bpmTaksItems = []
+    while len(tasksList) > 0:
+        bpmTask = tasksList.pop()
+        bpmTaksItems.append(BpmTask(bpmTask["TASK.TKIID"], bpmTask["TAD_DISPLAY_NAME"], bpmTask["STATUS"]))
+    
+    """ 
     bpmTask1 = BpmTask("1", "subject 1")
     bpmTask2 = BpmTask("2", "subject 2")
     bpmTask3 = BpmTask("3", "subject 3")
     bpmTaksItems = [bpmTask1, bpmTask2, bpmTask3]
+    """
+
     bpmTaskList = BpmTaskList(len(bpmTaksItems), bpmTaksItems)
     return bpmTaskList
 
 def _listAvailableTasks(self):
-    if self.loggedIn == True:
-        logging.info("list available tasks, user %s", self.userCreds.getName())
+    if self.user.loggedIn == True:
+        logging.info("list available tasks, user %s", self.user.userCreds.getName())
 
         # query task list
-
-        # test
-        bpmData = ""
-
-        return __buildTaskList(bpmData);
+        params = {'organization': 'byTask',
+                  'shared': 'false',
+                  'conditions': [{ 'field': 'taskActivityType', 'operator': 'Equals', 'value': 'USER_TASK' }],
+                  'fields': [ 'taskSubject', 'taskStatus', 'assignedToRoleDisplayName'],
+                  'aliases': [], 
+                  'interaction': 'available', 
+                  'size': 25 }
+        authValue : str = "Bearer "+self.user.authorizationBearerToken
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        constParams : str = "calcStats=false&includeAllIndexes=false&includeAllBusinessData=false&avoidBasicAuthChallenge=true"
+        offset = "0"
+        fullUrl = self.user.cp4baHost+"/pfs/rest/bpm/federated/v1/tasks?"+constParams+"&offset="+offset
+        with self.client.put(url=fullUrl, headers=my_headers, data=json.dumps(params), catch_response=True) as response:
+            logging.info("task list available status code: %s", response.status_code)
+            if response.status_code == 200:
+                try:
+                    print(response.json()) 
+                    size = response.json()["size"]
+                    items = response.json()["items"]
+                    return _buildTaskList(size, items)
+                except JSONDecodeError:
+                        response.failure("Response could not be decoded as JSON")
+                except KeyError:
+                        response.failure("Response did not contain expected key 'size' or 'items'")
+        return None
     pass
 
 def _listClaimedTasks(self):
@@ -142,19 +178,27 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         if self.user.loggedIn == False:
             uName = "n/a"
             if self.user.userCreds != None:
-                uName = self.user.userCreds.getName()
-                self.user.loggedIn = True
-                logging.info("*** login, user %s", uName)
+
+                userName = self.user.userCreds.getName()
+                userPassword = self.user.userCreds.getPassword()
+                access_token : str = _accessToken(self, self.user.iamHost, userName, userPassword)
+                if access_token != None:
+                    self.user.authorizationBearerToken = _cp4baToken(self, self.user.cp4baHost, userName, access_token)
+                    if self.user.authorizationBearerToken != None:
+                        self.user.loggedIn = True
+                        logging.info("*** logged in user %s", userName)
+                    else:
+                        logging.error("*** ERROR failed login for user %s", userName)
         pass
 
     def claim(self):
         if self.user.loggedIn == True:
-            taskList : BpmTaskList = _listAvailableTasks(self.user)
+            taskList : BpmTaskList = _listAvailableTasks(self)
 
             # test
             idx : int = random.randint(0, taskList.getCount()-1)
             bpmTask : BpmTask = taskList.getTasks()[idx];
-            taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+"]"
+            taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTask.getStatus()+"]"
 
             logging.info("claim, user %s, task %s", self.user.userCreds.getName(), taskInfo )
         pass
@@ -181,7 +225,7 @@ def on_test_start(environment, **kwargs):
     logging.info("A BPM test is starting")
 
     # legge csv e valorizza array utenze
-    loadCredentials.setupCredentials("./configurations/creds100.csv")
+    loadCredentials.setupCredentials("./configurations/creds10.csv")
     pass
 
 @events.test_stop.add_listener
