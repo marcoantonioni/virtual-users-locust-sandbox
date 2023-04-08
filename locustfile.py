@@ -96,9 +96,24 @@ class MyBpmUser(FastHttpUser):
                         response.failure("Response could not be decoded as JSON")
                 except KeyError:
                         response.failure("Response did not contain expected key 'greeting'")
+            
+    @task
+    def all_tokens(self):
+        baseQDN : str = ".itzroks-120000c7nk-ww08nj-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-gb.containers.appdomain.cloud"
+        iamHost : str = "https://cp-console-cp4ba"+baseQDN
+        cp4baHost : str = "https://cpd-cp4ba"+baseQDN
 
+        userName="user1"
+        userPassword="passw0rd"
+        access_token : str = bpmTask._accessToken(self, iamHost, userName, userPassword)
+        logging.info("ACCESS TOKEN: %s", access_token)
+        if access_token != None:
+            cp4ba_token = bpmTask._cp4baToken(self, cp4baHost, userName, access_token)
+            logging.info("CP4BA TOKEN: %s", cp4ba_token)
+        self.environment.runner.quit() 
 
     #---------------------
     # tasks
     # tasks = [ts_test]
-    tasks = [ bpmTask.SequenceOfBpmTasks ]
+    # tasks = [ bpmTask.SequenceOfBpmTasks ]
+    tasks = [all_tokens]

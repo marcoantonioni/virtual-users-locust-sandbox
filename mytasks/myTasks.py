@@ -7,7 +7,7 @@ from locust.runners import MasterRunner
 from json import JSONDecodeError
 
 #-------------------------------------------
-# BPM type
+# BPM types
 
 class BpmTask:
     id : str = None
@@ -40,6 +40,42 @@ class BpmTaskList:
         return self.bpmTasks
     
     pass
+
+#-------------------------------------------
+# bpm authentication
+
+# IAM address (cp-console)
+def _accessToken(self, baseHost, userName, userPassword):
+    access_token : str = None
+    params : str = "grant_type=password&scope=openid&username="+userName+"&password="+userPassword
+    my_headers = {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}
+    with self.client.post(url=baseHost+"/idprovider/v1/auth/identitytoken", data=params, headers=my_headers, catch_response=True) as response:
+        logging.info("_accessToken status code: %s", response.status_code)
+        if response.status_code == 200:
+            try:
+                access_token = response.json()["access_token"]                
+            except JSONDecodeError:
+                    response.failure("Response could not be decoded as JSON")
+            except KeyError:
+                    response.failure("Response did not contain expected key 'access_token'")
+    return access_token
+
+# CP4BA address (cpd-cp4ba)
+def _cp4baToken(self, baseHost, userName, iamToken):
+    cp4ba_token : str = None
+    #   cp4baToken=$(curl -sk "${cp4baHost}/v1/preauth/validateAuth" -H "username:${userName}" -H "iam-token: ${iamToken}" | jq .accessToken
+    my_headers = {'username': userName, 'iam-token': iamToken }
+    
+    with self.client.get(url=baseHost+"/v1/preauth/validateAuth", headers=my_headers, catch_response=True) as response:
+        logging.info("_cp4baToken status code: %s", response.status_code)
+        if response.status_code == 200:
+            try:
+                cp4ba_token = response.json()["accessToken"]                
+            except JSONDecodeError:
+                    response.failure("Response could not be decoded as JSON")
+            except KeyError:
+                    response.failure("Response did not contain expected key 'greeting'")
+    return cp4ba_token
 
 #-------------------------------------------
 # bpm logic
