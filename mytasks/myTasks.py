@@ -6,6 +6,7 @@ from json import JSONDecodeError
 from mytasks import loadEnvironment as bpmEnv
 from configurations import payloadManager as bpmPayloadManager
 import urllib.parse
+from locust.exception import RescheduleTaskImmediately
 
 #-------------------------------------------
 # BPM types
@@ -14,11 +15,13 @@ class BpmTask:
     id : str = None
     subject : str = None
     status : str = None
+    role: str = None
 
-    def __init__(self, id, subject, status):
+    def __init__(self, id, subject, status, role):
         self.id = id
         self.subject = subject
         self.status = status
+        self.role = role
 
     def getId(self):
         return self.id
@@ -28,6 +31,9 @@ class BpmTask:
     
     def getStatus(self):
         return self.status
+    
+    def getRole(self):
+        return self.role
 
     pass
 
@@ -86,15 +92,27 @@ def _cp4baToken(self, baseHost, userName, iamToken):
 # bpm logic
 # self = MyUser
 
-def _buildTaskList(self, tasksCount, tasksList):
+def _buildTaskList(self, tasksCount, tasksList, interaction):
 
     logging.debug("build tasks - tasksCount %s, taskListLen %d", tasksCount, len(tasksList))
 
+    isClaiming = False
+    if interaction == "available":
+         isClaiming = True
     bpmTaksItems = []
     while len(tasksList) > 0:
         bpmTask = tasksList.pop()
-        mustClaim = self.user.isSubjectForUser(bpmTask["TAD_DISPLAY_NAME"])
-        bpmTaksItems.append(BpmTask(bpmTask["TASK.TKIID"], bpmTask["TAD_DISPLAY_NAME"], bpmTask["STATUS"]))
+        bpmTaskId = bpmTask["TASK.TKIID"]
+        bpmStatus = bpmTask["STATUS"]
+        bpmSubject = bpmTask["TAD_DISPLAY_NAME"]
+        bpmRole = bpmTask["ASSIGNED_TO_ROLE_DISPLAY_NAME"]
+        if bpmRole != None and isClaiming == True:             
+            if self.user.isSubjectForUser(bpmSubject) == True:
+                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, bpmRole))
+        if bpmRole == None and isClaiming == False:             
+            if self.user.isSubjectForUser(bpmSubject) == True:
+                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, bpmRole))
+
     bpmTaskList = BpmTaskList(len(bpmTaksItems), bpmTaksItems)
     return bpmTaskList
 
@@ -118,10 +136,13 @@ def _listTasks(self, interaction, size):
             logging.debug("task list available status code: %s", response.status_code)
             if response.status_code == 200:
                 try:
-                    size = response.json()["size"]
-                    items = response.json()["items"]
+                    rsp = response.json()
+                    if logging.DEBUG >= logging.root.level: 
+                        logging.debug("task list [%s]", interaction, json.dumps(rsp, indent = 2))
+                    size = rsp["size"]
+                    items = rsp["items"]
                     logging.debug("list available tasks, user %s, size %d, list %d", self.user.userCreds.getName(), size, len(items))
-                    return _buildTaskList(self, size, items)
+                    return _buildTaskList(self, size, items, interaction)
                 except JSONDecodeError:
                         response.failure("Response could not be decoded as JSON")
                 except KeyError:
@@ -148,7 +169,7 @@ def _taskClaim(self, bpmTask):
         taskId = bpmTask.getId()
         fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=assign&toMe=true&parts=none"
         with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
-            logging.info("task claimed status code: %s", response.status_code)
+            logging.debug("task claimed status code: %s", response.status_code)
             rsp = response.json()
             # print(rsp)
             if response.status_code == 200:
@@ -191,7 +212,7 @@ def _taskComplete(self, bpmTask, payload):
         jsonStr = json.dumps(payload)
         fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=complete&parts=none&params="+jsonStr
         with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
-            logging.info("task completed status code: %s", response.status_code)
+            logging.debug("task completed status code: %s", response.status_code)
             rsp = response.json()
             # print(rsp)
             if response.status_code == 200:
@@ -208,7 +229,7 @@ def _taskComplete(self, bpmTask, payload):
                     else:
                         data = rsp["Data"]
                         bpmErrorMessage = data["errorMessage"]
-                        logging.error("Complete error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmRequestStatus, bpmErrorMessage)
+                        logging.error("Complete error, user %s, task %s, task status %s, task role %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmTask.getStatus(), bpmTask.getRole(), bpmRequestStatus, bpmErrorMessage)
                         pass
                 
                 except JSONDecodeError:
@@ -217,10 +238,14 @@ def _taskComplete(self, bpmTask, payload):
                         response.failure("Response did not contain expected key 'status' or 'data.state'")
             else:
                 if response.status_code == 401:
+                    # print("COMPLETE ERR on task ", taskId, self.user.userCreds.getName(), self.user.completeFailed )
+                    # self.user.completeFailed.append(taskId)
                     response.success()
+                    # response._manual_result = False
+                    # raise RescheduleTaskImmediately() 
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
-                logging.error("Complete error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), taskId, response.status_code, bpmErrorMessage)
+                logging.error("Complete error, user %s, task %s, task status %s, task role %s, status %d, error %s", self.user.userCreds.getName(), taskId, bpmTask.getStatus(), bpmTask.getRole(), response.status_code, bpmErrorMessage)
 
     pass
 
@@ -273,7 +298,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTask.getStatus()+"]"
                 think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
                 logging.info("Working on task, user %s, task %s", self.user.userCreds.getName(), taskInfo)
-                time.sleep( think )
+                # time.sleep( think )
 
                 payload = _buildPayload(bpmTask.getSubject())
                 _taskComplete(self, bpmTask, payload)

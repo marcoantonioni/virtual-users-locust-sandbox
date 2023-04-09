@@ -28,7 +28,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     #----------------------------------------
     # BAW user vars
     min_think_time : int = 0
-    max_think_time : int = 2    
+    max_think_time : int = 1  
     loggedIn : bool = False
     authorizationBearerToken : str = None    
     userCreds : bpmCreds.UserCredentials = None
@@ -62,6 +62,11 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     # for each virtual user
 
     def on_start(self):
+
+        # solo per TEST 
+        self.completeFailed = []
+
+
         self.host = host = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         self.userCreds = bpmCreds.getNextUserCredentials()
         if self.userCreds != None:

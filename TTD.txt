@@ -1,2 +1,4 @@
 
 1. completare configurazione esterna (think time, etc... come da bash tool)
+
+2. verificare errore su complete con setsso utente (vedi self.completeFailed = [])
