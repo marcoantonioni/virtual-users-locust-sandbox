@@ -1,0 +1,2 @@
+
+1. completare configurazione esterna (think time, etc... come da bash tool)

@@ -1,9 +1,11 @@
 # tasks
 
 import logging, time, random, json
-from mytasks import loadEnvironment as bpmEnv
 from locust import task, tag, SequentialTaskSet
 from json import JSONDecodeError
+from mytasks import loadEnvironment as bpmEnv
+from configurations import payloadManager as bpmPayloadManager
+import urllib.parse
 
 #-------------------------------------------
 # BPM types
@@ -84,30 +86,28 @@ def _cp4baToken(self, baseHost, userName, iamToken):
 # bpm logic
 # self = MyUser
 
-def _buildTaskList(tasksCount, tasksList):
+def _buildTaskList(self, tasksCount, tasksList):
 
     logging.debug("build tasks - tasksCount %s, taskListLen %d", tasksCount, len(tasksList))
 
     bpmTaksItems = []
     while len(tasksList) > 0:
         bpmTask = tasksList.pop()
+        mustClaim = self.user.isSubjectForUser(bpmTask["TAD_DISPLAY_NAME"])
         bpmTaksItems.append(BpmTask(bpmTask["TASK.TKIID"], bpmTask["TAD_DISPLAY_NAME"], bpmTask["STATUS"]))
-
     bpmTaskList = BpmTaskList(len(bpmTaksItems), bpmTaksItems)
     return bpmTaskList
 
-def _listAvailableTasks(self):
+def _listTasks(self, interaction, size):
     if self.user.loggedIn == True:
-        logging.info("list available tasks, user %s", self.user.userCreds.getName())
-
         # query task list
         params = {'organization': 'byTask',
                   'shared': 'false',
                   'conditions': [{ 'field': 'taskActivityType', 'operator': 'Equals', 'value': 'USER_TASK' }],
                   'fields': [ 'taskSubject', 'taskStatus', 'assignedToRoleDisplayName'],
                   'aliases': [], 
-                  'interaction': 'available', 
-                  'size': 25 }
+                  'interaction': interaction, 
+                  'size': size }
         authValue : str = "Bearer "+self.user.authorizationBearerToken
         my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
         constParams : str = "calcStats=false&includeAllIndexes=false&includeAllBusinessData=false&avoidBasicAuthChallenge=true"
@@ -120,7 +120,8 @@ def _listAvailableTasks(self):
                 try:
                     size = response.json()["size"]
                     items = response.json()["items"]
-                    return _buildTaskList(size, items)
+                    logging.debug("list available tasks, user %s, size %d, list %d", self.user.userCreds.getName(), size, len(items))
+                    return _buildTaskList(self, size, items)
                 except JSONDecodeError:
                         response.failure("Response could not be decoded as JSON")
                 except KeyError:
@@ -128,25 +129,104 @@ def _listAvailableTasks(self):
         return None
     pass
 
-def _listClaimedTasks(self):
-    if self.loggedIn == True:
-        logging.info("list claimed tasks, user %s", self.userCreds.getName())
-    pass
-
 def _taskGetData(self, taskId):
-    if self.loggedIn == True:
+    if self.user.loggedIn == True:
         logging.info("task get data, user %s, task %s", self.userCreds.getName(), taskId)
     pass
 
 def _taskSetData(self, taskId, payload):
-    if self.loggedIn == True:
+    if self.user.loggedIn == True:
         logging.info("task set data, user %s, task %s, payload %s", self.userCreds.getName(), taskId, payload)
     pass
 
-def _taskComplete(self, taskId, payload):
-    if self.loggedIn == True:
-        logging.info("task complete, user %s, task %s, payload %s", self.userCreds.getName(), taskId, payload)
+# !!!! /bas/ da parametrizzare
+def _taskClaim(self, bpmTask):
+    if self.user.loggedIn == True:
+        authValue : str = "Bearer "+self.user.authorizationBearerToken
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        taskId = bpmTask.getId()
+        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=assign&toMe=true&parts=none"
+        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
+            logging.info("task claimed status code: %s", response.status_code)
+            rsp = response.json()
+            # print(rsp)
+            if response.status_code == 200:
+                bpmRequestStatus = ""
+                bpmTaskState = ""
+                bpmErrorMessage = ""
+                try:                                        
+                    bpmRequestStatus = rsp["status"]
+                    if bpmRequestStatus == "200":
+                        data = rsp["data"]
+                        bpmTaskState = data["state"]
+                        taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTaskState+"]"
+                        logging.info("Claimed task, user %s, task %s", self.user.userCreds.getName(), taskInfo )
+                    else:
+                        data = rsp["Data"]
+                        bpmErrorMessage = data["errorMessage"]
+                        logging.error("Claim error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmRequestStatus, bpmErrorMessage)
+                        pass
+                
+                except JSONDecodeError:
+                        response.failure("Response could not be decoded as JSON")
+                except KeyError:
+                        response.failure("Response did not contain expected key 'status' or 'data.state'")
+            else:
+                if response.status_code == 401:
+                    response.success()
+                data = rsp["Data"]
+                bpmErrorMessage = data["errorMessage"]
+                logging.error("Claim error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), taskId, response.status_code, bpmErrorMessage)
+                
     pass
+
+# !!!! /bas/ da parametrizzare
+def _taskComplete(self, bpmTask, payload):
+    if self.user.loggedIn == True:
+        authValue : str = "Bearer "+self.user.authorizationBearerToken
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        taskId = bpmTask.getId()
+        jsonStr = json.dumps(payload)
+        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=complete&parts=none&params="+jsonStr
+        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
+            logging.info("task completed status code: %s", response.status_code)
+            rsp = response.json()
+            # print(rsp)
+            if response.status_code == 200:
+                bpmRequestStatus = ""
+                bpmTaskState = ""
+                bpmErrorMessage = ""
+                try:                                        
+                    bpmRequestStatus = rsp["status"]
+                    if bpmRequestStatus == "200":
+                        data = rsp["data"]
+                        bpmTaskState = data["state"]
+                        taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTaskState+"]"
+                        logging.info("Completed task, user %s, task %s", self.user.userCreds.getName(), taskId )
+                    else:
+                        data = rsp["Data"]
+                        bpmErrorMessage = data["errorMessage"]
+                        logging.error("Complete error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmRequestStatus, bpmErrorMessage)
+                        pass
+                
+                except JSONDecodeError:
+                        response.failure("Response could not be decoded as JSON")
+                except KeyError:
+                        response.failure("Response did not contain expected key 'status' or 'data.state'")
+            else:
+                if response.status_code == 401:
+                    response.success()
+                data = rsp["Data"]
+                bpmErrorMessage = data["errorMessage"]
+                logging.error("Complete error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), taskId, response.status_code, bpmErrorMessage)
+
+    pass
+
+def _buildPayload(taskSubject):
+    payload = bpmPayloadManager.buildPayloadForSubject(taskSubject)
+    return payload
 
 #-------------------------------------------
 class SequenceOfBpmTasks(SequentialTaskSet):
@@ -165,34 +245,41 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     self.user.authorizationBearerToken = _cp4baToken(self, hostUrl, userName, access_token)
                     if self.user.authorizationBearerToken != None:
                         self.user.loggedIn = True
-                        logging.info("*** logged in user %s", userName)
+                        logging.debug("Logged in user %s", userName)
                     else:
                         logging.error("*** ERROR failed login for user %s", userName)
         pass
 
     def claim(self):
         if self.user.loggedIn == True:
-            taskList : BpmTaskList = _listAvailableTasks(self)
-
-            if taskList.getCount() > 0:
+            taskList = _listTasks(self, "available", 25)
+            if taskList != None and taskList.getCount() > 0:
                 idx : int = random.randint(0, taskList.getCount()-1)
                 bpmTask : BpmTask = taskList.getTasks()[idx];
-                taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTask.getStatus()+"]"
-                logging.info("Claimed task, user %s, task %s", self.user.userCreds.getName(), taskInfo )
+                _taskClaim(self, bpmTask)
             else:
-                 logging.info("No task to claim, user %s", self.user.userCreds.getName() )
+                logging.info("No task to claim, user %s", self.user.userCreds.getName() )
         pass
 
     def complete(self):
         if self.user.loggedIn == True:
-            _listClaimedTasks(self.user)
+            taskList = _listTasks(self, "claimed", 25)
 
-            think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
-            logging.info("working on task, user %s", self.user.userCreds.getName())
-            time.sleep( think )            
-            
-            _taskComplete(self.user, "1", "{}")
-            logging.info("complete task, user %s", self.user.userCreds.getName())
+            if taskList != None and taskList.getCount() > 0:    
+                idx : int = random.randint(0, taskList.getCount()-1)
+                bpmTask : BpmTask = taskList.getTasks()[idx];
+
+                # think time
+                taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTask.getStatus()+"]"
+                think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
+                logging.info("Working on task, user %s, task %s", self.user.userCreds.getName(), taskInfo)
+                time.sleep( think )
+
+                payload = _buildPayload(bpmTask.getSubject())
+                _taskComplete(self, bpmTask, payload)
+
+            else:
+                logging.info("No task to complete, user %s", self.user.userCreds.getName() )
         pass
 
     # you can still use the tasks attribute to specify a list of tasks

@@ -3,6 +3,20 @@
 Sandbox per struttura progetto finale
 
 ```
+
+# 1 utente
+locust -f ./baw-virtual-users.py --headless --only-summary --run-time 60s --users 1 --spawn-rate 1 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
+
+# 10 utenti
+locust -f ./baw-virtual-users.py --headless --only-summary --run-time 60s --users 10 --spawn-rate 5 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
+
+# 2 utenti
+locust -f ./baw-virtual-users.py --headless --only-summary --run-time 60s --users 2 --spawn-rate 1 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds-user9-10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
+
+# https://github.com/locustio/locust/blob/master/examples/test_data_management.py
+# https://github.com/locustio/locust/blob/master/examples/dynamic_user_credentials.py
+
+
 # moduli
 pip install locust
 pip install jproperties
