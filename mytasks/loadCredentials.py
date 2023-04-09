@@ -22,7 +22,7 @@ class UserCredentials:
 
 #--------------------------------------------
 def setupCredentials( fullPathName ):
-    logging.info("Loading credentials from: %s", fullPathName)
+    logging.debug("Loading credentials from: %s", fullPathName)
 
     with open(fullPathName,'r') as data:
         for item in csv.DictReader(data):
@@ -40,7 +40,7 @@ def setupCredentials( fullPathName ):
         else:
             hasItems = False
         user_credentials.append( temp_user_credentials.pop(idx) )
-    logging.info("Loaded %d users", len(user_credentials))
+    logging.debug("Loaded %d users", len(user_credentials))
     pass        
 
 def getNextUserCredentials():
