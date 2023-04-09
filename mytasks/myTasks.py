@@ -118,7 +118,6 @@ def _listAvailableTasks(self):
             logging.debug("task list available status code: %s", response.status_code)
             if response.status_code == 200:
                 try:
-                    # print(response.json()) 
                     size = response.json()["size"]
                     items = response.json()["items"]
                     return _buildTaskList(size, items)
@@ -147,20 +146,6 @@ def _taskSetData(self, taskId, payload):
 def _taskComplete(self, taskId, payload):
     if self.loggedIn == True:
         logging.info("task complete, user %s, task %s, payload %s", self.userCreds.getName(), taskId, payload)
-
-        # test
-        with self.client.get("/test", catch_response=True) as response:
-            # logging.info("status code: %s", response.status_code)
-            if response.status_code == 200:
-                try:
-                    if response.json()["id"] != "id1":                        
-                        response.failure("Did not get expected value in response")
-                except JSONDecodeError:
-                        response.failure("Response could not be decoded as JSON")
-                except KeyError:
-                        response.failure("Response did not contain expected key 'greeting'")
-
-
     pass
 
 #-------------------------------------------
