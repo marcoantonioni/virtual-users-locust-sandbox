@@ -46,7 +46,6 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         found = False
         userId = self.userCreds.getName()
         dictionary = bpmUserSubjects.getDictionary()
-        # print(dictionary)
         if dictionary != None:
             try:
                 taskSubjects = dictionary[userId]
@@ -62,11 +61,6 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     # for each virtual user
 
     def on_start(self):
-
-        # solo per TEST 
-        self.completeFailed = []
-
-
         self.host = host = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         self.userCreds = bpmCreds.getNextUserCredentials()
         if self.userCreds != None:

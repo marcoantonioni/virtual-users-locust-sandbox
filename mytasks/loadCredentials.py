@@ -43,9 +43,13 @@ def setupCredentials( fullPathName ):
     logging.debug("Loaded %d users", len(user_credentials))
     pass        
 
+userStrategyTwins = True
 def getNextUserCredentials():
     if len(user_credentials) > 0:
-        return user_credentials.pop()
+        user = user_credentials.pop()
+        if userStrategyTwins == True:
+            user_credentials.insert(0, user)
+        return user
     else:
         logging.error("********************************")
         logging.error("!!! Error no more users")
