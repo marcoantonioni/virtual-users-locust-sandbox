@@ -1,3 +1,7 @@
 
 1. completare configurazione esterna (think time, etc... come da bash tool)
-
+2. policies configurazione
+2.1 policy utenze [unique|twins]
+2.2 policy query [federatedportal|standalone]
+3. impostazione query task list in base a policy [federatedportal|standalone]
+4. aggiungere a bpmtask la url di origine se policy query federatedportal

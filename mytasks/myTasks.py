@@ -251,7 +251,7 @@ def _taskGetDetails(self, bpmTask : BpmTask):
                 except KeyError:
                         response.failure("Response did not contain expected key 'status' or 'data'")
             else:
-                if response.status_code == 401:
+                if response.status_code == 401 or response.status_code == 409:
                     response.success()
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
@@ -296,7 +296,7 @@ def _taskGetData(self, bpmTask: BpmTask):
                     except KeyError:
                             response.failure("Response did not contain expected key 'status' or 'data'")
                 else:
-                    if response.status_code == 401:
+                    if response.status_code == 401 or response.status_code == 409:
                         response.success()
                     data = rsp["Data"]
                     bpmErrorMessage = data["errorMessage"]
@@ -338,7 +338,7 @@ def _taskSetData(self, bpmTask, payload):
                 except KeyError:
                         response.failure("Response did not contain expected key 'status' or 'data.state'")
             else:
-                if response.status_code == 401:
+                if response.status_code == 401 or response.status_code == 409:
                     response.success()
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
@@ -380,7 +380,7 @@ def _taskClaim(self, bpmTask):
                 except KeyError:
                         response.failure("Response did not contain expected key 'status' or 'data.state'")
             else:
-                if response.status_code == 401:
+                if response.status_code == 401 or response.status_code == 409:
                     response.success()
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
@@ -419,7 +419,7 @@ def _taskRelease(self, bpmTask):
                 except KeyError:
                         response.failure("Response did not contain expected key 'status' or 'data.state'")
             else:
-                if response.status_code == 401:
+                if response.status_code == 401 or response.status_code == 409:
                     response.success()
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
@@ -463,7 +463,7 @@ def _taskComplete(self, bpmTask, payload):
                 except KeyError:
                         response.failure("Response did not contain expected key 'status' or 'data.state'")
             else:
-                if response.status_code == 401:
+                if response.status_code == 401 or response.status_code == 409:
                     response.success()
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
