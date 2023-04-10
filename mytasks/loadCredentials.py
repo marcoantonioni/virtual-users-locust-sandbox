@@ -43,7 +43,7 @@ def setupCredentials( fullPathName ):
     logging.debug("Loaded %d users", len(user_credentials))
     pass        
 
-userStrategyTwins = True
+userStrategyTwins = False
 def getNextUserCredentials():
     if len(user_credentials) > 0:
         user = user_credentials.pop()
