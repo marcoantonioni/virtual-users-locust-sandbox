@@ -15,12 +15,17 @@ class BpmTask:
     id : str = None
     subject : str = None
     status : str = None
+    state: str = None
     role: str = None
+    variableNames = []
+    actions = []
+    data: dict = None
 
-    def __init__(self, id, subject, status, role):
+    def __init__(self, id, subject, status, state, role):
         self.id = id
         self.subject = subject
         self.status = status
+        self.state = state
         self.role = role
 
     def getId(self):
@@ -32,9 +37,45 @@ class BpmTask:
     def getStatus(self):
         return self.status
     
+    def getState(self):
+        return self.state
+    def setState(self, state):
+        self.state = state
+    
     def getRole(self):
         return self.role
 
+    def getVariableNames(self):
+        return self.variableNames
+    def setVariableNames(self, variableNames):
+        self.variableNames = variableNames
+
+    def getActions(self):
+        return self.actions
+    def setActions(self, actions):
+        self.actions = actions
+    def hasAction(self, action):
+        for act in self.actions:
+            if act == action:
+                return True
+        return False
+    
+    def setTaskData(self, data):
+        self.data = data
+    def getTaskData(self):
+        return self.data
+
+    def buildListOfVarNames(self):
+        paramVarNames = ""
+        allNames = self.getVariableNames()
+        totNames = len(allNames)
+        for pName in allNames:
+            paramVarNames = paramVarNames + pName
+            totNames = totNames - 1
+            if totNames > 0:
+                paramVarNames = paramVarNames + ","
+        return paramVarNames
+    
     pass
 
 class BpmTaskList:
@@ -52,6 +93,20 @@ class BpmTaskList:
         return self.bpmTasks
     
     pass
+
+def _getAttributeNamesFromDictionary(varDict):
+    listOfVarNames = []
+    varNames : dict = varDict.keys()
+    for attrName in varDict.keys():
+        listOfVarNames.append(attrName)
+    return listOfVarNames
+
+def _cleanVarData(varDict):
+    listOfVarNames = _getAttributeNamesFromDictionary(varDict)
+    for vn in listOfVarNames:
+        vnObj = varDict[vn]
+        del vnObj["@metadata"]
+    return varDict
 
 #-------------------------------------------
 # bpm authentication tokens
@@ -108,10 +163,10 @@ def _buildTaskList(self, tasksCount, tasksList, interaction):
         bpmRole = bpmTask["ASSIGNED_TO_ROLE_DISPLAY_NAME"]
         if bpmRole != None and isClaiming == True:             
             if self.user.isSubjectForUser(bpmSubject) == True:
-                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, bpmRole))
+                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole))
         if bpmRole == None and isClaiming == False:             
             if self.user.isSubjectForUser(bpmSubject) == True:
-                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, bpmRole))
+                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole))
 
     bpmTaskList = BpmTaskList(len(bpmTaksItems), bpmTaksItems)
     return bpmTaskList
@@ -138,7 +193,7 @@ def _listTasks(self, interaction, size):
                 try:
                     rsp = response.json()
                     if logging.DEBUG >= logging.root.level: 
-                        logging.debug("task list [%s]", interaction, json.dumps(rsp, indent = 2))
+                        logging.debug("task list [%s] %s", interaction, json.dumps(rsp, indent = 2))
                     size = rsp["size"]
                     items = rsp["items"]
                     logging.debug("list available tasks, user %s, size %d, list %d", self.user.userCreds.getName(), size, len(items))
@@ -150,14 +205,102 @@ def _listTasks(self, interaction, size):
         return None
     pass
 
-def _taskGetData(self, taskId):
+def _taskGetDetails(self, bpmTask : BpmTask):
     if self.user.loggedIn == True:
-        logging.info("task get data, user %s, task %s", self.userCreds.getName(), taskId)
-    pass
+        authValue : str = "Bearer "+self.user.authorizationBearerToken
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        taskId = bpmTask.getId()
+        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?parts=data,actions"
+        with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
+            logging.debug("task get details status code: %s", response.status_code)
+            rsp = response.json()
+            if response.status_code == 200:
+                rsp = response.json()
+                if logging.DEBUG >= logging.root.level: 
+                    logging.debug("task details taskId[%s] %s", taskId, json.dumps(rsp, indent = 2))
+                
+                bpmRequestStatus = ""
+                bpmErrorMessage = ""
+                try:                                        
+                    bpmRequestStatus = rsp["status"]
+                    if bpmRequestStatus == "200":
+                        data1 = rsp["data"]
+                        
+                        #actions = data1["actions"]
 
-def _taskSetData(self, taskId, payload):
+                        data2 = data1["data"]
+                        # variables = data2["variables"]
+
+                        bpmTask.setActions(data1["actions"])
+                        bpmTask.setVariableNames(_getAttributeNamesFromDictionary(data2["variables"]))
+
+                        return True
+                    else:
+                        data = rsp["Data"]
+                        bpmErrorMessage = data["errorMessage"]
+                        logging.error("Task details error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmRequestStatus, bpmErrorMessage)
+                        pass
+                
+                except JSONDecodeError:
+                        response.failure("Response could not be decoded as JSON")
+                except KeyError:
+                        response.failure("Response did not contain expected key 'status' or 'data'")
+            else:
+                if response.status_code == 401:
+                    response.success()
+                data = rsp["Data"]
+                bpmErrorMessage = data["errorMessage"]
+                logging.error("Task get details error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), taskId, response.status_code, bpmErrorMessage)
+
+    return False
+
+def _taskGetData(self, bpmTask: BpmTask):
     if self.user.loggedIn == True:
-        logging.info("task set data, user %s, task %s, payload %s", self.userCreds.getName(), taskId, payload)
+        if _taskGetDetails(self, bpmTask) == True:
+            authValue : str = "Bearer "+self.user.authorizationBearerToken
+            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+            hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+            taskId = bpmTask.getId()
+            paramNames = bpmTask.buildListOfVarNames()
+            fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=getData&fields="+paramNames
+            with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
+                logging.debug("task get data status code: %s", response.status_code)
+                rsp = response.json()
+                if response.status_code == 200:
+                    rsp = response.json()
+                    if logging.DEBUG >= logging.root.level: 
+                        logging.debug("task data taskId[%s] %s", taskId, json.dumps(rsp, indent = 2))
+                    
+                    bpmRequestStatus = ""
+                    bpmErrorMessage = ""
+                    try:                                        
+                        bpmRequestStatus = rsp["status"]
+                        if bpmRequestStatus == "200":
+                            data = rsp["data"]
+                            bpmTask.setTaskData(_cleanVarData(data["resultMap"]))
+                            return True
+                        else:
+                            data = rsp["Data"]
+                            bpmErrorMessage = data["errorMessage"]
+                            logging.error("Task details error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmRequestStatus, bpmErrorMessage)
+                            pass
+                    
+                    except JSONDecodeError:
+                            response.failure("Response could not be decoded as JSON")
+                    except KeyError:
+                            response.failure("Response did not contain expected key 'status' or 'data'")
+                else:
+                    if response.status_code == 401:
+                        response.success()
+                    data = rsp["Data"]
+                    bpmErrorMessage = data["errorMessage"]
+                    logging.error("Task get details error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), taskId, response.status_code, bpmErrorMessage)
+    return False
+
+def _taskSetData(self, bpmTask, payload):
+    if self.user.loggedIn == True:
+        logging.info("task set data, user %s, task %s, payload %s", self.userCreds.getName(), "taskId", payload)
     pass
 
 # !!!! /bas/ da parametrizzare
@@ -281,7 +424,21 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             if taskList != None and taskList.getCount() > 0:
                 idx : int = random.randint(0, taskList.getCount()-1)
                 bpmTask : BpmTask = taskList.getTasks()[idx];
-                _taskClaim(self, bpmTask)
+
+                if _taskGetDetails(self, bpmTask) == True:
+                    if logging.DEBUG >= logging.root.level: 
+                        logging.debug("TASK [%s] DETAIL BEFORE CLAIM actions[%s] variables[%s]", bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
+
+                    if bpmTask.hasAction("ACTION_CLAIM"):
+                        _taskClaim(self, bpmTask)
+
+                        if logging.DEBUG >= logging.root.level: 
+                            if _taskGetDetails(self, bpmTask) == True:
+                                logging.debug("TASK [%s] DETAIL AFTER CLAIM actions[%s] variables[%s]", bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
+                    else:
+                        if logging.DEBUG >= logging.root.level: 
+                            logging.indebugfo("TASK [%s] CONFLICT, cannot claim task, actions %s", bpmTask.getId(), bpmTask.getActions())
+
             else:
                 logging.info("No task to claim, user %s", self.user.userCreds.getName() )
         pass
@@ -294,19 +451,40 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 idx : int = random.randint(0, taskList.getCount()-1)
                 bpmTask : BpmTask = taskList.getTasks()[idx];
 
-                # think time
-                taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTask.getStatus()+"]"
-                think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
-                logging.info("Working on task, user %s, task %s", self.user.userCreds.getName(), taskInfo)
-                # time.sleep( think )
+                if _taskGetDetails(self, bpmTask) == True:
+                    if logging.DEBUG >= logging.root.level: 
+                        logging.debug("TASK [%s] DETAIL BEFORE COMPLETE actions[%s] variables[%s]", bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
 
-                payload = _buildPayload(bpmTask.getSubject())
-                _taskComplete(self, bpmTask, payload)
+                    if bpmTask.hasAction("ACTION_COMPLETE"):
+                        # think time
+                        taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTask.getStatus()+"]"
+                        think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
+                        logging.info("Working on task, user %s, task %s", self.user.userCreds.getName(), taskInfo)
+                        time.sleep( think )
+ 
+                        payload = _buildPayload(bpmTask.getSubject())
+                        _taskComplete(self, bpmTask, payload)
+                    else:
+                        if logging.DEBUG >= logging.root.level: 
+                            logging.indebugfo("TASK [%s] CONFLICT, cannot complete already claimed task, actions %s", bpmTask.getId(), bpmTask.getActions())
 
             else:
                 logging.info("No task to complete, user %s", self.user.userCreds.getName() )
         pass
 
+    def taskData(self):
+        if self.user.loggedIn == True:
+            taskList = _listTasks(self, "claimed", 25)
+
+            if taskList != None and taskList.getCount() > 0:    
+                idx : int = random.randint(0, taskList.getCount()-1)
+                bpmTask : BpmTask = taskList.getTasks()[idx];
+                _taskGetData(self, bpmTask)
+                if logging.DEBUG >= logging.root.level: 
+                    logging.debug("TASK [%s] CLEANED TASK DATA %s", bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
+
+        pass
+
     # you can still use the tasks attribute to specify a list of tasks
-    tasks = [login, claim, complete]
+    tasks = [login, claim, complete, taskData]
 
