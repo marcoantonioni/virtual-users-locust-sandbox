@@ -1,5 +1,6 @@
 
 import logging,sys,csv,random
+import mytasks.loadEnvironment as bpmEnv
 
 #--------------------------------------------
 # global vars
@@ -21,8 +22,16 @@ class UserCredentials:
     pass
 
 #--------------------------------------------
-def setupCredentials( fullPathName ):
+userStrategyTwins = False
+
+def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment  ):
+    global userStrategyTwins
+
     logging.debug("Loading credentials from: %s", fullPathName)
+
+    userStrategy = bpmEnvironment.getValue(bpmEnvironment.keyBAW_USERS_STRATEGY)
+    if userStrategy != None and userStrategy == bpmEnvironment.valBAW_USERS_STRATEGY_TWINS:
+        userStrategyTwins = True
 
     with open(fullPathName,'r') as data:
         for item in csv.DictReader(data):
@@ -40,10 +49,11 @@ def setupCredentials( fullPathName ):
         else:
             hasItems = False
         user_credentials.append( temp_user_credentials.pop(idx) )
-    logging.debug("Loaded %d users", len(user_credentials))
+
+    logging.debug("Loaded [%d] users, using strategy [%s]", len(user_credentials), userStrategy)
+    
     pass        
 
-userStrategyTwins = False
 def getNextUserCredentials():
     if len(user_credentials) > 0:
         user = user_credentials.pop()

@@ -11,22 +11,57 @@ from locust.exception import RescheduleTaskImmediately
 #-------------------------------------------
 # BPM types
 
+class BpmFederatedSystem:
+    restUrlPrefix : str = None # /bas/rest/bpm/wle
+    systemID : str = None
+    displayName : str = None
+    systemType : str = None # SYSTEM_TYPE_WLE
+    id : str = None
+    taskCompletionUrlPrefix : str = None # /bas/teamworks
+    version : str = None
+    indexRefreshInterval : int = 0
+    statusCode : str = None
+
+    def __init__(self, restUrlPrefix, systemID, displayName, systemType, id, taskCompletionUrlPrefix, version, indexRefreshInterval, statusCode):
+        self.restUrlPrefix = restUrlPrefix
+        self.systemID = systemID
+        self.displayName = displayName
+        self.systemType = systemType
+        self.id = id
+        self.taskCompletionUrlPrefix = taskCompletionUrlPrefix
+        self.version = version
+        self.indexRefreshInterval = indexRefreshInterval
+        self.statusCode = statusCode
+
+    def getSystemID(self):
+        return self.systemID
+
+    def getRestUrlPrefix(self):
+        return self.restUrlPrefix
+
+    def getStatusCode(self):
+        return self.statusCode
+
+
 class BpmTask:
     id : str = None
     subject : str = None
     status : str = None
     state: str = None
     role: str = None
+    systemID: str = None
     variableNames = []
     actions = []
     data: dict = None
+    federatedSystem : BpmFederatedSystem = None
 
-    def __init__(self, id, subject, status, state, role):
+    def __init__(self, id, subject, status, state, role, systemID):
         self.id = id
         self.subject = subject
         self.status = status
         self.state = state
         self.role = role
+        self.systemID = systemID
 
     def getId(self):
         return self.id
@@ -44,6 +79,9 @@ class BpmTask:
     
     def getRole(self):
         return self.role
+
+    def getSystemID(self):
+        return self.systemID
 
     def getVariableNames(self):
         return self.variableNames
@@ -65,6 +103,13 @@ class BpmTask:
     def getTaskData(self):
         return self.data
 
+    def setFederatedSystem(self, fedSys):
+        self.federatedSystem = fedSys
+    def getFederatedSystem(self):
+        return self.federatedSystem
+    def isFederatedSystem(self):
+        return self.federatedSystem != None
+
     def buildListOfVarNames(self):
         paramVarNames = ""
         allNames = self.getVariableNames()
@@ -81,6 +126,7 @@ class BpmTask:
 class BpmTaskList:
     count : int = 0
     bpmTasks : BpmTask = None
+    bpmFederatedSystems = dict()
 
     def __init__(self, count, bpmTasks):
         self.count = count
@@ -92,7 +138,21 @@ class BpmTaskList:
     def getTasks(self):
         return self.bpmTasks
     
-    pass
+    def getPreparedTask( self, idx ):
+        bpmTask : BpmTask = self.getTasks()[idx];
+        if bpmTask != None:
+            bpmTask.setFederatedSystem(self.bpmFederatedSystems[bpmTask.getSystemID()])
+        return bpmTask
+    
+    def getPreparedTaskRandom(self):
+        idx : int = random.randint(0, self.getCount()-1)
+        return self.getPreparedTask( idx )
+    
+    def setFederationInfos( self, listOfBpmSystems ):
+        for bpmSystem in listOfBpmSystems:
+            bpmFedSys : BpmFederatedSystem = BpmFederatedSystem(bpmSystem["restUrlPrefix"], bpmSystem["systemID"], bpmSystem["displayName"], bpmSystem["systemType"], bpmSystem["id"], bpmSystem["taskCompletionUrlPrefix"], bpmSystem["version"], bpmSystem["indexRefreshInterval"], bpmSystem["statusCode"])
+            self.bpmFederatedSystems[bpmFedSys.getSystemID()] = bpmFedSys
+
 
 def _getAttributeNamesFromDictionary(varDict):
     listOfVarNames = []
@@ -164,17 +224,31 @@ def _buildTaskList(self, tasksCount, tasksList, interaction):
         bpmStatus = bpmTask["STATUS"]
         bpmSubject = bpmTask["TAD_DISPLAY_NAME"]
         bpmRole = bpmTask["ASSIGNED_TO_ROLE_DISPLAY_NAME"]
+        bpmSystemID = bpmTask["systemID"]
         if bpmRole != None and isClaiming == True:             
             if self.user.isSubjectForUser(bpmSubject) == True:
-                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole))
+                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole, bpmSystemID))
         if bpmRole == None and isClaiming == False:             
             if self.user.isSubjectForUser(bpmSubject) == True:
-                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole))
+                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole, bpmSystemID))
 
     bpmTaskList = BpmTaskList(len(bpmTaksItems), bpmTaksItems)
     return bpmTaskList
 
 def _listTasks(self, interaction, size):
+
+    uriBaseTaskList = ""
+    taskListFederated = False
+    taskListStrategy = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_TASK_LIST_STRATEGY)
+    if taskListStrategy == bpmEnv.BpmEnvironment.valBAW_TASK_LIST_STRATEGY_FEDERATEDPORTAL:
+        taskListFederated = True
+        uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
+    else:
+        baseUri = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        if baseUri == None:
+            baseUri = ""
+        uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
+
     if self.user.loggedIn == True:
         # query task list
         params = {'organization': 'byTask',
@@ -189,7 +263,7 @@ def _listTasks(self, interaction, size):
         constParams : str = "calcStats=false&includeAllIndexes=false&includeAllBusinessData=false&avoidBasicAuthChallenge=true"
         offset = "0"
         hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        fullUrl = hostUrl+"/pfs/rest/bpm/federated/v1/tasks?"+constParams+"&offset="+offset
+        fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset
         with self.client.put(url=fullUrl, headers=my_headers, data=json.dumps(params), catch_response=True) as response:
             if logging.getLogger().isEnabledFor(logging.DEBUG):
                 logging.debug("_listTasks '%s' status code: %s", interaction, response.status_code)
@@ -200,21 +274,41 @@ def _listTasks(self, interaction, size):
                     items = rsp["items"]
                     if logging.getLogger().isEnabledFor(logging.DEBUG):
                         logging.debug("_listTasks [%s] user %s, size %d, numtasks %d, response %s", interaction, self.user.userCreds.getName(), size, len(items), json.dumps(rsp, indent = 2))
-                    return _buildTaskList(self, size, items, interaction)
+
+                    _taskList : BpmTaskList = _buildTaskList(self, size, items, interaction)
+                    if taskListFederated == True:
+                        _taskList.setFederationInfos(rsp["federationResult"])
+                        
+                    return _taskList
                 except JSONDecodeError:
                         response.failure("Response could not be decoded as JSON")
                 except KeyError:
-                        response.failure("Response did not contain expected key 'size' or 'items'")
+                        logging.error("_listTasks error, user %s, esponse did not contain expected key 'size', 'items', if federated portal [now is %s] 'federationResult'", self.user.userCreds.getName(), taskListFederated)
+                        response.failure("Response did not contain expected key 'size', 'items', if federated portal 'federationResult'")
         return None
     pass
+
+# !!!! /bas/ da parametrizzare
+def _buildTaskUrl(bpmTask : BpmTask, user):
+    fullUrl = ""
+    if bpmTask.isFederatedSystem():
+        fullUrl = bpmTask.getFederatedSystem().getRestUrlPrefix()+"/v1/task/"+bpmTask.getId()
+    else:
+        hostUrl : str = user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+bpmTask.getId()
+    return fullUrl
 
 def _taskGetDetails(self, bpmTask : BpmTask):
     if self.user.loggedIn == True:
         authValue : str = "Bearer "+self.user.authorizationBearerToken
         my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
-        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        taskId = bpmTask.getId()
-        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?parts=data,actions"
+
+        #hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        #taskId = bpmTask.getId()
+        #fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?parts=data,actions"
+
+        fullUrl = _buildTaskUrl(bpmTask, self.user) + "?parts=data,actions"
+        
         with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
             if logging.getLogger().isEnabledFor(logging.DEBUG):
                 logging.debug("_taskGetDetails status code: %s", response.status_code)
@@ -222,7 +316,7 @@ def _taskGetDetails(self, bpmTask : BpmTask):
             if response.status_code == 200:
                 rsp = response.json()
                 if logging.getLogger().isEnabledFor(logging.DEBUG):
-                    logging.debug("_taskGetDetails taskId[%s] %s", taskId, json.dumps(rsp, indent = 2))
+                    logging.debug("_taskGetDetails taskId[%s] %s", bpmTask.getId(), json.dumps(rsp, indent = 2))
                 
                 bpmRequestStatus = ""
                 bpmErrorMessage = ""
@@ -243,7 +337,7 @@ def _taskGetDetails(self, bpmTask : BpmTask):
                     else:
                         data = rsp["Data"]
                         bpmErrorMessage = data["errorMessage"]
-                        logging.error("_taskGetDetails error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmRequestStatus, bpmErrorMessage)
+                        logging.error("_taskGetDetails error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), bpmTask.getId(), bpmRequestStatus, bpmErrorMessage)
                         pass
                 
                 except JSONDecodeError:
@@ -255,7 +349,7 @@ def _taskGetDetails(self, bpmTask : BpmTask):
                     response.success()
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
-                logging.error("Task get details error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), taskId, response.status_code, bpmErrorMessage)
+                logging.error("Task get details error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), bpmTask.getId(), response.status_code, bpmErrorMessage)
 
     return False
 
@@ -264,10 +358,15 @@ def _taskGetData(self, bpmTask: BpmTask):
         if _taskGetDetails(self, bpmTask) == True:
             authValue : str = "Bearer "+self.user.authorizationBearerToken
             my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
-            hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-            taskId = bpmTask.getId()
+
+            #hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+            #taskId = bpmTask.getId()
+            #paramNames = bpmTask.buildListOfVarNames()
+            #fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=getData&fields="+paramNames
+
             paramNames = bpmTask.buildListOfVarNames()
-            fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=getData&fields="+paramNames
+            fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=getData&fields="+paramNames
+
             with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
                 if logging.getLogger().isEnabledFor(logging.DEBUG):
                     logging.debug("_taskGetData status code: %s", response.status_code)
@@ -275,7 +374,7 @@ def _taskGetData(self, bpmTask: BpmTask):
                 if response.status_code == 200:
                     rsp = response.json()
                     if logging.getLogger().isEnabledFor(logging.DEBUG):
-                        logging.debug("_taskGetData taskId[%s] %s", taskId, json.dumps(rsp, indent = 2))
+                        logging.debug("_taskGetData taskId[%s] %s", bpmTask.getId(), json.dumps(rsp, indent = 2))
                     
                     bpmRequestStatus = ""
                     bpmErrorMessage = ""
@@ -288,7 +387,7 @@ def _taskGetData(self, bpmTask: BpmTask):
                         else:
                             data = rsp["Data"]
                             bpmErrorMessage = data["errorMessage"]
-                            logging.error("_taskGetData error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmRequestStatus, bpmErrorMessage)
+                            logging.error("_taskGetData error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), bpmTask.getId(), bpmRequestStatus, bpmErrorMessage)
                             pass
                     
                     except JSONDecodeError:
@@ -300,17 +399,22 @@ def _taskGetData(self, bpmTask: BpmTask):
                         response.success()
                     data = rsp["Data"]
                     bpmErrorMessage = data["errorMessage"]
-                    logging.error("_taskGetData error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), taskId, response.status_code, bpmErrorMessage)
+                    logging.error("_taskGetData error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), bpmTask.getId(), response.status_code, bpmErrorMessage)
     return False
 
 def _taskSetData(self, bpmTask, payload):
     if self.user.loggedIn == True:
         authValue : str = "Bearer "+self.user.authorizationBearerToken
         my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
-        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        taskId = bpmTask.getId()
+
+        #hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        #taskId = bpmTask.getId()
+        #jsonStr = json.dumps(payload)
+        #fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=setData&params="+jsonStr
+
         jsonStr = json.dumps(payload)
-        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=setData&params="+jsonStr
+        fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=setData&params="+jsonStr
+
         with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
             if logging.getLogger().isEnabledFor(logging.DEBUG):
                 logging.debug("_taskSetData status code: %s", response.status_code)
@@ -325,12 +429,12 @@ def _taskSetData(self, bpmTask, payload):
                         bpmTask.setTaskData(_cleanVarData(data["resultMap"]))              
                         taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject() +"]"
                         if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.debug("_taskSetData, user %s, task %s", self.user.userCreds.getName(), taskId )
+                            logging.debug("_taskSetData, user %s, task %s", self.user.userCreds.getName(), bpmTask.getId() )
                         return True
                     else:
                         data = rsp["Data"]
                         bpmErrorMessage = data["errorMessage"]
-                        logging.error("_taskSetData error, user %s, task %s, task status %s, task role %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmTask.getStatus(), bpmTask.getRole(), bpmRequestStatus, bpmErrorMessage)
+                        logging.error("_taskSetData error, user %s, task %s, task status %s, task role %s, request status %s, error %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getStatus(), bpmTask.getRole(), bpmRequestStatus, bpmErrorMessage)
                         pass
                 
                 except JSONDecodeError:
@@ -342,17 +446,16 @@ def _taskSetData(self, bpmTask, payload):
                     response.success()
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
-                logging.error("_taskSetData error, user %s, task %s, task status %s, task role %s, status %d, error %s", self.user.userCreds.getName(), taskId, bpmTask.getStatus(), bpmTask.getRole(), response.status_code, bpmErrorMessage)
+                logging.error("_taskSetData error, user %s, task %s, task status %s, task role %s, status %d, error %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getStatus(), bpmTask.getRole(), response.status_code, bpmErrorMessage)
     return False
 
-# !!!! /bas/ da parametrizzare
-def _taskClaim(self, bpmTask):
+def _taskClaim(self, bpmTask : BpmTask):
     if self.user.loggedIn == True:
         authValue : str = "Bearer "+self.user.authorizationBearerToken
         my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
-        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        taskId = bpmTask.getId()
-        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=assign&toMe=true&parts=none"
+
+        fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=assign&toMe=true&parts=none"
+
         with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
             if logging.getLogger().isEnabledFor(logging.DEBUG):
                 logging.debug("_taskClaim status code: %s", response.status_code)
@@ -372,7 +475,7 @@ def _taskClaim(self, bpmTask):
                     else:
                         data = rsp["Data"]
                         bpmErrorMessage = data["errorMessage"]
-                        logging.error("_taskClaim error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmRequestStatus, bpmErrorMessage)
+                        logging.error("_taskClaim error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), bpmTask.getId(), bpmRequestStatus, bpmErrorMessage)
                         pass
                 
                 except JSONDecodeError:
@@ -384,17 +487,16 @@ def _taskClaim(self, bpmTask):
                     response.success()
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
-                logging.error("_taskClaim error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), taskId, response.status_code, bpmErrorMessage)
+                logging.error("_taskClaim error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), bpmTask.getId(), response.status_code, bpmErrorMessage)
     return False                
 
-# !!!! /bas/ da parametrizzare
-def _taskRelease(self, bpmTask):
+def _taskRelease(self, bpmTask: BpmTask):
     if self.user.loggedIn == True:
         authValue : str = "Bearer "+self.user.authorizationBearerToken
         my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
-        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        taskId = bpmTask.getId()
-        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=assign&back=true&parts=none"
+
+        fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=assign&back=true&parts=none"
+
         with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
             if logging.getLogger().isEnabledFor(logging.DEBUG):
                 logging.debug("_taskRelease status code: %s", response.status_code)
@@ -411,7 +513,7 @@ def _taskRelease(self, bpmTask):
                     else:
                         data = rsp["Data"]
                         bpmErrorMessage = data["errorMessage"]
-                        logging.error("_taskRelease error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmRequestStatus, bpmErrorMessage)
+                        logging.error("_taskRelease error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), bpmTask.getId(), bpmRequestStatus, bpmErrorMessage)
                         pass
                 
                 except JSONDecodeError:
@@ -423,19 +525,22 @@ def _taskRelease(self, bpmTask):
                     response.success()
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
-                logging.error("_taskRelease error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), taskId, response.status_code, bpmErrorMessage)
+                logging.error("_taskRelease error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), bpmTask.getId(), response.status_code, bpmErrorMessage)
                 
     pass
 
-# !!!! /bas/ da parametrizzare
 def _taskComplete(self, bpmTask, payload):
     if self.user.loggedIn == True:
         authValue : str = "Bearer "+self.user.authorizationBearerToken
         my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
-        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        taskId = bpmTask.getId()
+
+        #hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        #taskId = bpmTask.getId()
+        #fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=complete&parts=none&params="+jsonStr
+        
         jsonStr = json.dumps(payload)
-        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=complete&parts=none&params="+jsonStr
+        fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=complete&parts=none&params="+jsonStr
+
         with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
             if logging.getLogger().isEnabledFor(logging.DEBUG):
                 logging.debug("_taskComplete status code: %s", response.status_code)
@@ -450,12 +555,12 @@ def _taskComplete(self, bpmTask, payload):
                         bpmTaskState = data["state"]
                         taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTaskState+"]"
                         if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.debug("_taskComplete, user %s, task %s", self.user.userCreds.getName(), taskId )
+                            logging.debug("_taskComplete, user %s, task %s", self.user.userCreds.getName(), bpmTask.getId() )
                         return True
                     else:
                         data = rsp["Data"]
                         bpmErrorMessage = data["errorMessage"]
-                        logging.error("_taskComplete error, user %s, task %s, task status %s, task role %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmTask.getStatus(), bpmTask.getRole(), bpmRequestStatus, bpmErrorMessage)
+                        logging.error("_taskComplete error, user %s, task %s, task status %s, task role %s, request status %s, error %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getStatus(), bpmTask.getRole(), bpmRequestStatus, bpmErrorMessage)
                         pass
                 
                 except JSONDecodeError:
@@ -467,7 +572,7 @@ def _taskComplete(self, bpmTask, payload):
                     response.success()
                 data = rsp["Data"]
                 bpmErrorMessage = data["errorMessage"]
-                logging.error("_taskComplete error, user %s, task %s, task status %s, task role %s, status %d, error %s", self.user.userCreds.getName(), taskId, bpmTask.getStatus(), bpmTask.getRole(), response.status_code, bpmErrorMessage)
+                logging.error("_taskComplete error, user %s, task %s, task status %s, task role %s, status %d, error %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getStatus(), bpmTask.getRole(), response.status_code, bpmErrorMessage)
     return False
 
 def _buildPayload(taskSubject):
@@ -498,10 +603,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
 
     def bawClaimTask(self):
         if self.user.loggedIn == True:
-            taskList = _listTasks(self, "available", 25)
+            taskList : BpmTaskList = _listTasks(self, "available", 25)
             if taskList != None and taskList.getCount() > 0:
-                idx : int = random.randint(0, taskList.getCount()-1)
-                bpmTask : BpmTask = taskList.getTasks()[idx];
+                bpmTask : BpmTask = taskList.getPreparedTaskRandom()
 
                 if _taskGetDetails(self, bpmTask) == True:
 
@@ -517,7 +621,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("bawClaimTask TASK [%s] DETAIL AFTER CLAIM actions[%s] variables[%s]", bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
                     else:
                         if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.indebugfo("bawClaimTask TASK [%s] CONFLICT, cannot claim task, actions %s", bpmTask.getId(), bpmTask.getActions())
+                            logging.debug("bawClaimTask TASK [%s] CONFLICT, cannot claim task, actions %s", bpmTask.getId(), bpmTask.getActions())
 
             else:
                 logging.info("User[%s] - bawClaimTask no task to claim", self.user.userCreds.getName() )
@@ -528,8 +632,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             taskList = _listTasks(self, "claimed", 25)
 
             if taskList != None and taskList.getCount() > 0:    
-                idx : int = random.randint(0, taskList.getCount()-1)
-                bpmTask : BpmTask = taskList.getTasks()[idx];
+                bpmTask : BpmTask = taskList.getPreparedTaskRandom()
 
                 if _taskGetDetails(self, bpmTask) == True:
 
@@ -548,7 +651,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
 
                     else:
                         if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.indebugfo("bawCompleteTask TASK [%s] CONFLICT, cannot complete already claimed task, actions %s", bpmTask.getId(), bpmTask.getActions())
+                            logging.debug("bawCompleteTask TASK [%s] CONFLICT, cannot complete already claimed task, actions %s", bpmTask.getId(), bpmTask.getActions())
 
             else:
                 logging.info("User[%s] - bawCompleteTask no task to complete", self.user.userCreds.getName() )
@@ -559,8 +662,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             taskList = _listTasks(self, "claimed", 25)
 
             if taskList != None and taskList.getCount() > 0:    
-                idx : int = random.randint(0, taskList.getCount()-1)
-                bpmTask : BpmTask = taskList.getTasks()[idx];
+                bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+
                 if _taskGetData(self, bpmTask) == True:
                     logging.info("User[%s] - bawGetTaskData - got data from task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
@@ -576,8 +679,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             taskList = _listTasks(self, "claimed", 25)
 
             if taskList != None and taskList.getCount() > 0:    
-                idx : int = random.randint(0, taskList.getCount()-1)
-                bpmTask : BpmTask = taskList.getTasks()[idx];
+                bpmTask : BpmTask = taskList.getPreparedTaskRandom()
 
                 if _taskGetDetails(self, bpmTask) == True:
 
@@ -610,8 +712,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             taskList = _listTasks(self, "claimed", 25)
 
             if taskList != None and taskList.getCount() > 0:    
-                idx : int = random.randint(0, taskList.getCount()-1)
-                bpmTask : BpmTask = taskList.getTasks()[idx];
+                bpmTask : BpmTask = taskList.getPreparedTaskRandom()
 
                 if _taskGetDetails(self, bpmTask) == True:
 

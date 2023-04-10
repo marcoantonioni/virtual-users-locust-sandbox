@@ -119,10 +119,14 @@ def on_locust_init(environment, **kwargs):
         environment.runner.quit()
     else:
         logging.debug("Setup BAW environment with BAW_ENV[%s] BAW_USERS[%s] BAW_TASK_SUBJECTS[%s] BAW_USER_TASK_SUBJECTS[%s]", _fullPathBawEnv, _fullPathBawUsers, _fullPathBawTaskSubjects, _fullPathBawUserTaskSubjects)
+
         # read properties
         bpmEnvironment.loadEnvironment(_fullPathBawEnv)
+        bpmEnvironment.dumpValues()
+
         # read credentials
-        bpmCreds.setupCredentials(_fullPathBawUsers)
+        bpmCreds.setupCredentials(_fullPathBawUsers, bpmEnvironment)
+
         # read user tasks dictionary
         taskSubjects = bpmUTS.setupTaskSubjects(_fullPathBawTaskSubjects)
         userTaskSubjects = bpmUTS.setupUserTaskSubjects(_fullPathBawUserTaskSubjects)
