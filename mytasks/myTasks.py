@@ -300,7 +300,47 @@ def _taskGetData(self, bpmTask: BpmTask):
 
 def _taskSetData(self, bpmTask, payload):
     if self.user.loggedIn == True:
-        logging.info("task set data, user %s, task %s, payload %s", self.userCreds.getName(), "taskId", payload)
+        authValue : str = "Bearer "+self.user.authorizationBearerToken
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        taskId = bpmTask.getId()
+        jsonStr = json.dumps(payload)
+        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=setData&params="+jsonStr
+        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
+            logging.debug("task set data status code: %s", response.status_code)
+            rsp = response.json()
+            if response.status_code == 200:
+                bpmRequestStatus = ""
+                bpmTaskState = ""
+                bpmErrorMessage = ""
+                try:                                        
+                    bpmRequestStatus = rsp["status"]
+                    if bpmRequestStatus == "200":
+                        data = rsp["data"]
+                        bpmTask.setTaskData(_cleanVarData(data["resultMap"]))              
+                        taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTaskState+"]"
+                        logging.info("Updated task, user %s, task %s", self.user.userCreds.getName(), taskId )
+                    else:
+                        data = rsp["Data"]
+                        bpmErrorMessage = data["errorMessage"]
+                        logging.error("Update error, user %s, task %s, task status %s, task role %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmTask.getStatus(), bpmTask.getRole(), bpmRequestStatus, bpmErrorMessage)
+                        pass
+                
+                except JSONDecodeError:
+                        response.failure("Response could not be decoded as JSON")
+                except KeyError:
+                        response.failure("Response did not contain expected key 'status' or 'data.state'")
+            else:
+                if response.status_code == 401:
+                    # print("COMPLETE ERR on task ", taskId, self.user.userCreds.getName(), self.user.completeFailed )
+                    # self.user.completeFailed.append(taskId)
+                    response.success()
+                    # response._manual_result = False
+                    # raise RescheduleTaskImmediately() 
+                data = rsp["Data"]
+                bpmErrorMessage = data["errorMessage"]
+                logging.error("Update error, user %s, task %s, task status %s, task role %s, status %d, error %s", self.user.userCreds.getName(), taskId, bpmTask.getStatus(), bpmTask.getRole(), response.status_code, bpmErrorMessage)
+
     pass
 
 # !!!! /bas/ da parametrizzare
@@ -398,7 +438,7 @@ def _buildPayload(taskSubject):
 
 #-------------------------------------------
 class SequenceOfBpmTasks(SequentialTaskSet):
-    def login(self):
+    def bawlogin(self):
         if self.user.loggedIn == False:
             uName = "n/a"
             if self.user.userCreds != None:
@@ -418,7 +458,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         logging.error("*** ERROR failed login for user %s", userName)
         pass
 
-    def claim(self):
+    def bawClaimTask(self):
         if self.user.loggedIn == True:
             taskList = _listTasks(self, "available", 25)
             if taskList != None and taskList.getCount() > 0:
@@ -443,7 +483,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 logging.info("No task to claim, user %s", self.user.userCreds.getName() )
         pass
 
-    def complete(self):
+    def bawCompleteTask(self):
         if self.user.loggedIn == True:
             taskList = _listTasks(self, "claimed", 25)
 
@@ -472,7 +512,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 logging.info("No task to complete, user %s", self.user.userCreds.getName() )
         pass
 
-    def taskData(self):
+    def bawGetTaskData(self):
         if self.user.loggedIn == True:
             taskList = _listTasks(self, "claimed", 25)
 
@@ -485,6 +525,38 @@ class SequenceOfBpmTasks(SequentialTaskSet):
 
         pass
 
+    def bawSetTaskData(self):
+        if self.user.loggedIn == True:
+            taskList = _listTasks(self, "claimed", 25)
+
+            if taskList != None and taskList.getCount() > 0:    
+                idx : int = random.randint(0, taskList.getCount()-1)
+                bpmTask : BpmTask = taskList.getTasks()[idx];
+
+                if _taskGetDetails(self, bpmTask) == True:
+                    if logging.DEBUG >= logging.root.level: 
+                        logging.debug("TASK [%s] DETAIL BEFORE SET DATA actions[%s] data[%s]", bpmTask.getId(), bpmTask.getActions(), json.dumps(bpmTask.getTaskData(), indent = 2))
+
+                    if bpmTask.hasAction("ACTION_SETTASK"):
+                        # think time
+                        taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTask.getStatus()+"]"
+                        think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
+                        logging.info("Postponing on task, user %s, task %s", self.user.userCreds.getName(), taskInfo)
+                        time.sleep( think )
+ 
+                        payload = _buildPayload(bpmTask.getSubject())
+                        _taskSetData(self, bpmTask, payload)
+                        if logging.DEBUG >= logging.root.level: 
+                            logging.debug("TASK [%s] UPDATED TASK DATA %s", bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
+                    else:
+                        if logging.DEBUG >= logging.root.level: 
+                            logging.debug("TASK [%s] HAS NO ACTION_SETTASK, available actions %s", bpmTask.getId(), bpmTask.getActions())
+
+            else:
+                logging.info("No task to set data, user %s", self.user.userCreds.getName() )
+
+        pass
+
     # you can still use the tasks attribute to specify a list of tasks
-    tasks = [login, claim, complete, taskData]
+    tasks = [bawlogin, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData]
 

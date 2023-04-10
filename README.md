@@ -16,6 +16,7 @@ locust -f ./baw-virtual-users.py --headless --only-summary --run-time 60s --user
 # https://github.com/locustio/locust/blob/master/examples/test_data_management.py
 # https://github.com/locustio/locust/blob/master/examples/dynamic_user_credentials.py
 
+# https://www.ibm.com/docs/en/bpm/8.6.0?topic=SSFPJS_8.6.0/com.ibm.wbpm.bpc.doc/topics/rrestapi_authtasks.htm
 
 # moduli
 pip install locust
