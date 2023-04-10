@@ -4,6 +4,13 @@ Sandbox per struttura progetto finale
 
 ```
 
+# 8 utenti 1/8
+locust --config=./configurations/baw-vu-cfg-1.conf
+
+# 2 utenti 9/10
+locust --config=./configurations/baw-vu-cfg-2.conf
+
+
 # 1 utente
 locust -f ./baw-virtual-users.py --headless --only-summary --run-time 60s --users 1 --spawn-rate 1 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
 
