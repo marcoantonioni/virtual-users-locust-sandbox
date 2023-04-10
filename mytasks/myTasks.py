@@ -311,14 +311,13 @@ def _taskSetData(self, bpmTask, payload):
             rsp = response.json()
             if response.status_code == 200:
                 bpmRequestStatus = ""
-                bpmTaskState = ""
                 bpmErrorMessage = ""
                 try:                                        
                     bpmRequestStatus = rsp["status"]
                     if bpmRequestStatus == "200":
                         data = rsp["data"]
                         bpmTask.setTaskData(_cleanVarData(data["resultMap"]))              
-                        taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ " - "+bpmTaskState+"]"
+                        taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject() +"]"
                         logging.info("Updated task, user %s, task %s", self.user.userCreds.getName(), taskId )
                     else:
                         data = rsp["Data"]
@@ -356,8 +355,7 @@ def _taskClaim(self, bpmTask):
             rsp = response.json()
             # print(rsp)
             if response.status_code == 200:
-                bpmRequestStatus = ""
-                bpmTaskState = ""
+                bpmRequestStatus = ""                
                 bpmErrorMessage = ""
                 try:                                        
                     bpmRequestStatus = rsp["status"]
@@ -386,6 +384,44 @@ def _taskClaim(self, bpmTask):
     pass
 
 # !!!! /bas/ da parametrizzare
+def _taskRelease(self, bpmTask):
+    if self.user.loggedIn == True:
+        authValue : str = "Bearer "+self.user.authorizationBearerToken
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        taskId = bpmTask.getId()
+        fullUrl = hostUrl+"/bas/rest/bpm/wle/v1/task/"+taskId+"?action=assign&back=true&parts=none"
+        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
+            logging.debug("task release status code: %s", response.status_code)
+            rsp = response.json()
+            if response.status_code == 200:
+                bpmRequestStatus = ""
+                bpmErrorMessage = ""
+                try:                                        
+                    bpmRequestStatus = rsp["status"]
+                    if bpmRequestStatus == "200":
+                        taskInfo : str = "[" + bpmTask.getId() + " - " + bpmTask.getSubject()+ "]"
+                        logging.info("Released task, user %s, task %s", self.user.userCreds.getName(), taskInfo )
+                    else:
+                        data = rsp["Data"]
+                        bpmErrorMessage = data["errorMessage"]
+                        logging.error("Release error, user %s, task %s, request status %s, error %s", self.user.userCreds.getName(), taskId, bpmRequestStatus, bpmErrorMessage)
+                        pass
+                
+                except JSONDecodeError:
+                        response.failure("Response could not be decoded as JSON")
+                except KeyError:
+                        response.failure("Response did not contain expected key 'status' or 'data.state'")
+            else:
+                if response.status_code == 401:
+                    response.success()
+                data = rsp["Data"]
+                bpmErrorMessage = data["errorMessage"]
+                logging.error("Release error, user %s, task %s, status %d, error %s", self.user.userCreds.getName(), taskId, response.status_code, bpmErrorMessage)
+                
+    pass
+
+# !!!! /bas/ da parametrizzare
 def _taskComplete(self, bpmTask, payload):
     if self.user.loggedIn == True:
         authValue : str = "Bearer "+self.user.authorizationBearerToken
@@ -400,7 +436,6 @@ def _taskComplete(self, bpmTask, payload):
             # print(rsp)
             if response.status_code == 200:
                 bpmRequestStatus = ""
-                bpmTaskState = ""
                 bpmErrorMessage = ""
                 try:                                        
                     bpmRequestStatus = rsp["status"]
@@ -557,6 +592,29 @@ class SequenceOfBpmTasks(SequentialTaskSet):
 
         pass
 
+    def bawReleaseTask(self):
+        if self.user.loggedIn == True:
+            taskList = _listTasks(self, "claimed", 25)
+
+            if taskList != None and taskList.getCount() > 0:    
+                idx : int = random.randint(0, taskList.getCount()-1)
+                bpmTask : BpmTask = taskList.getTasks()[idx];
+
+                if _taskGetDetails(self, bpmTask) == True:
+                    if logging.DEBUG >= logging.root.level: 
+                        logging.debug("TASK [%s] DETAIL BEFORE RELEASE actions[%s] data[%s]", bpmTask.getId(), bpmTask.getActions(), json.dumps(bpmTask.getTaskData(), indent = 2))
+                    if bpmTask.hasAction("ACTION_CANCELCLAIM"):
+                        _taskRelease(self, bpmTask)
+                        if logging.DEBUG >= logging.root.level: 
+                            logging.debug("TASK [%s] RELEASED ", bpmTask.getId())
+                    else:
+                        if logging.DEBUG >= logging.root.level: 
+                            logging.debug("TASK [%s] HAS NO ACTION_CANCELCLAIM, available actions %s", bpmTask.getId(), bpmTask.getActions())
+
+            else:
+                logging.info("No task to release, user %s", self.user.userCreds.getName() )
+        pass
+
     # you can still use the tasks attribute to specify a list of tasks
-    tasks = [bawlogin, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData]
+    tasks = [bawlogin, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask]
 
