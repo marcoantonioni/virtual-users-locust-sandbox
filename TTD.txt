@@ -7,3 +7,5 @@
 4. OK aggiungere a bpmtask la url di origine se policy query federatedportal
 5. OK parametrizzare /bas/ in base a url di task se federatedportal
 6. test su traditional
+7. OK centralizzare gestione risposte rest e errori
+8. verificare _listTasks se possibile filtrare task per applicazione 
