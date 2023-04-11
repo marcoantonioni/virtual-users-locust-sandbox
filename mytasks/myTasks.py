@@ -14,14 +14,15 @@ class BpmFederatedSystem:
     restUrlPrefix : str = None # /...server-base-uri.../rest/bpm/wle
     systemID : str = None
     displayName : str = None
-    systemType : str = None # SYSTEM_TYPE_WLE
+    systemType : str = None # SYSTEM_TYPE_WLE | SYSTEM_TYPE_CASE
     id : str = None
     taskCompletionUrlPrefix : str = None # /...server-base-uri.../teamworks
     version : str = None
     indexRefreshInterval : int = 0
     statusCode : str = None
+    targetObjectStoreName : str = None # present only if systemType==SYSTEM_TYPE_CASE
 
-    def __init__(self, restUrlPrefix, systemID, displayName, systemType, id, taskCompletionUrlPrefix, version, indexRefreshInterval, statusCode):
+    def __init__(self, restUrlPrefix, systemID, displayName, systemType, id, taskCompletionUrlPrefix, version, indexRefreshInterval, statusCode, targetObjectStoreName):
         self.restUrlPrefix = restUrlPrefix
         self.systemID = systemID
         self.displayName = displayName
@@ -31,6 +32,7 @@ class BpmFederatedSystem:
         self.version = version
         self.indexRefreshInterval = indexRefreshInterval
         self.statusCode = statusCode
+        self.targetObjectStoreName = targetObjectStoreName
 
     def getSystemID(self):
         return self.systemID
@@ -149,7 +151,11 @@ class BpmTaskList:
     
     def setFederationInfos( self, listOfBpmSystems ):
         for bpmSystem in listOfBpmSystems:
-            bpmFedSys : BpmFederatedSystem = BpmFederatedSystem(bpmSystem["restUrlPrefix"], bpmSystem["systemID"], bpmSystem["displayName"], bpmSystem["systemType"], bpmSystem["id"], bpmSystem["taskCompletionUrlPrefix"], bpmSystem["version"], bpmSystem["indexRefreshInterval"], bpmSystem["statusCode"])
+            targetObjectStoreName = None
+            systemType = bpmSystem["systemType"]
+            if systemType == "SYSTEM_TYPE_CASE":
+                targetObjectStoreName = bpmSystem["targetObjectStoreName"]
+            bpmFedSys : BpmFederatedSystem = BpmFederatedSystem(bpmSystem["restUrlPrefix"], bpmSystem["systemID"], bpmSystem["displayName"], systemType, bpmSystem["id"], bpmSystem["taskCompletionUrlPrefix"], bpmSystem["version"], bpmSystem["indexRefreshInterval"], bpmSystem["statusCode"], targetObjectStoreName)
             self.bpmFederatedSystems[bpmFedSys.getSystemID()] = bpmFedSys
 
 
@@ -307,6 +313,7 @@ def _listTasks(self, interaction, size):
         my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
         constParams : str = "calcStats=false&includeAllIndexes=false&includeAllBusinessData=false&avoidBasicAuthChallenge=true"
         offset = "0"
+        processAppName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
 
         uriBaseTaskList = ""
         taskListFederated = False
@@ -322,7 +329,7 @@ def _listTasks(self, interaction, size):
             uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
 
         hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset
+        fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&processAppName="+processAppName
         
         with self.client.put(url=fullUrl, headers=my_headers, data=json.dumps(params), catch_response=True) as response:
 

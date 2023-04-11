@@ -62,6 +62,8 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
 
     def on_start(self):
         self.host = host = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        self.min_think_time = int(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MIN))
+        self.max_think_time = int(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MAX))
         self.userCreds = bpmCreds.getNextUserCredentials()
         if self.userCreds != None:
             logging.debug("User %s is starting... ", self.userCreds.getName())
@@ -134,3 +136,5 @@ def on_locust_init(environment, **kwargs):
         bpmUserSubjects.setDictionary(userSubjectsDictionary)
         logging.debug("User Subjects Dictionary ", userSubjectsDictionary)
 
+        # serach exposed process
+        # searchExposedProcess

@@ -19,6 +19,15 @@ class BpmEnvironment:
 
     keyBAW_BASE_URI_SERVER : str = "BAW_BASE_URI_SERVER"
 
+    keyBAW_PROCESS_APPLICATION_NAME : str = "BAW_PROCESS_APPLICATION_NAME"
+    keyBAW_PROCESS_APPLICATION_ACRONYM : str = "BAW_PROCESS_APPLICATION_ACRONYM"
+    keyBAW_PROCESS_NAMES : str = "BAW_PROCESS_NAMES"
+
+    keyBAW_VU_THINK_TIME_MIN : str = "BAW_VU_THINK_TIME_MIN"
+    keyBAW_VU_THINK_TIME_MAX : str = "BAW_VU_THINK_TIME_MAX"
+
+    keyBAW_POWER_USER_NAME : str = "BAW_POWER_USER_NAME"
+    keyBAW_POWER_USER_PASSWORD : str = "BAW_POWER_USER_PASSWORD"
 
     def loadEnvironment(self, fullPathName):
         self.configFullPathName = fullPathName

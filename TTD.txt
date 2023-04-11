@@ -1,11 +1,5 @@
 
-1. completare configurazione esterna (think time, etc... come da bash tool)
-2. OK policies configurazione
-2.1 OK policy utenze [unique|twins]
-2.2 OK policy query [federatedportal|standalone]
-3. OK impostazione query task list in base a policy [federatedportal|standalone]
-4. OK aggiungere a bpmtask la url di origine se policy query federatedportal
-5. OK parametrizzare /bas/ in base a url di task se federatedportal
-6. test su traditional
-7. OK centralizzare gestione risposte rest e errori
-8. verificare _listTasks se possibile filtrare task per applicazione 
+- searchExposedProcess ad avvio di test con credenziali power user
+
+- tool autonomo per creazione istanze processo
+- tool autonomo per terminazione/cancellazione istanze processo
