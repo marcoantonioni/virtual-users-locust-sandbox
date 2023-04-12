@@ -8,9 +8,11 @@ import mytasks.myTasks as bpmTask
 import mytasks.loadCredentials as bpmCreds
 import mytasks.loadEnvironment as bpmEnv
 import mytasks.loadUserTaskSubjects as bpmUTS
+import mytasks.searchExposedProcess as bpmExpProcs
 
 bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
 bpmUserSubjects : bpmUTS.BpmUserSubjects =bpmUTS.BpmUserSubjects()
+bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
 
 class IBMBusinessAutomationWorkflowUser(FastHttpUser):
 
@@ -136,5 +138,16 @@ def on_locust_init(environment, **kwargs):
         bpmUserSubjects.setDictionary(userSubjectsDictionary)
         logging.debug("User Subjects Dictionary ", userSubjectsDictionary)
 
-        # serach exposed process
+        # search exposed process
+        bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
+        logging.info("*** BAW EXPOSED PROCESSES ***")
+        for key in bpmExposedProcessManager.getKeys():
+            processInfo : bpmExpProcs.BpmExposedProcessInfo = bpmExposedProcessManager.getProcessInfos(key)
+            if processInfo != None:
+                logging.info("Process[%s] Application[%s] Acronym[%s]", processInfo.getAppProcessName(), processInfo.getAppName(), processInfo.getAppAcronym())
+            else:
+                logging.info("!!! object with key[%s] not found", key)
+            
+        logging.info("***********************")
+
         # searchExposedProcess

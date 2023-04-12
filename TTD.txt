@@ -1,5 +1,5 @@
 
 - searchExposedProcess ad avvio di test con credenziali power user
-
+- tool per estrazione modello dati in formato json template
 - tool autonomo per creazione istanze processo
 - tool autonomo per terminazione/cancellazione istanze processo
