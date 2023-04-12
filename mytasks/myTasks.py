@@ -5,6 +5,7 @@ from locust import task, tag, SequentialTaskSet
 from locust.exception import RescheduleTaskImmediately
 from json import JSONDecodeError
 from mytasks import loadEnvironment as bpmEnv
+from mytasks.createProcessInstance import BpmProcessInstanceManager as bpmPIM
 from configurations import payloadManager as bpmPayloadManager
 
 #-------------------------------------------
@@ -234,7 +235,12 @@ class RestResponseManager:
         self.userName = userName
         self.taskId = taskId
         self.ignoreCodes = ignoreCodes
-        self.js = response.json()
+        self.js = {}
+        try:
+            self.js = response.json()
+        except:
+            logging.error("%s status code: %s, empty/not-valid json content", contextName, response.status_code)
+
         if logging.getLogger().isEnabledFor(logging.DEBUG):
             logging.debug("%s status code: %s", contextName, response.status_code)
         if response.status_code >= 300:
@@ -646,6 +652,19 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 logging.info("User[%s] - bawReleaseTask no task to release", self.user.userCreds.getName() )
         pass
 
+    def bawCreateInstance(self):
+        if self.user.loggedIn == True:
+            pem = self.user.getEPM()
+            pim = self.user.getPIM()
+            processInfo = pem.getProcessInfos("ClaimCompileAndValidate/VirtualUsersSandbox/VUS")            
+            jsonPayload = _buildPayload("Start-ClaimCompileAndValidate")
+            strPayload = json.dumps(jsonPayload)
+            newInstanceInfo = pim.createInstance(self.user.getEnvironment(), processInfo, strPayload, self.user.authorizationBearerToken)
+            # salvare dati risposta
+        pass
+
     # list of enabled tasks
-    tasks = [bawLogin, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask]
+    #tasks = [bawLogin, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask, bawCreateInstance]
+    tasks = [bawLogin, bawClaimTask, bawCompleteTask]
+    # tasks = [bawLogin, bawCreateInstance]
 

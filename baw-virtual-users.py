@@ -8,11 +8,13 @@ import mytasks.myTasks as bpmTask
 import mytasks.loadCredentials as bpmCreds
 import mytasks.loadEnvironment as bpmEnv
 import mytasks.loadUserTaskSubjects as bpmUTS
-import mytasks.searchExposedProcess as bpmExpProcs
+import mytasks.exposedProcessManager as bpmExpProcs
+import mytasks.createProcessInstance as bpmPIM
 
 bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
 bpmUserSubjects : bpmUTS.BpmUserSubjects =bpmUTS.BpmUserSubjects()
 bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
+bpmProcessInstanceManager : bpmPIM.BpmProcessInstanceManager = bpmPIM.BpmProcessInstanceManager()
 
 class IBMBusinessAutomationWorkflowUser(FastHttpUser):
 
@@ -41,6 +43,9 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     def getEnvValue(self, key):
         return bpmEnvironment.getValue(key)
 
+    def getEnvironment(self):
+        return bpmEnvironment
+
     def context(self):
         return {"username": self.userCreds.getName()}
 
@@ -59,6 +64,13 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
                 # ignore, userId not in dictionary
                 pass
         return found
+    
+    def getPIM(self):
+        return bpmProcessInstanceManager
+    
+    def getEPM(self):
+        return bpmExposedProcessManager
+
     #----------------------------------------
     # for each virtual user
 
