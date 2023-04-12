@@ -63,6 +63,7 @@ class BpmUserSubjects:
         return self.userSubjectsDictionary
 
 #----------------------------------
+"""
 def main():
     tasks_subjects = setupTaskSubjects("./configurations/TS-TEST1.csv")
     user_task_subjects = setupUserTaskSubjects("./configurations/US-TS-TEST1.csv")
@@ -71,3 +72,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+"""

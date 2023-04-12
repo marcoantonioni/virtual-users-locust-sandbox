@@ -149,5 +149,3 @@ def on_locust_init(environment, **kwargs):
                 logging.info("!!! object with key[%s] not found", key)
             
         logging.info("***********************")
-
-        # searchExposedProcess
