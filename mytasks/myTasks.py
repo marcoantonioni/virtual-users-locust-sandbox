@@ -4,10 +4,11 @@ import logging, time, random, json
 from locust import task, tag, SequentialTaskSet
 from locust.exception import RescheduleTaskImmediately
 from json import JSONDecodeError
-from mytasks import loadEnvironment as bpmEnv
 from mytasks.createProcessInstance import BpmProcessInstanceManager as bpmPIM
 from mytasks.createProcessInstance import BpmProcessInstance as bpmPI
+from bawsys import loadEnvironment as bpmEnv
 from configurations import payloadManager as bpmPayloadManager
+
 #-------------------------------------------
 # BPM types
 
@@ -507,171 +508,184 @@ def _extractPayloadOptionalThinkTime(payloadInfos: dict, user, wait: bool):
         time.sleep( think )
     return payload
 
+def isActionEnabled(self, key):
+    actionEnabled = False
+    try:
+        if self.user.selectedUserActions != None:
+            userAction = self.user.selectedUserActions[key]
+            if userAction != None:
+                actionEnabled = userAction == bpmEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
+    except:
+        pass
+    return actionEnabled
+
 #-------------------------------------------
 class SequenceOfBpmTasks(SequentialTaskSet):
     def bawLogin(self):
         if self.user.loggedIn == False:
-            uName = "n/a"
-            if self.user.userCreds != None:
+            if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_LOGIN ):
+                uName = "n/a"
+                if self.user.userCreds != None:
 
-                userName : str = self.user.userCreds.getName()
-                userPassword : str = self.user.userCreds.getPassword()
-                iamUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
-                hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+                    userName : str = self.user.userCreds.getName()
+                    userPassword : str = self.user.userCreds.getPassword()
+                    iamUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
+                    hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
 
-                access_token : str = _accessToken(self, iamUrl, userName, userPassword)
-                if access_token != None:
-                    self.user.authorizationBearerToken = _cp4baToken(self, hostUrl, userName, access_token)
-                    if self.user.authorizationBearerToken != None:
-                        self.user.loggedIn = True
-                        logging.info("User[%s] - bawLogin - logged in", userName)
-                    else:
-                        logging.error("User[%s] - bawLogin - failed login ***ERROR***", userName)
+                    access_token : str = _accessToken(self, iamUrl, userName, userPassword)
+                    if access_token != None:
+                        self.user.authorizationBearerToken = _cp4baToken(self, hostUrl, userName, access_token)
+                        if self.user.authorizationBearerToken != None:
+                            self.user.loggedIn = True
+                            logging.info("User[%s] - bawLogin - logged in", userName)
+                        else:
+                            logging.error("User[%s] - bawLogin - failed login ***ERROR***", userName)
         pass
 
     def bawClaimTask(self):
         if self.user.loggedIn == True:
-            taskList : BpmTaskList = _listTasks(self, "available", 25)
-            if taskList != None and taskList.getCount() > 0:
-                bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+            if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_CLAIM ):
+                taskList : BpmTaskList = _listTasks(self, "available", 25)
+                if taskList != None and taskList.getCount() > 0:
+                    bpmTask : BpmTask = taskList.getPreparedTaskRandom()
 
-                if _taskGetDetails(self, bpmTask) == True:
-
-                    if logging.getLogger().isEnabledFor(logging.DEBUG):
-                        logging.debug("User[%s] - bawClaimTask TASK [%s] DETAIL BEFORE CLAIM actions[%s] variables[%s]", self.user.userCreds.getName(),bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
-
-                    if bpmTask.hasAction("ACTION_CLAIM"):
-                        if _taskClaim(self, bpmTask) == True:
-                            logging.info("User[%s] - bawClaimTask - claimed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                    if _taskGetDetails(self, bpmTask) == True:
 
                         if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            if _taskGetDetails(self, bpmTask) == True:
-                                logging.debug("bawClaimTask TASK [%s] DETAIL AFTER CLAIM actions[%s] variables[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
-                    else:
-                        if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.debug("User[%s] - bawClaimTask TASK [%s] CONFLICT, cannot claim task, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
+                            logging.debug("User[%s] - bawClaimTask TASK [%s] DETAIL BEFORE CLAIM actions[%s] variables[%s]", self.user.userCreds.getName(),bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
 
-            else:
-                logging.info("User[%s] - bawClaimTask no task to claim", self.user.userCreds.getName() )
+                        if bpmTask.hasAction("ACTION_CLAIM"):
+                            if _taskClaim(self, bpmTask) == True:
+                                logging.info("User[%s] - bawClaimTask - claimed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+
+                            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                if _taskGetDetails(self, bpmTask) == True:
+                                    logging.debug("bawClaimTask TASK [%s] DETAIL AFTER CLAIM actions[%s] variables[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
+                        else:
+                            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                logging.debug("User[%s] - bawClaimTask TASK [%s] CONFLICT, cannot claim task, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
+
+                else:
+                    logging.info("User[%s] - bawClaimTask no task to claim", self.user.userCreds.getName() )
         pass
 
     def bawCompleteTask(self):
         if self.user.loggedIn == True:
-            taskList = _listTasks(self, "claimed", 25)
+            if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_COMPLETE ):
+                taskList = _listTasks(self, "claimed", 25)
 
-            if taskList != None and taskList.getCount() > 0:    
-                bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+                if taskList != None and taskList.getCount() > 0:    
+                    bpmTask : BpmTask = taskList.getPreparedTaskRandom()
 
-                if _taskGetDetails(self, bpmTask) == True:
+                    if _taskGetDetails(self, bpmTask) == True:
 
-                    if logging.getLogger().isEnabledFor(logging.DEBUG):
-                        logging.debug("User[%s] - bawCompleteTask TASK [%s] DETAIL BEFORE COMPLETE actions[%s] variables[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
-
-                    if bpmTask.hasAction("ACTION_COMPLETE"):
-                        payloadInfos = _buildPayload(bpmTask.getSubject())
-                        payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
-                        logging.info("User[%s] - bawCompleteTask working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
-                        if _taskComplete(self, bpmTask, payload) == True:
-                            logging.info("User[%s] - bawCompleteTask - completed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
-
-                    else:
                         if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.debug("User[%s] - bawCompleteTask TASK [%s] CONFLICT, cannot complete already claimed task, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
+                            logging.debug("User[%s] - bawCompleteTask TASK [%s] DETAIL BEFORE COMPLETE actions[%s] variables[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
 
-            else:
-                logging.info("User[%s] - bawCompleteTask no task to complete", self.user.userCreds.getName() )
+                        if bpmTask.hasAction("ACTION_COMPLETE"):
+                            payloadInfos = _buildPayload(bpmTask.getSubject())
+                            payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
+                            logging.info("User[%s] - bawCompleteTask working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                            if _taskComplete(self, bpmTask, payload) == True:
+                                logging.info("User[%s] - bawCompleteTask - completed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+
+                        else:
+                            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                logging.debug("User[%s] - bawCompleteTask TASK [%s] CONFLICT, cannot complete already claimed task, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
+
+                else:
+                    logging.info("User[%s] - bawCompleteTask no task to complete", self.user.userCreds.getName() )
         pass
 
     def bawGetTaskData(self):
         if self.user.loggedIn == True:
-            taskList = _listTasks(self, "claimed", 25)
+            if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_GETDATA ):
+                taskList = _listTasks(self, "claimed", 25)
 
-            if taskList != None and taskList.getCount() > 0:    
-                bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+                if taskList != None and taskList.getCount() > 0:    
+                    bpmTask : BpmTask = taskList.getPreparedTaskRandom()
 
-                if _taskGetData(self, bpmTask) == True:
-                    logging.info("User[%s] - bawGetTaskData - got data from task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                    if _taskGetData(self, bpmTask) == True:
+                        logging.info("User[%s] - bawGetTaskData - got data from task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
-                if logging.getLogger().isEnabledFor(logging.DEBUG):
-                    logging.debug("User[%s] - bawGetTaskData TASK [%s] CLEANED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
+                    if logging.getLogger().isEnabledFor(logging.DEBUG):
+                        logging.debug("User[%s] - bawGetTaskData TASK [%s] CLEANED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
 
-            else:
-                logging.info("User[%s] - bawGetTaskData no task to set data", self.user.userCreds.getName() )
+                else:
+                    logging.info("User[%s] - bawGetTaskData no task to set data", self.user.userCreds.getName() )
         pass
 
     def bawSetTaskData(self):
         if self.user.loggedIn == True:
-            taskList = _listTasks(self, "claimed", 25)
+            if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_SETDATA ):
+                taskList = _listTasks(self, "claimed", 25)
 
-            if taskList != None and taskList.getCount() > 0:    
-                bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+                if taskList != None and taskList.getCount() > 0:    
+                    bpmTask : BpmTask = taskList.getPreparedTaskRandom()
 
-                if _taskGetDetails(self, bpmTask) == True:
-
-                    if logging.getLogger().isEnabledFor(logging.DEBUG):
-                        logging.debug("User[%s] - bawSetTaskData TASK [%s] DETAIL BEFORE SET DATA actions[%s] data[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), json.dumps(bpmTask.getTaskData(), indent = 2))
-
-                    if bpmTask.hasAction("ACTION_SETTASK"):
-                        payloadInfos = _buildPayload(bpmTask.getSubject())
-                        payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
-                        logging.info("User[%s] - bawSetTaskData working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
-                        if _taskSetData(self, bpmTask, payload) == True:
-                            logging.info("User[%s] - bawSetTaskData - set data and postponed on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                    if _taskGetDetails(self, bpmTask) == True:
 
                         if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.debug("User[%s] - bawSetTaskData TASK [%s] UPDATED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
-                    else:
-                        if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.debug("User[%s] - bawSetTaskData TASK [%s] HAS NO ACTION_SETTASK, available actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
+                            logging.debug("User[%s] - bawSetTaskData TASK [%s] DETAIL BEFORE SET DATA actions[%s] data[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), json.dumps(bpmTask.getTaskData(), indent = 2))
 
-            else:
-                logging.info("User[%s] - bawSetTaskData no task to set data", self.user.userCreds.getName() )
+                        if bpmTask.hasAction("ACTION_SETTASK"):
+                            payloadInfos = _buildPayload(bpmTask.getSubject())
+                            payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
+                            logging.info("User[%s] - bawSetTaskData working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                            if _taskSetData(self, bpmTask, payload) == True:
+                                logging.info("User[%s] - bawSetTaskData - set data and postponed on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
+                            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                logging.debug("User[%s] - bawSetTaskData TASK [%s] UPDATED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
+                        else:
+                            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                logging.debug("User[%s] - bawSetTaskData TASK [%s] HAS NO ACTION_SETTASK, available actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
+
+                else:
+                    logging.info("User[%s] - bawSetTaskData no task to set data", self.user.userCreds.getName() )
         pass
 
     def bawReleaseTask(self):
         if self.user.loggedIn == True:
-            taskList = _listTasks(self, "claimed", 25)
+            if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_RELEASE ):
+                taskList = _listTasks(self, "claimed", 25)
 
-            if taskList != None and taskList.getCount() > 0:    
-                bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+                if taskList != None and taskList.getCount() > 0:    
+                    bpmTask : BpmTask = taskList.getPreparedTaskRandom()
 
-                if _taskGetDetails(self, bpmTask) == True:
-
-                    if logging.getLogger().isEnabledFor(logging.DEBUG):
-                        logging.debug("User[%s] - bawReleaseTask TASK [%s] DETAIL BEFORE RELEASE actions[%s] data[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), json.dumps(bpmTask.getTaskData(), indent = 2))
-                    
-                    if bpmTask.hasAction("ACTION_CANCELCLAIM"):
-                        if _taskRelease(self, bpmTask) == True:
-                            logging.info("User[%s] - bawReleaseTask - released task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                    if _taskGetDetails(self, bpmTask) == True:
 
                         if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.debug("User[%s] - bawReleaseTask TASK [%s] RELEASED ", self.user.userCreds.getName(), bpmTask.getId())
-                    else:
-                        if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.debug("User[%s] - bawReleaseTask TASK [%s] HAS NO ACTION_CANCELCLAIM, available actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
+                            logging.debug("User[%s] - bawReleaseTask TASK [%s] DETAIL BEFORE RELEASE actions[%s] data[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), json.dumps(bpmTask.getTaskData(), indent = 2))
+                        
+                        if bpmTask.hasAction("ACTION_CANCELCLAIM"):
+                            if _taskRelease(self, bpmTask) == True:
+                                logging.info("User[%s] - bawReleaseTask - released task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
-            else:
-                logging.info("User[%s] - bawReleaseTask no task to release", self.user.userCreds.getName() )
+                            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                logging.debug("User[%s] - bawReleaseTask TASK [%s] RELEASED ", self.user.userCreds.getName(), bpmTask.getId())
+                        else:
+                            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                logging.debug("User[%s] - bawReleaseTask TASK [%s] HAS NO ACTION_CANCELCLAIM, available actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
+
+                else:
+                    logging.info("User[%s] - bawReleaseTask no task to release", self.user.userCreds.getName() )
         pass
 
     def bawCreateInstance(self):
         if self.user.loggedIn == True:
-            pem = self.user.getEPM()
-            pim = self.user.getPIM()
-            processInfo = pem.getProcessInfos("ClaimCompileAndValidate/VirtualUsersSandbox/VUS")            
-            jsonPayloadInfos = _buildPayload("Start-ClaimCompileAndValidate")
-            jsonPayload = _extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
-            strPayload = json.dumps(jsonPayload)
-            processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), processInfo, strPayload, self.user.authorizationBearerToken)
-            # salvare dati risposta
-            if processInstanceInfo != None:
-                logging.info("User[%s] - bawCreateInstance - process id[%s], state[%s]", self.user.userCreds.getName(), processInstanceInfo.getPiid(), processInstanceInfo.getState())
-
+            if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS ):
+                pem = self.user.getEPM()
+                pim = self.user.getPIM()
+                processInfo = pem.getProcessInfos("ClaimCompileAndValidate/VirtualUsersSandbox/VUS")            
+                jsonPayloadInfos = _buildPayload("Start-ClaimCompileAndValidate")
+                jsonPayload = _extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
+                strPayload = json.dumps(jsonPayload)
+                processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), processInfo, strPayload, self.user.authorizationBearerToken)
+                if processInstanceInfo != None:
+                    logging.info("User[%s] - bawCreateInstance - process id[%s], state[%s]", self.user.userCreds.getName(), processInstanceInfo.getPiid(), processInstanceInfo.getState())
         pass
 
     # list of enabled tasks
     tasks = [bawLogin, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask, bawCreateInstance]
-    # tasks = [bawLogin, bawClaimTask, bawCompleteTask]
-    # tasks = [bawLogin, bawCreateInstance]
 

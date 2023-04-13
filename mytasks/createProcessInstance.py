@@ -1,6 +1,6 @@
 import requests, json
-import mytasks.loadEnvironment as bpmEnv
-import mytasks.bawSystem as bpmSys
+import bawsys.loadEnvironment as bpmEnv
+import bawsys.bawSystem as bpmSys
 import urllib
 
 requests.packages.urllib3.disable_warnings() 

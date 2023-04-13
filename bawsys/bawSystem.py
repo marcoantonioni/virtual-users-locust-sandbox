@@ -1,6 +1,6 @@
 
 import requests, json
-import mytasks.loadEnvironment as bpmEnv
+import bawsys.loadEnvironment as bpmEnv
 
 class BpmExposedProcessInfo:
     def __init__(self, appName, appAcronym, processName, appId, appBpdId, startUrl):

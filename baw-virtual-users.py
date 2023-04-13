@@ -4,12 +4,14 @@ from locust import FastHttpUser, task, between, tag, events
 from locust.runners import MasterRunner
 from json import JSONDecodeError
 import logging
+
 import mytasks.myTasks as bpmTask
-import mytasks.loadCredentials as bpmCreds
-import mytasks.loadEnvironment as bpmEnv
-import mytasks.loadUserTaskSubjects as bpmUTS
-import mytasks.exposedProcessManager as bpmExpProcs
 import mytasks.createProcessInstance as bpmPIM
+
+import bawsys.loadEnvironment as bpmEnv
+import bawsys.loadUserTaskSubjects as bpmUTS
+import bawsys.loadCredentials as bpmCreds
+import bawsys.exposedProcessManager as bpmExpProcs
 
 bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
 bpmUserSubjects : bpmUTS.BpmUserSubjects =bpmUTS.BpmUserSubjects()
@@ -36,6 +38,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     loggedIn : bool = False
     authorizationBearerToken : str = None    
     userCreds : bpmCreds.UserCredentials = None
+    selectedUserActions = None
 
     #----------------------------------------
     # user functions
@@ -70,6 +73,17 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     
     def getEPM(self):
         return bpmExposedProcessManager
+    
+    def configureVirtualUserActions(self):
+        if self.selectedUserActions == None:
+            self.selectedUserActions = dict()
+            self.selectedUserActions[bpmEnv.BpmEnvironment.keyBAW_ACTION_LOGIN] = bpmEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
+            setOfActions = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_ACTIONS)
+            actions = setOfActions.split(",")
+            for act in actions:
+                action = act.strip().upper()
+                if (action == bpmEnv.BpmEnvironment.keyBAW_ACTION_CLAIM) or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_COMPLETE or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_RELEASE or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_GETDATA or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_SETDATA or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS:
+                    self.selectedUserActions[action] = bpmEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
 
     #----------------------------------------
     # for each virtual user
@@ -78,6 +92,8 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         self.host = host = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         self.min_think_time = int(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MIN))
         self.max_think_time = int(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MAX))
+        self.configureVirtualUserActions()
+
         self.userCreds = bpmCreds.getNextUserCredentials()
         if self.userCreds != None:
             logging.debug("User %s is starting... ", self.userCreds.getName())
@@ -94,7 +110,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         return super().on_stop()
 
     #----------------------------------------
-    # tasks definition
+    # tasks definition    
     tasks = [ bpmTask.SequenceOfBpmTasks ]
 
 
@@ -148,10 +164,9 @@ def on_locust_init(environment, **kwargs):
         userTaskSubjects = bpmUTS.setupUserTaskSubjects(_fullPathBawUserTaskSubjects)
         userSubjectsDictionary = bpmUTS.createUserSubjectsDictionary(userTaskSubjects, taskSubjects)
         bpmUserSubjects.setDictionary(userSubjectsDictionary)
-        logging.debug("User Subjects Dictionary ", userSubjectsDictionary)
-
-        # search exposed process
         bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
+
+        logging.debug("User Subjects Dictionary ", userSubjectsDictionary)
         logging.info("*** BAW EXPOSED PROCESSES ***")
         for key in bpmExposedProcessManager.getKeys():
             processInfo : bpmExpProcs.BpmExposedProcessInfo = bpmExposedProcessManager.getProcessInfos(key)

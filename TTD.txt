@@ -1,6 +1,64 @@
 
-- terminare payloadManager
-- configurazione array tasks
-- tool autonomo per creazione istanze processo
 - tool autonomo per terminazione/cancellazione istanze processo
 - tool per estrazione modello dati in formato json template
+- caricamento dinamico file .py e invocazione payloadManager
+- verifica funzionalità senza portale federato
+-- login, query task list, url da task list, etc...
+
+
+#--------------------------------------------------------------------------
+TERMINATE
+
+Q_ACT="action=terminate"
+Q_STAT="statusFilter=Active,Failed,Suspended"
+Q_SF_SC="searchFilterScope=InstanceName"
+Q_SF="searchFilter=${APP_PROCESSNAME}"
+Q_PF="projectFilter=${APP_ACRONYM}"
+Q_STAT_ENCODED=$(printf %s "${Q_STAT}" | jq -sRr @uri)
+Q_PARAMS="${Q_ACT}&${Q_STAT_ENCODED}&${Q_SF_SC}&${Q_SF}&${Q_PF}"
+FULL_QUERY="${BASE_HOST}/${BASE_BPM_REST}/${PROCESS_ACTIONS_BULK_FILTERS}?${Q_PARAMS}"
+RESPONSE=$(curl -sk -u ${CREDS} -H "${CONTENT}" -H "${ACCEPT}" -X PUT ${FULL_QUERY})
+if [ "${DEBUG}" == "true" ]; then
+  _dumpJsonData "${_me}:terminate" "${RESPONSE}"
+fi
+
+HTTP_STATUS=$(echo ${RESPONSE} | jq .status | sed 's/\"//g')
+if [ "${HTTP_STATUS}" == "200" ]; then
+  TERMINATED=$(echo ${RESPONSE} | jq .data.succeeded | sed 's/\"//g')
+  echo "Bulk terminate operation reports: [${TERMINATED}] Terminated process instances of ${APP_PROCESSNAME}/${APP_ACRONYM}"
+else
+  ERROR_CODE=$(echo ${RESPONSE} | jq .status | sed 's/\"//g')
+  ERROR_MSG=$(echo ${RESPONSE} | jq .Data.errorMessage | sed 's/\"//g') 
+  echo "Error unknown code [${ERROR_CODE}] error message: ${ERROR_MSG}"
+fi
+
+
+#--------------------------------------------------------------------------
+DELETE
+
+if [ "${TERMINATE}" == "true" ]; then
+  ./_processTerminateBulk.sh -c ${CREDS} -e ${ENV_PROPS} -d ${DEBUG}
+fi
+
+Q_ACT="action=delete"
+Q_STAT="statusFilter=Terminated"
+Q_SF_SC="searchFilterScope=InstanceName"
+Q_SF="earchFilter=${APP_PROCESSNAME}"
+Q_PF="projectFilter=${APP_ACRONYM}"
+Q_STAT_ENCODED=$(printf %s "${Q_STAT}" | jq -sRr @uri)
+Q_PARAMS="${Q_ACT}&${Q_STAT_ENCODED}&${Q_SF_SC}&${Q_SF}&${Q_PF}"
+FULL_QUERY="${BASE_HOST}/${BASE_BPM_REST}/${PROCESS_ACTIONS_BULK_FILTERS}?${Q_PARAMS}"
+RESPONSE=$(curl -sk -u ${CREDS} -H "${CONTENT}" -H "${ACCEPT}" -X PUT ${FULL_QUERY})
+if [ "${DEBUG}" == "true" ]; then
+  _dumpJsonData "${_me}:delete" "${RESPONSE}"
+fi
+
+HTTP_STATUS=$(echo ${RESPONSE} | jq .status | sed 's/\"//g')
+if [ "${HTTP_STATUS}" == "200" ]; then
+  DELETED=$(echo ${RESPONSE} | jq .data.succeeded | sed 's/\"//g')
+  echo "Bulk delete operation reports: [${DELETED}] Deleted process instances of ${APP_PROCESSNAME}/${APP_ACRONYM}"
+else
+  ERROR_CODE=$(echo ${RESPONSE} | jq .status | sed 's/\"//g')
+  ERROR_MSG=$(echo ${RESPONSE} | jq .Data.errorMessage | sed 's/\"//g') 
+  echo "Error unknown code [${ERROR_CODE}] error message: ${ERROR_MSG}"
+fi

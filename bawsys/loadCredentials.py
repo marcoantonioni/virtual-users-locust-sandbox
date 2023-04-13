@@ -1,6 +1,6 @@
 
 import logging,sys,csv,random
-import mytasks.loadEnvironment as bpmEnv
+import bawsys.loadEnvironment as bpmEnv
 
 #--------------------------------------------
 # global vars
