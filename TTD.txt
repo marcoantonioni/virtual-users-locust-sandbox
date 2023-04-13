@@ -1,4 +1,6 @@
 
+- terminare payloadManager
+- configurazione array tasks
 - tool autonomo per creazione istanze processo
 - tool autonomo per terminazione/cancellazione istanze processo
 - tool per estrazione modello dati in formato json template

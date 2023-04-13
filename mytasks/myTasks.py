@@ -1,13 +1,13 @@
 # tasks
 
-import logging, time, random, json, urllib.parse
+import logging, time, random, json
 from locust import task, tag, SequentialTaskSet
 from locust.exception import RescheduleTaskImmediately
 from json import JSONDecodeError
 from mytasks import loadEnvironment as bpmEnv
 from mytasks.createProcessInstance import BpmProcessInstanceManager as bpmPIM
+from mytasks.createProcessInstance import BpmProcessInstance as bpmPI
 from configurations import payloadManager as bpmPayloadManager
-
 #-------------------------------------------
 # BPM types
 
@@ -495,7 +495,16 @@ def _taskComplete(self, bpmTask, payload):
     return False
 
 def _buildPayload(taskSubject):
-    payload = bpmPayloadManager.buildPayloadForSubject(taskSubject)
+    payloadInfos = bpmPayloadManager.buildPayloadForSubject(taskSubject)
+    return payloadInfos
+
+def _extractPayloadOptionalThinkTime(payloadInfos: dict, user, wait: bool):
+    payload = payloadInfos["jsonObject"]
+    if wait == True:
+        think : int = payloadInfos["thinkTime"]
+        if ( think == -1):
+            think : int = random.randint(user.min_think_time, user.max_think_time)
+        time.sleep( think )
     return payload
 
 #-------------------------------------------
@@ -559,12 +568,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         logging.debug("User[%s] - bawCompleteTask TASK [%s] DETAIL BEFORE COMPLETE actions[%s] variables[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
 
                     if bpmTask.hasAction("ACTION_COMPLETE"):
-                        # think time
-                        think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
-                        logging.info("User[%s] - bawCompleteTask working on task[%s] for think time %d", self.user.userCreds.getName(), bpmTask.getId(), think)
-                        time.sleep( think )
- 
-                        payload = _buildPayload(bpmTask.getSubject())
+                        payloadInfos = _buildPayload(bpmTask.getSubject())
+                        payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
+                        logging.info("User[%s] - bawCompleteTask working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
                         if _taskComplete(self, bpmTask, payload) == True:
                             logging.info("User[%s] - bawCompleteTask - completed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
@@ -606,12 +612,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         logging.debug("User[%s] - bawSetTaskData TASK [%s] DETAIL BEFORE SET DATA actions[%s] data[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), json.dumps(bpmTask.getTaskData(), indent = 2))
 
                     if bpmTask.hasAction("ACTION_SETTASK"):
-                        # think time
-                        think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
-                        logging.info("User[%s] - bawSetTaskData working on task[%s] for think time %d", self.user.userCreds.getName(), bpmTask.getId(), think)
-                        time.sleep( think )
- 
-                        payload = _buildPayload(bpmTask.getSubject())
+                        payloadInfos = _buildPayload(bpmTask.getSubject())
+                        payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
+                        logging.info("User[%s] - bawSetTaskData working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
                         if _taskSetData(self, bpmTask, payload) == True:
                             logging.info("User[%s] - bawSetTaskData - set data and postponed on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
@@ -657,14 +660,18 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             pem = self.user.getEPM()
             pim = self.user.getPIM()
             processInfo = pem.getProcessInfos("ClaimCompileAndValidate/VirtualUsersSandbox/VUS")            
-            jsonPayload = _buildPayload("Start-ClaimCompileAndValidate")
+            jsonPayloadInfos = _buildPayload("Start-ClaimCompileAndValidate")
+            jsonPayload = _extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
             strPayload = json.dumps(jsonPayload)
-            newInstanceInfo = pim.createInstance(self.user.getEnvironment(), processInfo, strPayload, self.user.authorizationBearerToken)
+            processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), processInfo, strPayload, self.user.authorizationBearerToken)
             # salvare dati risposta
+            if processInstanceInfo != None:
+                logging.info("User[%s] - bawCreateInstance - process id[%s], state[%s]", self.user.userCreds.getName(), processInstanceInfo.getPiid(), processInstanceInfo.getState())
+
         pass
 
     # list of enabled tasks
-    #tasks = [bawLogin, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask, bawCreateInstance]
-    tasks = [bawLogin, bawClaimTask, bawCompleteTask]
+    tasks = [bawLogin, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask, bawCreateInstance]
+    # tasks = [bawLogin, bawClaimTask, bawCompleteTask]
     # tasks = [bawLogin, bawCreateInstance]
 
