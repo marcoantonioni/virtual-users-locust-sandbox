@@ -4,7 +4,6 @@ import bawsys.bawSystem as bpmSys
 
 requests.packages.urllib3.disable_warnings() 
 
-
 class BpmExposedProcessManager:
     exposedProcesses = dict()
 
@@ -37,7 +36,7 @@ class BpmExposedProcessManager:
 
         iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
         hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        cp4ba_token : str = bpmSys._loginZen(self, bpmEnvironment, iamUrl, hostUrl)
+        cp4ba_token : str = bpmSys._loginZen(bpmEnvironment, iamUrl, hostUrl)
         if cp4ba_token != None:
             authValue : str = "Bearer "+cp4ba_token
             my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }

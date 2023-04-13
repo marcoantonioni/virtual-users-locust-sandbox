@@ -29,7 +29,7 @@ class BpmExposedProcessInfo:
     def getStartUrl(self):
         return self.startUrl
 
-def _loginZen(self, bpmEnvironment : bpmEnv.BpmEnvironment, iamUrl: str, hostUrl: str):
+def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, iamUrl: str, hostUrl: str):
     userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
     userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
     
