@@ -9,6 +9,8 @@ class BpmExposedProcessManager:
 
     def __init__(self):
       self.exposedProcesses = dict()
+      self.appId = None
+      self.bpdId = None
 
     def addProcessInfos(self, key: str, processInfo: bpmSys.BpmExposedProcessInfo):
         self.exposedProcesses[key] = processInfo  
@@ -30,10 +32,13 @@ class BpmExposedProcessManager:
             keysList.append(key)
         return keysList
     
-    def LoadProcessInstancesInfos(self, bpmEnvironment : bpmEnv.BpmEnvironment):
-        #userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
-        #userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
+    def getAppId(self):
+        return self.appId
 
+    def getBpdId(self):
+        return self.bpdId
+
+    def LoadProcessInstancesInfos(self, bpmEnvironment : bpmEnv.BpmEnvironment):
         iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
         hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         cp4ba_token : str = bpmSys._loginZen(bpmEnvironment, iamUrl, hostUrl)
@@ -53,6 +58,9 @@ class BpmExposedProcessManager:
                 listOfProcessInfos = []
                 for expIt in exposedItemsList:
                     if appProcName == expIt["processAppName"] and appProcAcronym == expIt["processAppAcronym"]:
+                        if self.appId == None:
+                            self.appId = expIt["processAppID"] 
+                            self.bpdId = expIt["itemID"]
                         processName = expIt["display"]                        
                         for pn in appProcessNames:
                             if pn == processName:                        

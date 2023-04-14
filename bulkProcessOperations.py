@@ -1,7 +1,5 @@
 from bawsys import loadEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys
-#from bawsys import loadEnvironment
-#from bawsys import exposedProcessManager
 import urllib, requests, json
 
 requests.packages.urllib3.disable_warnings() 
@@ -11,13 +9,6 @@ class BpmProcessBulkOpsManager:
 
     def __init__(self):
       self.cp4ba_token : str = None
-
-    def terminateInstances(self):
-       pass
-
-    def deleteInstances(self):
-       pass
-
 
     def terminateInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment):
         iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)

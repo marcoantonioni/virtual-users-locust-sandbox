@@ -1,7 +1,7 @@
 
-- parametrizzare tools terminazione/cancellazione/generazionetemplate file environments
 
 - tool per estrazione modello dati in formato json template
+    prima di loop su parked leggere i referenced 
 
 - caricamento dinamico file .py e invocazione payloadManager
 - verifica funzionalità senza portale federato

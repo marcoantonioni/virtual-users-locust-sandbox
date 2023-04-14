@@ -1,27 +1,182 @@
-
-
-from bawsys import loadEnvironment as bawEnv
+import bulkProcessOperations
+import bawsys.commandLineManager as clpm
+import bawsys.exposedProcessManager as bpmExpProcs
+from bawsys import loadEnvironment as bpmEnv
+from bawsys import bawSystem as bawSys
+import urllib, requests, json, sys
 
 #----------------------------------
 
 class PayloadTemplateManager:
-    pass
 
-def generatePayloadTemplates():
-    bpmEnvironment : bawEnv.BpmEnvironment = bawEnv.BpmEnvironment()
+    def __init__(self):
+      self.cp4ba_token : str = None
+      self.dataTypes = dict()
+      self.parkedDataTypes = []
+      self.parkedDataTypesId = dict()
+      self.referencedClassRefId = dict()
 
-    _fullPathBawEnv = "./configurations/env1.properties"
-    bpmEnvironment.loadEnvironment(_fullPathBawEnv)
-    bpmEnvironment.dumpValues()
+    def buildJsonArributeTemplate(self, idxTemplate: int, pName: str, pClass: str, pIsArr: bool, pClassRef: str, pClasSnapId: str, referencedTypeName: str):
+        templatePayload = ""
+        templIdxVal = ""
+        refTypeName = None
+        if pClassRef != None:
+            # complex type
+            # ??? ricercare nome type
+            if referencedTypeName != None:
+                refTypeName = referencedTypeName
+            else:
+                refTypeName = pClassRef
+                try:
+                    refInfo = self.referencedClassRefId[pClassRef]
+                    typeName = refInfo["typeName"]
+                    if typeName != None:
+                        refTypeName = typeName                    
+                except KeyError:
+                    pass
+            templIdxVal = "@§§§"+str(idxTemplate)+"-type("+refTypeName+")§§§@"
 
-    payloadTemplateMgr = PayloadTemplateManager()
-    payloadTemplateMgr.generateTemplates(bpmEnvironment)
+        else:
+            templIdxVal = "@§§§"+str(idxTemplate)+"§§§@"
+            
+        if pIsArr == True:
+            templatePayload = pName+":['"+templIdxVal+"']"
+        else:
+            templatePayload = pName+":'"+templIdxVal+"'"
 
-def main():
-    generatePayloadTemplates()
+        return templatePayload
+
+    def buildDataType(self, hostUrl, baseUri, dtName, dtId, snapId, appId, park: bool):
+
+        authValue : str = "Bearer "+self.cp4ba_token
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+
+        if baseUri == None:
+            baseUri = ""
+        uriBaseRest = baseUri+"/rest/bpm/wle/v1"
+
+        uriData = dtId+"?snapshotId="+snapId+"&processAppId="+appId
+        urlDataType = hostUrl+uriBaseRest+"/businessobject/"+uriData
+
+        response = requests.get(url=urlDataType, headers=my_headers, verify=False)
+        referencesComplexTypes = False
+        if response.status_code == 200:
+            data = response.json()["data"]
+            properties = data["properties"]
+            idxTemplate = 1
+            attribs = ""
+            tot = len(properties)
+            for prop in properties:
+                pName = prop["name"]
+                pClass = prop["typeClass"]
+                pIsArr = prop["isArray"]
+
+                isArr = "False"
+                if pIsArr == True:
+                    isArr = "True"
+                pClassRef = None
+                pClasSnapId = None
+                try:
+                    pClassRef = prop["typeClassRef"]
+                    if pClassRef != None:
+                        pClasSnapId = prop["typeClassSnapshotId"]
+                except KeyError:
+                    pass
+                
+                referencedTypeName = None
+                if pClassRef != None:
+                    referencesComplexTypes = True
+                    dt = None
+                    try:
+                        dt = self.referencedClassRefId[pClassRef]
+                        if dt != None:
+                            referencedTypeName = dt["typeName"]                        
+                    except KeyError:
+                        pass
+                    if referencedTypeName == None:
+                        self.referencedClassRefId[pClassRef] = {'typeName': None, 'pClasSnapId': pClasSnapId } 
+
+                attrib = self.buildJsonArributeTemplate(idxTemplate, pName, pClass, pIsArr, pClassRef, pClasSnapId, referencedTypeName)
+                attribs += attrib
+                if (tot > 1):
+                    attribs += ","
+                idxTemplate = idxTemplate + 1
+                tot = tot -1
+            if referencesComplexTypes == True and park == True:
+                self.parkedDataTypes.append(dtName)
+                self.parkedDataTypesId[dtName] = dtId                
+            else:
+                dtTypeTemplate = "{'varName':{"+attribs+"}}"
+                self.dataTypes[dtName] = dtTypeTemplate 
+                print(dtName+":\n"+dtTypeTemplate+"\n")
+
+    def getModel(self, bpmEnvironment : bpmEnv.BpmEnvironment):
+        bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
+        bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
+        appId = bpmExposedProcessManager.getAppId()
+        hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+
+        authValue : str = "Bearer "+self.cp4ba_token
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+
+        if baseUri == None:
+            baseUri = ""
+        uriBaseRest = baseUri+"/rest/bpm/wle/v1"
+
+        urlAssetts = hostUrl+uriBaseRest+"/assets?processAppId="+appId
+
+        response = requests.get(url=urlAssetts, headers=my_headers, verify=False)
+        if response.status_code == 200:
+            # print(json.dumps(response.json(), indent = 2))
+            data = response.json()["data"]
+            snapshotId = data["snapshotId"]
+            dataTypesList = data["VariableType"]
+            for dataType in dataTypesList:
+                dtName = dataType["name"]
+                dtId = dataType["poId"]
+                self.buildDataType(hostUrl, baseUri, dtName, dtId, snapshotId, appId, True)
+
+            while len(self.parkedDataTypes) > 0:
+                dtName = self.parkedDataTypes.pop()
+                dtId = self.parkedDataTypesId[dtName]
+                print("Parked ", dtName)
+                self.buildDataType(hostUrl, baseUri, dtName, dtId, snapshotId, appId, False)
+
+    def generateTemplates(self, bpmEnvironment : bpmEnv.BpmEnvironment):
+
+        iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
+        hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+
+        if self.cp4ba_token == None:
+            self.cp4ba_token = bawSys._loginZen(bpmEnvironment, iamUrl, hostUrl)
+        if self.cp4ba_token != None:
+            self.getModel(bpmEnvironment)
+
+        pass
+
+def generatePayloadTemplates(argv):
+
+    ok = False
+    if argv != None:
+        bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
+        cmdLineMgr = clpm.CommandLineParamsManager()
+        cmdLineMgr.builDictionary(argv, "e:", ["environment="])
+        if cmdLineMgr.isExit() == False:
+            ok = True
+            _fullPathBawEnv = cmdLineMgr.getParam("e", "environment")
+            bpmEnvironment.loadEnvironment(_fullPathBawEnv)
+            bpmEnvironment.dumpValues()
+            payloadTemplateMgr = PayloadTemplateManager()
+            payloadTemplateMgr.generateTemplates(bpmEnvironment)
+    if ok == False:
+        print("Wrong arguments, use -e param to specify environment file")
+
+def main(argv):
+    generatePayloadTemplates(argv)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
 
 """
 

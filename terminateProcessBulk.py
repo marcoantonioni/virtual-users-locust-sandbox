@@ -10,7 +10,7 @@ def terminateProcessInstances(argv):
     if argv != None:
         bpmEnvironment : bawEnv.BpmEnvironment = bawEnv.BpmEnvironment()
         cmdLineMgr = clpm.CommandLineParamsManager()
-        cmdLineMgr.builDictionary(argv, "e:h", ["environment="])
+        cmdLineMgr.builDictionary(argv, "e:", ["environment="])
         if cmdLineMgr.isExit() == False:
             ok = True
             _fullPathBawEnv = cmdLineMgr.getParam("e", "environment")
