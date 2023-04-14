@@ -1,6 +1,8 @@
 
-- tool autonomo per terminazione/cancellazione istanze processo
+- parametrizzare tools terminazione/cancellazione/generazionetemplate file environments
+
 - tool per estrazione modello dati in formato json template
+
 - caricamento dinamico file .py e invocazione payloadManager
 - verifica funzionalità senza portale federato
 -- login, query task list, url da task list, etc...

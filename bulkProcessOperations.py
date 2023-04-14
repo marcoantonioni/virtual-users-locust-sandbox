@@ -57,7 +57,7 @@ class BpmProcessBulkOpsManager:
         if action == "terminate":
             part2="&statusFilter=Active%2CFailed%2CSuspended"
         else:
-            part2="&statusFilter=Terminated"
+            part2="&statusFilter=Completed"
         queryParts = part1+part2
 
         if baseUri == None:
@@ -73,6 +73,7 @@ class BpmProcessBulkOpsManager:
                 data = response.json()["data"]
                 print("Instances elaborated", data["succeeded"])
                 print("Instances failed", data["failed"])
+                print("")
         else:
             print(response.status_code)
             print(response.text)                
