@@ -48,7 +48,7 @@ class BpmProcessBulkOpsManager:
         if action == "terminate":
             part2="&statusFilter=Active%2CFailed%2CSuspended"
         else:
-            part2="&statusFilter=Completed"
+            part2="&statusFilter=Completed%2CTerminated"
         queryParts = part1+part2
 
         if baseUri == None:
