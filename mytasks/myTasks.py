@@ -301,8 +301,7 @@ def _buildTaskList(self, tasksCount, tasksList, interaction):
             if self.user.isSubjectForUser(bpmSubject) == True:
                 bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole, bpmSystemID))
 
-    bpmTaskList = BpmTaskList(len(bpmTaksItems), bpmTaksItems)
-    return bpmTaskList
+    return BpmTaskList(len(bpmTaksItems), bpmTaksItems)
 
 def _listTasks(self, interaction, size):
     if self.user.loggedIn == True:
@@ -519,8 +518,7 @@ def isActionEnabled(self, key):
 class SequenceOfBpmTasks(SequentialTaskSet):
         
     def _buildPayload(self, taskSubject):
-        payloadInfos = self.user._payload(taskSubject)
-        return payloadInfos
+        return self.user._payload(taskSubject)
 
     def bawLogin(self):        
         if self.user.loggedIn == False:

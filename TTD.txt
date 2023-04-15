@@ -1,6 +1,5 @@
 
 
-- caricamento dinamico file .py e invocazione payloadManager
 
 - verifica funzionalità senza portale federato (traditional)
 -- login, query task list, url da task list, etc...
