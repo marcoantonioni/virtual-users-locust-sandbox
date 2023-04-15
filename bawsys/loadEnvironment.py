@@ -31,6 +31,8 @@ class BpmEnvironment:
 
     keyBAW_VU_ACTIONS : str = "BAW_VU_ACTIONS"
 
+    keyBAW_PAYLOAD_MANAGER : str = "BAW_PAYLOAD_MANAGER"
+
     keyBAW_ACTION_LOGIN="LOGIN"
     keyBAW_ACTION_CLAIM="CLAIM"
     keyBAW_ACTION_COMPLETE="COMPLETE"
@@ -61,3 +63,12 @@ class BpmEnvironment:
             if cfgVal != None:
                 logging.info("%s=%s", k, cfgVal.data)
         logging.info("***********************")
+
+    def getDynamicModuleFormatName(self):
+        pathName : str = self.getValue(self.keyBAW_PAYLOAD_MANAGER)
+        pathName = pathName.replace(".py", "")
+        pathName = pathName.replace("./", "")
+        pathName = pathName.replace("/", ".")
+        return pathName
+        # 'configurations.notImportedPayloadManager'
+        # "./configurations/notImportedPayloadManager.py"

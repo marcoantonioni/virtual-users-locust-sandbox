@@ -3,7 +3,7 @@
 from locust import FastHttpUser, task, between, tag, events
 from locust.runners import MasterRunner
 from json import JSONDecodeError
-import logging
+import logging, sys, importlib
 
 import mytasks.myTasks as bpmTask
 import mytasks.createProcessInstance as bpmPIM
@@ -42,6 +42,9 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
 
     #----------------------------------------
     # user functions
+
+    def _payload(self, subject):
+        return bpmDynamicModule.buildPayloadForSubject(subject)
 
     def getEnvValue(self, key):
         return bpmEnvironment.getValue(key)
@@ -113,7 +116,32 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     # tasks definition    
     tasks = [ bpmTask.SequenceOfBpmTasks ]
 
+#----------------------------------------
+def import_module(name, package=None):
+    absolute_name = importlib.util.resolve_name(name, package)
+    try:
+        return sys.modules[absolute_name]
+    except KeyError:
+        pass
 
+    path = None
+    if '.' in absolute_name:
+        parent_name, _, child_name = absolute_name.rpartition('.')
+        parent_module = import_module(parent_name)
+        path = parent_module.__spec__.submodule_search_locations
+    for finder in sys.meta_path:
+        spec = finder.find_spec(absolute_name, path)
+        if spec is not None:
+            break
+    else:
+        msg = f'No module named {absolute_name!r}'
+        raise ModuleNotFoundError(msg, name=absolute_name)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[absolute_name] = module
+    spec.loader.exec_module(module)
+    if path is not None:
+        setattr(parent_module, child_name, module)
+    return module
 
 #----------------------------------------
 # global events managers
@@ -176,3 +204,7 @@ def on_locust_init(environment, **kwargs):
                 logging.info("!!! object with key[%s] not found", key)
             
         logging.info("***********************")
+
+        dynamicPLM : str = bpmEnvironment.getDynamicModuleFormatName()
+        global bpmDynamicModule 
+        bpmDynamicModule = import_module(dynamicPLM)

@@ -7,7 +7,6 @@ from json import JSONDecodeError
 from mytasks.createProcessInstance import BpmProcessInstanceManager as bpmPIM
 from mytasks.createProcessInstance import BpmProcessInstance as bpmPI
 from bawsys import loadEnvironment as bpmEnv
-from configurations import payloadManager as bpmPayloadManager
 
 #-------------------------------------------
 # BPM types
@@ -495,10 +494,6 @@ def _taskComplete(self, bpmTask, payload):
 
     return False
 
-def _buildPayload(taskSubject):
-    payloadInfos = bpmPayloadManager.buildPayloadForSubject(taskSubject)
-    return payloadInfos
-
 def _extractPayloadOptionalThinkTime(payloadInfos: dict, user, wait: bool):
     payload = payloadInfos["jsonObject"]
     if wait == True:
@@ -520,8 +515,14 @@ def isActionEnabled(self, key):
     return actionEnabled
 
 #-------------------------------------------
+
 class SequenceOfBpmTasks(SequentialTaskSet):
-    def bawLogin(self):
+        
+    def _buildPayload(self, taskSubject):
+        payloadInfos = self.user._payload(taskSubject)
+        return payloadInfos
+
+    def bawLogin(self):        
         if self.user.loggedIn == False:
             if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_LOGIN ):
                 uName = "n/a"
@@ -583,7 +584,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                             logging.debug("User[%s] - bawCompleteTask TASK [%s] DETAIL BEFORE COMPLETE actions[%s] variables[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
 
                         if bpmTask.hasAction("ACTION_COMPLETE"):
-                            payloadInfos = _buildPayload(bpmTask.getSubject())
+                            payloadInfos = self._buildPayload(bpmTask.getSubject())
                             payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
                             logging.info("User[%s] - bawCompleteTask working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
                             if _taskComplete(self, bpmTask, payload) == True:
@@ -629,7 +630,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                             logging.debug("User[%s] - bawSetTaskData TASK [%s] DETAIL BEFORE SET DATA actions[%s] data[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), json.dumps(bpmTask.getTaskData(), indent = 2))
 
                         if bpmTask.hasAction("ACTION_SETTASK"):
-                            payloadInfos = _buildPayload(bpmTask.getSubject())
+                            payloadInfos = self._buildPayload(bpmTask.getSubject())
                             payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
                             logging.info("User[%s] - bawSetTaskData working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
                             if _taskSetData(self, bpmTask, payload) == True:
@@ -678,7 +679,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 pem = self.user.getEPM()
                 pim = self.user.getPIM()
                 processInfo = pem.getProcessInfos("ClaimCompileAndValidate/VirtualUsersSandbox/VUS")            
-                jsonPayloadInfos = _buildPayload("Start-ClaimCompileAndValidate")
+                jsonPayloadInfos = self._buildPayload("Start-ClaimCompileAndValidate")
                 jsonPayload = _extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
                 strPayload = json.dumps(jsonPayload)
                 processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), processInfo, strPayload, self.user.authorizationBearerToken)
