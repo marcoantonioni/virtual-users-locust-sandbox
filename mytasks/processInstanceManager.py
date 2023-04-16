@@ -89,10 +89,6 @@ class BpmProcessInstanceManager:
         response = requests.post(url=urlStartInstance, headers=my_headers, verify=False)
         if response.status_code == 200:
             data = response.json()["data"]
-
-            #print(json.dumps(data, indent = 2))
-
-            # salvare dati risposta nuovo oggetto
             return BpmProcessInstance(data["state"], data["piid"], data["caseFolderID"], data["caseFolderServerName"], data["result"], 
                                         data["startingDocumentServerName"], data["parentCaseId"], data["parentActivityId"], data["workflowApplication"], data["caseIdentifier"], 
                                         data["caseTypeId"], data["caseStageStatus"], data["caseProcessTypeLocation"])

@@ -4,8 +4,8 @@ import logging, time, random, json
 from locust import task, tag, SequentialTaskSet
 from locust.exception import RescheduleTaskImmediately
 from json import JSONDecodeError
-from mytasks.createProcessInstance import BpmProcessInstanceManager as bpmPIM
-from mytasks.createProcessInstance import BpmProcessInstance as bpmPI
+from mytasks.processInstanceManager import BpmProcessInstanceManager as bpmPIM
+from mytasks.processInstanceManager import BpmProcessInstance as bpmPI
 from bawsys import loadEnvironment as bpmEnv
 
 #-------------------------------------------
