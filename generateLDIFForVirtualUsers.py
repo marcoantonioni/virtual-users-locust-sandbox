@@ -143,22 +143,41 @@ class LdifGenerator:
                 f.writelines("\r\n")
             f.close()
         else:
+            print("\n\n===== LDIF RECORDS =====\n\n")
             for user in self.allUsers:            
                 print(user.formatLdifRecord())
             for group in self.allGroups:            
                 print(group.formatLdifRecord())
-        print("Generated "+str(len(self.allUsers))+" users and "+str(len(self.allGroups))+" groups")
+        print("\n\nGenerated "+str(len(self.allUsers))+" users and "+str(len(self.allGroups))+" groups")
+
+    def generateUserCredentials(self, _fullOutputPath):
+        if _fullOutputPath != None:
+            f = open(_fullOutputPath, "a")
+            f.truncate(0)
+            f.writelines("NAME,PASSWORD")
+            f.writelines("\r\n")
+            for user in self.allUsers:            
+                f.writelines(user.userName+","+user.password)
+                f.writelines("\r\n")
+            f.close()
+        else:
+            print("\n\n===== USER CREDENTIALS =====\n\n")
+            print("NAME,PASSWORD")
+            for user in self.allUsers:            
+                print(user.userName+","+user.password+"\n")
+        print("\n\nGenerated "+str(len(self.allUsers))+" set of credentials")
 
 def createLdif(argv):
     if argv != None:
         ok = False
         ldifCfg : bawLdif.LdifConfiguration = bawLdif.LdifConfiguration()
         cmdLineMgr = clpm.CommandLineParamsManager()
-        cmdLineMgr.builDictionary(argv, "l:o:", ["ldifconfig=", "output="])
+        cmdLineMgr.builDictionary(argv, "c:l:u:", ["config=", "ldif=", "users="])
         if cmdLineMgr.isExit() == False:
             ok = True
-            _fullPathLdifCfg = cmdLineMgr.getParam("l", "ldifconfig")
-            _fullOutputPath = cmdLineMgr.getParam("o", "output")
+            _fullPathLdifCfg = cmdLineMgr.getParam("c", "config")
+            _fullOutputPathLdif = cmdLineMgr.getParam("l", "ldif")
+            _fullOutputPathUsersCredentials = cmdLineMgr.getParam("u", "users")
             ldifCfg.loadConfiguration(_fullPathLdifCfg)
             ldifCfg.dumpValues()
 
@@ -173,7 +192,8 @@ def createLdif(argv):
             ldifGenerator.createUsers(ldifUserTotal)
             ldifGenerator.buildGroupInfo(ldifGroupsInfo)
 
-            ldifGenerator.generateLdif(_fullOutputPath)
+            ldifGenerator.generateLdif(_fullOutputPathLdif)
+            ldifGenerator.generateUserCredentials(_fullOutputPathUsersCredentials)
 
     if ok == False:
         print("Wrong arguments, use -l 'filename' param to specify ldif configuration file")

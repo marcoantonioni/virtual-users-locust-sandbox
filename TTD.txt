@@ -2,9 +2,8 @@
 
 - tool creazione istanza processo da cmd line
 
-- tool generazione ldif virtual users
-    cp4ba: onboarding automatico
-    rest api per associazione gruppi idp a team applicazione
+- tool cp4ba onboarding automatico
+- rest api per associazione gruppi idp a team applicazione
 
 - verifica funzionalità senza portale federato (traditional)
 -- login, query task list, url da task list, etc...

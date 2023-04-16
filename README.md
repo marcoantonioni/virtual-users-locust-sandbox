@@ -34,6 +34,9 @@ python ./deleteProcessBulk.py -e ./configurations/env1.properties -t true
 # generazione template modello dati
 python ./generatePayloadTemplates.py -e ./configurations/env1.properties -i true
 
+# creazione utenze e gruppi ldap
+python generateLDIFForVirtualUsers.py -c ./configurations/ldif4vu-cfg1.properties -l ./configurations/vux-cfg1.ldif -u ./configurations/creds-cfg1.csv
+
 
 # https://github.com/locustio/locust/blob/master/examples/test_data_management.py
 # https://github.com/locustio/locust/blob/master/examples/dynamic_user_credentials.py
