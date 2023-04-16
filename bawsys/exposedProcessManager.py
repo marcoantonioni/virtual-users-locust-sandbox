@@ -1,6 +1,7 @@
-import requests, json
+import requests, json, logging
 import bawsys.loadEnvironment as bpmEnv
 import bawsys.bawSystem as bpmSys
+from json import JSONDecodeError
 
 requests.packages.urllib3.disable_warnings() 
 
@@ -69,5 +70,22 @@ class BpmExposedProcessManager:
                     key = appProcInfo.getAppProcessName()+"/"+appProcInfo.getAppName()+"/"+appProcInfo.getAppAcronym()
                     self.addProcessInfos(key, appProcInfo)
             else:
-                print(response.status_code)
-                print(response.text)                
+                contextName = "LoadProcessInstancesInfos"
+                js = {}
+                try:
+                    js = response.json()
+                except:
+                    logging.error("%s status code: %s, empty/not-valid json content", contextName, response.status_code)
+                if logging.getLogger().isEnabledFor(logging.DEBUG):
+                    logging.debug("%s status code: %s", contextName, response.status_code)
+                if response.status_code >= 300:
+                    try:
+                        data = js["Data"]
+                        bpmErrorMessage = data["errorMessage"]
+                        logging.error("%s error, user %s, status %d, error %s", self.contextName, self.userName, self.response.status_code, bpmErrorMessage)
+                    except JSONDecodeError:
+                        logging.error("%s error, user %s, response could not be decoded as JSON", self.contextName, self.user.userCreds.getName())
+                        self.response.failure("Response could not be decoded as JSON")
+                    except KeyError:
+                        logging.error("%s error, user %s, response did not contain expected key 'Data', 'errorMessage'", self.contextName, self.user.userCreds.getName())
+                        self.response.failure("Response did not contain expected key 'Data', 'errorMessage'")

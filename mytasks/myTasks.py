@@ -171,10 +171,11 @@ def _cleanVarData(varDict):
     listOfVarNames = _getAttributeNamesFromDictionary(varDict)
     for vn in listOfVarNames:
         vnObj = varDict[vn]
-        try:
-            del vnObj["@metadata"]
-        except KeyError:
-            pass
+        if vnObj != None:
+            try:
+                del vnObj["@metadata"]
+            except KeyError:
+                pass
     return varDict
 
 #-------------------------------------------
@@ -676,13 +677,22 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS ):
                 pem = self.user.getEPM()
                 pim = self.user.getPIM()
-                processInfo = pem.getProcessInfos("ClaimCompileAndValidate/VirtualUsersSandbox/VUS")            
-                jsonPayloadInfos = self._buildPayload("Start-ClaimCompileAndValidate")
+
+                #------------------------------
+                processInfoKeys = pem.getKeys()
+                totalKeys = len(processInfoKeys)
+                rndIdx : int = random.randint(0, (totalKeys-1))
+                key = processInfoKeys[rndIdx]
+                processName = key.split("/")[0]
+                processInfo = pem.getProcessInfos(key)  
+                jsonPayloadInfos = self._buildPayload("Start-"+processName)
+                #------------------------------
+
                 jsonPayload = _extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
                 strPayload = json.dumps(jsonPayload)
                 processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), processInfo, strPayload, self.user.authorizationBearerToken)
                 if processInstanceInfo != None:
-                    logging.info("User[%s] - bawCreateInstance - process id[%s], state[%s]", self.user.userCreds.getName(), processInstanceInfo.getPiid(), processInstanceInfo.getState())
+                    logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
         pass
 
     # list of enabled tasks

@@ -28,4 +28,7 @@ def buildPayloadForSubject(text):
         retObject["jsonObject"] =  {'inputData': {'requestID': 'reqValidated', 'counter': rndVal ,'authorizedReq': True}}
         retObject["thinkTime"] = random.randint(0, 5)
 
+    if text.find('Simple Task') != -1:
+        retObject["thinkTime"] = random.randint(0, 2)
+
     return retObject

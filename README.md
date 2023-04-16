@@ -24,6 +24,8 @@ locust -f ./baw-virtual-users.py --headless --only-summary --run-time 60s --user
 # 2 utenti
 locust -f ./baw-virtual-users.py --headless --only-summary --run-time 60s --users 2 --spawn-rate 1 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds-user9-10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
 
+# creazione istanze
+python ./createProcessInstance.py  -e ./configurations/env1.properties -i 10
 
 # terminazione istanze
 python ./terminateProcessBulk.py -e ./configurations/env1.properties

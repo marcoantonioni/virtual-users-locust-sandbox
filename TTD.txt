@@ -1,6 +1,6 @@
 
 
-- tool creazione istanza processo da cmd line
+- soluzione per identificare payload dei task da subject e tipologia/nome task
 
 - tool cp4ba onboarding automatico
 - rest api per associazione gruppi idp a team applicazione
