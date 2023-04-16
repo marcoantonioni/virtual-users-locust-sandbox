@@ -1,0 +1,185 @@
+import sys
+import bawsys.commandLineManager as clpm
+from bawsys import loadLdiffConfiguration as bawLdif
+
+class LdifUser:
+    def __init__(self, userName: str, password: str, domainName: str, domainNameSuffix: str, uidNumber: int, gidNumber: int):
+        self.userName: str = userName
+        self.password: str = password
+        self.domainName = domainName
+        self.domainNameSuffix = domainNameSuffix
+        self.uidNumber = uidNumber
+        self.gidNumber = gidNumber
+        pass
+
+    def getUserName(self):
+        return self.userName
+    
+    def formatLdifRecord(self):
+        record = "dn: uid="+self.userName+",dc="+self.domainName+",dc="+self.domainNameSuffix+"\n"
+        record += "uid: "+self.userName+"\n"
+        record += "cn: "+self.userName+"\n"
+        record += "sn: "+self.userName+"\n"
+        record += "userpassword: "+self.password+"\n"
+        record += "objectClass: top\n"
+        record += "objectClass: posixAccount\n"
+        record += "objectClass: organizationalPerson\n"
+        record += "objectClass: inetOrgPerson\n"
+        record += "objectClass: person\n"
+        record += "uidNumber: "+str(self.uidNumber)+"\n"
+        record += "gidNumber: "+str(self.gidNumber)+"\n"
+        record += "homeDirectory: /home/"+self.userName+"/\n"
+        record += "mail: "+self.userName+"@"+self.domainName+"."+self.domainNameSuffix+"\n"
+        # record += "\n"
+        return record
+    
+class LdifGroup:
+    def __init__(self, groupName: str, domainName: str, domainNameSuffix: str, users: LdifUser):
+        self.groupName: str = groupName
+        self.domainName = domainName
+        self.domainNameSuffix = domainNameSuffix
+        self.users: LdifUser = users
+        pass
+
+    def getGroupName(self):
+        return self.groupName
+
+    def formatLdifRecord(self):
+        baseDomain = "dc="+self.domainName+",dc="+self.domainNameSuffix
+        record = "dn: cn="+self.groupName+","+baseDomain+"\n"
+        record += "objectClass: groupOfNames\n"
+        record += "objectClass: top\n"
+        record += "cn: "+self.groupName+"\n"
+        for user in self.users:
+            record += "member: uid="+user.getUserName()+","+baseDomain+"\n"
+
+        return record
+
+class UserRangeForGroup:
+    def __init__(self, groupName: str, lowRange: int, highRange: int):
+        self.groupName = groupName
+        self.lowRange = lowRange
+        self.highRange = highRange
+
+class LdifGenerator:
+    def __init__(self, domainName: str, domainNameSuffix: str, userPrefix: str, userPassword: str):
+        self.domainName: str  = domainName
+        self.domainNameSuffix = domainNameSuffix
+        self.allUsers: LdifUser = []
+        self.allGroups: LdifGroup = []
+        self.allGroupsByName: dict = dict()
+        self.listOfUserRangesForGroups: UserRangeForGroup = []
+        self.userPrefix = userPrefix
+        self.userPassword = userPassword
+        self.gidNumber = 12345678
+        self.uidNumber = 12340000
+
+    def createUsers(self, totUsers: int):
+        userIdx = 1
+        while userIdx <= totUsers:
+            user = LdifUser(self.userPrefix+str(userIdx), self.userPassword, self.domainName, self.domainNameSuffix, self.uidNumber+userIdx, self.gidNumber)
+            self.allUsers.append(user)
+            userIdx += 1
+
+    def rangeOfUsers(self, offset: int, totUsers: int):
+        users: LdifUser = []
+        maxLen = len(self.allUsers)
+        if offset < 0:
+            offset = 0
+        if (offset+totUsers) > maxLen:
+            totUsers = maxLen - offset
+        maxIdx = offset + totUsers
+        while offset < maxIdx:
+            users.append(self.allUsers[offset])
+            offset += 1
+        return users
+
+    def createGroup(self, groupName: str, offset: int, totUsers: int):
+        users = self.rangeOfUsers(offset, totUsers)
+        group: LdifGroup = LdifGroup(groupName, self.domainName, self.domainNameSuffix, users)
+        self.allGroups.append(group)
+        self.allGroupsByName[groupName] = group
+
+    def buildGroupInfo(self, ldifGroupsInfo : str):
+        ldifGroupsInfo = ldifGroupsInfo.strip()
+        ldifGroupsInfo = ldifGroupsInfo.replace(" ", "")
+        segments = ldifGroupsInfo.split("|")
+        for segment in segments:
+            if segment.count("[") > 1 or segment.count("]") > 1:
+                print("ERROR: missing separator for: "+segment)
+            
+            segment = segment.removeprefix("[")
+            segment = segment.removesuffix("]")
+            groupData = segment.split(":")
+            groupName = groupData[0]
+            try:
+                self.allGroupsByName[groupName]
+                print("ERROR: duplicate group name: "+groupName)
+                sys.exit()
+            except KeyError:
+                groupUserOffset = 0
+                groupUserTot = 0
+                items = len(groupData)
+                if (items > 1):
+                    try:
+                        groupUserOffset = int(groupData[1])
+                        if (items > 2):
+                            groupUserTot = int(groupData[2])
+                    except ValueError:
+                        groupUserOffset = 0
+                        groupUserTot = 0
+                    
+                self.createGroup(groupName, groupUserOffset, groupUserTot)
+
+    def generateLdif(self, _fullOutputPath):
+        if _fullOutputPath != None:
+            f = open(_fullOutputPath, "a")
+            f.truncate(0)
+            for user in self.allUsers:            
+                f.writelines(user.formatLdifRecord())
+                f.writelines("\r\n")
+            for group in self.allGroups:            
+                f.writelines(group.formatLdifRecord())
+                f.writelines("\r\n")
+            f.close()
+        else:
+            for user in self.allUsers:            
+                print(user.formatLdifRecord())
+            for group in self.allGroups:            
+                print(group.formatLdifRecord())
+        print("Generated "+str(len(self.allUsers))+" users and "+str(len(self.allGroups))+" groups")
+
+def createLdif(argv):
+    if argv != None:
+        ok = False
+        ldifCfg : bawLdif.LdifConfiguration = bawLdif.LdifConfiguration()
+        cmdLineMgr = clpm.CommandLineParamsManager()
+        cmdLineMgr.builDictionary(argv, "l:o:", ["ldifconfig=", "output="])
+        if cmdLineMgr.isExit() == False:
+            ok = True
+            _fullPathLdifCfg = cmdLineMgr.getParam("l", "ldifconfig")
+            _fullOutputPath = cmdLineMgr.getParam("o", "output")
+            ldifCfg.loadConfiguration(_fullPathLdifCfg)
+            ldifCfg.dumpValues()
+
+            ldifDomain = ldifCfg.getValue(ldifCfg.keyLDIF_DOMAIN_NAME)
+            ldifDomainSuffix = ldifCfg.getValue(ldifCfg.keyLDIF_DOMAIN_NAME_SUFFIX)
+            ldifUserPrefix = ldifCfg.getValue(ldifCfg.keyLDIF_USER_PREFIX)
+            ldifUserPassword = ldifCfg.getValue(ldifCfg.keyLDIF_USER_PASSWORD)
+            ldifUserTotal = int(ldifCfg.getValue(ldifCfg.keyLDIF_USERS_TOTAL).strip())
+            ldifGroupsInfo = ldifCfg.getValue(ldifCfg.keyLDIF_GROUPS)
+
+            ldifGenerator: LdifGenerator = LdifGenerator(ldifDomain, ldifDomainSuffix, ldifUserPrefix, ldifUserPassword)
+            ldifGenerator.createUsers(ldifUserTotal)
+            ldifGenerator.buildGroupInfo(ldifGroupsInfo)
+
+            ldifGenerator.generateLdif(_fullOutputPath)
+
+    if ok == False:
+        print("Wrong arguments, use -l 'filename' param to specify ldif configuration file")
+
+def main(argv):
+    createLdif(argv)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

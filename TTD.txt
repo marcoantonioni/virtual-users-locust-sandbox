@@ -1,6 +1,16 @@
 
 
+- tool creazione istanza processo da cmd line
+
+- tool generazione ldif virtual users
+    cp4ba: onboarding automatico
+    rest api per associazione gruppi idp a team applicazione
 
 - verifica funzionalità senza portale federato (traditional)
 -- login, query task list, url da task list, etc...
+
+
+#----------------------------------
+
+cp4ba]$ oc get secret -n cp4ba icp4adeploy-openldap-customldif -o jsonpath='{.data.ldap_user\.ldif}' | base64 -d
 
