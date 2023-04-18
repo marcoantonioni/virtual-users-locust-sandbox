@@ -1,3 +1,5 @@
+version: 1
+
 dn: uid=vuxuser1,dc=vuxdomain,dc=org
 uid: vuxuser1
 cn: vuxuser1
@@ -9,7 +11,7 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: person
 uidNumber: 12340001
-gidNumber: 12345678
+gidNumber: 5555
 homeDirectory: /home/vuxuser1/
 mail: vuxuser1@vuxdomain.org
 
@@ -24,7 +26,7 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: person
 uidNumber: 12340002
-gidNumber: 12345678
+gidNumber: 5555
 homeDirectory: /home/vuxuser2/
 mail: vuxuser2@vuxdomain.org
 
@@ -39,7 +41,7 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: person
 uidNumber: 12340003
-gidNumber: 12345678
+gidNumber: 5555
 homeDirectory: /home/vuxuser3/
 mail: vuxuser3@vuxdomain.org
 
@@ -54,7 +56,7 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: person
 uidNumber: 12340004
-gidNumber: 12345678
+gidNumber: 5555
 homeDirectory: /home/vuxuser4/
 mail: vuxuser4@vuxdomain.org
 
@@ -69,7 +71,7 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: person
 uidNumber: 12340005
-gidNumber: 12345678
+gidNumber: 5555
 homeDirectory: /home/vuxuser5/
 mail: vuxuser5@vuxdomain.org
 
@@ -84,7 +86,7 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: person
 uidNumber: 12340006
-gidNumber: 12345678
+gidNumber: 5555
 homeDirectory: /home/vuxuser6/
 mail: vuxuser6@vuxdomain.org
 
@@ -99,7 +101,7 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: person
 uidNumber: 12340007
-gidNumber: 12345678
+gidNumber: 5555
 homeDirectory: /home/vuxuser7/
 mail: vuxuser7@vuxdomain.org
 
@@ -114,7 +116,7 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: person
 uidNumber: 12340008
-gidNumber: 12345678
+gidNumber: 5555
 homeDirectory: /home/vuxuser8/
 mail: vuxuser8@vuxdomain.org
 
@@ -129,7 +131,7 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: person
 uidNumber: 12340009
-gidNumber: 12345678
+gidNumber: 5555
 homeDirectory: /home/vuxuser9/
 mail: vuxuser9@vuxdomain.org
 
@@ -144,45 +146,46 @@ objectClass: organizationalPerson
 objectClass: inetOrgPerson
 objectClass: person
 uidNumber: 12340010
-gidNumber: 12345678
+gidNumber: 5555
 homeDirectory: /home/vuxuser10/
 mail: vuxuser10@vuxdomain.org
 
-dn: cn=Gruppo1,dc=vuxdomain,dc=org
+dn: cn=VUSAllUsers-vuxdomain,dc=vuxdomain,dc=org
 objectClass: groupOfNames
 objectClass: top
-cn: Gruppo1
 member: uid=vuxuser1,dc=vuxdomain,dc=org
 member: uid=vuxuser2,dc=vuxdomain,dc=org
 member: uid=vuxuser3,dc=vuxdomain,dc=org
 member: uid=vuxuser4,dc=vuxdomain,dc=org
 member: uid=vuxuser5,dc=vuxdomain,dc=org
-
-dn: cn=Gruppo2,dc=vuxdomain,dc=org
-objectClass: groupOfNames
-objectClass: top
-cn: Gruppo2
 member: uid=vuxuser6,dc=vuxdomain,dc=org
 member: uid=vuxuser7,dc=vuxdomain,dc=org
 member: uid=vuxuser8,dc=vuxdomain,dc=org
 member: uid=vuxuser9,dc=vuxdomain,dc=org
 member: uid=vuxuser10,dc=vuxdomain,dc=org
 
-dn: cn=Gruppo3,dc=vuxdomain,dc=org
+dn: cn=VUSGroup1,dc=vuxdomain,dc=org
 objectClass: groupOfNames
 objectClass: top
-cn: Gruppo3
+member: uid=vuxuser1,dc=vuxdomain,dc=org
+member: uid=vuxuser2,dc=vuxdomain,dc=org
+member: uid=vuxuser3,dc=vuxdomain,dc=org
+member: uid=vuxuser4,dc=vuxdomain,dc=org
+member: uid=vuxuser5,dc=vuxdomain,dc=org
+
+dn: cn=VUSGroup2,dc=vuxdomain,dc=org
+objectClass: groupOfNames
+objectClass: top
+member: uid=vuxuser6,dc=vuxdomain,dc=org
+member: uid=vuxuser7,dc=vuxdomain,dc=org
+member: uid=vuxuser8,dc=vuxdomain,dc=org
+member: uid=vuxuser9,dc=vuxdomain,dc=org
+member: uid=vuxuser10,dc=vuxdomain,dc=org
+
+dn: cn=VUSGroup3,dc=vuxdomain,dc=org
+objectClass: groupOfNames
+objectClass: top
 member: uid=vuxuser5,dc=vuxdomain,dc=org
 member: uid=vuxuser6,dc=vuxdomain,dc=org
 member: uid=vuxuser7,dc=vuxdomain,dc=org
-
-dn: cn=Gruppo4,dc=vuxdomain,dc=org
-objectClass: groupOfNames
-objectClass: top
-cn: Gruppo4
-
-dn: cn=Gruppo5,dc=vuxdomain,dc=org
-objectClass: groupOfNames
-objectClass: top
-cn: Gruppo5
 

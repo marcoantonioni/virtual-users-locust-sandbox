@@ -1,7 +1,7 @@
 import bulkProcessOperations
 import bawsys.commandLineManager as clpm
 from bawsys import loadEnvironment as bawEnv
-import sys
+import sys, logging
 
 #----------------------------------
 
@@ -25,6 +25,8 @@ def deleteProcessInstances(argv):
         print("Wrong arguments, use -e 'filename' param to specify environment file, use -t true to terminate process instances before delete")
 
 def main(argv):
+    logger = logging.getLogger('root')
+    logger.setLevel(logging.INFO)    
     deleteProcessInstances(argv)
 
 if __name__ == "__main__":

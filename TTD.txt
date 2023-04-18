@@ -4,6 +4,9 @@
 
 - tool cp4ba onboarding automatico
 - rest api per associazione gruppi idp a team applicazione
+    https://www.ibm.com/docs/en/baw/22.x?topic=calls-rest-api-authorization-user-group-team-actions
+    https://www.ibm.com/docs/en/baw/22.x?topic=apis-authorization-control-runtime-rest-api-calls
+    https://www.ibm.com/docs/en/baw/22.x?topic=snapshots-configuring-runtime-teams
 
 - verifica funzionalità senza portale federato (traditional)
 -- login, query task list, url da task list, etc...
@@ -12,4 +15,7 @@
 #----------------------------------
 
 cp4ba]$ oc get secret -n cp4ba icp4adeploy-openldap-customldif -o jsonpath='{.data.ldap_user\.ldif}' | base64 -d
+
+# openldap phpadmin (vm bamoe)
+https://github.com/marcoantonioni/openldap-openshift/blob/main/phpldapadmin.md
 

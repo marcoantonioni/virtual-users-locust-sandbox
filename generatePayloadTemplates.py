@@ -3,7 +3,7 @@ import bawsys.commandLineManager as clpm
 import bawsys.exposedProcessManager as bpmExpProcs
 from bawsys import loadEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys
-import urllib, requests, json, sys
+import urllib, requests, json, sys, logging
 
 #----------------------------------
 
@@ -119,7 +119,6 @@ class PayloadTemplateManager:
 
         response = requests.get(url=urlAssetts, headers=my_headers, verify=False)
         if response.status_code == 200:
-            # print(json.dumps(response.json(), indent = 2))
             data = response.json()["data"]
             snapshotId = data["snapshotId"]
             dataTypesList = data["VariableType"]
@@ -127,6 +126,9 @@ class PayloadTemplateManager:
                 dtName = dataType["name"]
                 dtId = dataType["poId"]
                 self.buildDataTypeTemplates(hostUrl, baseUri, dtName, dtId, snapshotId, appId)
+        else:
+            print("ERROR, status code: ", response.status_code)
+            print(json.dumps(response.json(), indent = 2))
 
     def buildTypeTemplate(self):
         for dtName in self.dataTypeTemplates.keys():
@@ -183,6 +185,8 @@ def generatePayloadTemplates(argv):
         print("Wrong arguments, use -e param to specify environment file")
 
 def main(argv):
+    logger = logging.getLogger('root')
+    logger.setLevel(logging.INFO)    
     generatePayloadTemplates(argv)
 
 if __name__ == "__main__":

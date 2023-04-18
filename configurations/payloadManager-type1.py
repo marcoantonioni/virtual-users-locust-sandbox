@@ -15,7 +15,7 @@ def buildPayloadForSubject(text):
     retObject["jsonObject"] = {}
     retObject["thinkTime"] = -1
 
-    if text.find('Start-ClaimCompileAndValidate') != -1:
+    if text.find('Start-VUSClaimCompleteTwoRoles') != -1:
         rndVal : int = random.randint(0, 100) + 1
         retObject["jsonObject"] = {'inputData': {'requestID': 'req'+str(rndVal), 'counter': rndVal ,'authorizedReq': False}}
 
@@ -28,7 +28,8 @@ def buildPayloadForSubject(text):
         retObject["jsonObject"] =  {'inputData': {'requestID': 'reqValidated', 'counter': rndVal ,'authorizedReq': True}}
         retObject["thinkTime"] = random.randint(0, 5)
 
-    if text.find('Simple Task') != -1:
-        retObject["thinkTime"] = random.randint(0, 2)
+    if text.find('Start-VUSClaimCompleteAuthorize') != -1:
+        rndVal : int = random.randint(0, 100) + 1
+        retObject["jsonObject"] = {'inputData': {'requestID': 'req'+str(rndVal), 'counter': rndVal ,'authorizedReq': False}}
 
     return retObject

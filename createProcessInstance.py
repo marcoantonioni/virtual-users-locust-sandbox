@@ -80,6 +80,8 @@ def createProcessInstances(argv):
         print("Wrong arguments, use -e 'filename' param to specify environment file")
 
 def main(argv):
+    logger = logging.getLogger('root')
+    logger.setLevel(logging.INFO)    
     createProcessInstances(argv)
 
 if __name__ == "__main__":

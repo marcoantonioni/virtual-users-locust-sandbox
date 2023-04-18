@@ -32,7 +32,10 @@ class BpmExposedProcessInfo:
 def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, iamUrl: str, hostUrl: str):
     userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
     userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
-    
+    if iamUrl.endswith('/'):
+        iamUrl = iamUrl[:-1]
+    if hostUrl.endswith('/'):
+        hostUrl = hostUrl[:-1]
     access_token : str = None
     token : str = None
     params : str = "grant_type=password&scope=openid&username="+userName+"&password="+userPassword

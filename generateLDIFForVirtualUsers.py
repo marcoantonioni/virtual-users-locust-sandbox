@@ -1,4 +1,4 @@
-import sys
+import sys, logging
 import bawsys.commandLineManager as clpm
 from bawsys import loadLdiffConfiguration as bawLdif
 
@@ -49,7 +49,6 @@ class LdifGroup:
         record = "dn: cn="+self.groupName+","+baseDomain+"\n"
         record += "objectClass: groupOfNames\n"
         record += "objectClass: top\n"
-        record += "cn: "+self.groupName+"\n"
         for user in self.users:
             record += "member: uid="+user.getUserName()+","+baseDomain+"\n"
 
@@ -71,7 +70,7 @@ class LdifGenerator:
         self.listOfUserRangesForGroups: UserRangeForGroup = []
         self.userPrefix = userPrefix
         self.userPassword = userPassword
-        self.gidNumber = 12345678
+        self.gidNumber = 5555
         self.uidNumber = 12340000
 
     def createUsers(self, totUsers: int):
@@ -100,7 +99,10 @@ class LdifGenerator:
         self.allGroups.append(group)
         self.allGroupsByName[groupName] = group
 
-    def buildGroupInfo(self, ldifGroupsInfo : str):
+    def buildGroupInfo(self, ldifDomain: str, ldifGroupsInfo : str):
+        
+        self.createGroup("VUSAllUsers-"+ldifDomain, 0, len(self.allUsers))
+
         ldifGroupsInfo = ldifGroupsInfo.strip()
         ldifGroupsInfo = ldifGroupsInfo.replace(" ", "")
         segments = ldifGroupsInfo.split("|")
@@ -135,6 +137,9 @@ class LdifGenerator:
         if _fullOutputPath != None:
             f = open(_fullOutputPath, "a")
             f.truncate(0)
+
+            f.writelines("version: 1")
+            f.writelines("\r\n\r\n")
             for user in self.allUsers:            
                 f.writelines(user.formatLdifRecord())
                 f.writelines("\r\n")
@@ -190,7 +195,7 @@ def createLdif(argv):
 
             ldifGenerator: LdifGenerator = LdifGenerator(ldifDomain, ldifDomainSuffix, ldifUserPrefix, ldifUserPassword)
             ldifGenerator.createUsers(ldifUserTotal)
-            ldifGenerator.buildGroupInfo(ldifGroupsInfo)
+            ldifGenerator.buildGroupInfo(ldifDomain, ldifGroupsInfo)
 
             ldifGenerator.generateLdif(_fullOutputPathLdif)
             ldifGenerator.generateUserCredentials(_fullOutputPathUsersCredentials)
@@ -199,6 +204,8 @@ def createLdif(argv):
         print("Wrong arguments, use -l 'filename' param to specify ldif configuration file")
 
 def main(argv):
+    logger = logging.getLogger('root')
+    logger.setLevel(logging.INFO)    
     createLdif(argv)
 
 if __name__ == "__main__":

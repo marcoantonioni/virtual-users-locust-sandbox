@@ -1,7 +1,7 @@
 import bulkProcessOperations
 import bawsys.commandLineManager as clpm
 from bawsys import loadEnvironment as bawEnv
-import sys
+import sys, logging
 
 #----------------------------------
 
@@ -22,6 +22,8 @@ def terminateProcessInstances(argv):
         print("Wrong arguments, use -e param to specify environment file")
 
 def main(argv):
+    logger = logging.getLogger('root')
+    logger.setLevel(logging.INFO)    
     terminateProcessInstances(argv)
 
 if __name__ == "__main__":
