@@ -8,31 +8,96 @@
     https://www.ibm.com/docs/en/baw/22.x?topic=apis-authorization-control-runtime-rest-api-calls
     https://www.ibm.com/docs/en/baw/22.x?topic=snapshots-configuring-runtime-teams
 
+
+    !!! cercare api ricerca utente in IDP
+
 - verifica funzionalità senza portale federato (traditional)
 -- login, query task list, url da task list, etc...
 
 
 #----------------------------------
 
-cp4ba]$ oc get secret -n cp4ba icp4adeploy-openldap-customldif -o jsonpath='{.data.ldap_user\.ldif}' | base64 -d
+oc get secret -n cp4ba icp4adeploy-openldap-customldif -o jsonpath='{.data.ldap_user\.ldif}' | base64 -d
 
 # openldap phpadmin (vm bamoe)
 https://github.com/marcoantonioni/openldap-openshift/blob/main/phpldapadmin.md
 
 
 
+#=====================================
+# debug http
+#=====================================
+def patch_send():
+    old_send = http.client.HTTPConnection.send
+    def new_send(self, data):
+        print(f'{"-"*9} BEGIN REQUEST {"-"*9}')
+        print(data.decode('utf-8').strip())
+        print(f'{"-"*10} END REQUEST {"-"*10}')
+        return old_send(self, data)
+    http.client.HTTPConnection.send = new_send
+patch_send()
 
-POST
-https://cpd-cp4ba-starter.apps.daffy-2g1uwuep.cloud.techzone.ibm.com/usermgmt/v1/user/bulk
 
-[
-  {
-    "username":"vuxuser8",
-    "displayName":"vuxuser8",
-    "email":"vuxuser8@vuxdomain.org",
-    "authenticator":"external",
-    "user_roles":["zen_user_role"],
-    "misc":{"realm_name":"vuxdomain1","extAttributes":{}}
-  }
-]
+#=====================================
+# Onboarding utenti
+# python ./_testUserOnboard.py -e ./configurations/env1.properties -u vuxuser5 -d vuxdomain1
+#=====================================
 
+TNS=cp4ba-starter
+
+# credenziali pak: admin 
+oc get secret platform-auth-idp-credentials -n ${TNS} -o jsonpath='{.data.admin_password}' | base64 -d && echo
+W1BcbRumpJaLZ0msHFzGzjAxSMa0eL6a
+
+# per Access Control con utenza admin
+# https://cpd-cp4ba-starter.
+
+
+
+TNS=cp4ba-starter
+
+# IAM token
+
+iamadmin=$(oc get secret -n ${TNS} platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 -d)
+iampass=$(oc get secret -n ${TNS} platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)
+
+echo $iamadmin $iampass
+
+iamhost=https://$(oc get route -n ${TNS} cp-console -o jsonpath="{.spec.host}")
+iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=$iamadmin&password=$iampass&scope=openid" $iamhost/idprovider/v1/auth/identitytoken | jq -r .access_token)
+
+echo $iamaccesstoken
+
+
+# ZEN token
+
+zenhost=https://$(oc get route -n ${TNS} cpd -o jsonpath="{.spec.host}")
+echo $zenhost
+
+zentoken=$(curl -sk "$zenhost/v1/preauth/validateAuth" -H "username:$iamadmin" -H "iam-token: $iamaccesstoken" | jq -r .accessToken)
+echo $zentoken
+
+
+# BULK OP
+
+payload_name=onboard-user.json
+onb_dom=vuxdomain1
+onb_user=vuxuser3
+echo '[{"username":"'$onb_user'","displayName":"'$onb_user'","email":"'$onb_user'@vuxdomain.org","authenticator":"external","user_roles":["zen_user_role"],"misc":{"realm_name":"'$onb_dom'","extAttributes":{}}}]' > ./${payload_name}
+
+curl -sk -H "Authorization: Bearer $zentoken" -H "Content-Type: application/json" -X POST $zenhost/usermgmt/v1/user/bulk -d @./${payload_name} | jq .
+
+
+{
+  "result": [
+    {
+      "uid": "1000331027",
+      "username": "vuxuser3",
+      "displayName": "vuxuser3",
+      "success": "true",
+      "message": "User created"
+    }
+  ],
+  "_messageCode_": "Success",
+  "message": "Success"
+}
