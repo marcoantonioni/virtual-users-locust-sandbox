@@ -1,9 +1,5 @@
 TASK_SUBJECTS,  SUBJECT_TEXT
-TS1,            "Compile"
-TS2,            "Validate"
-TS3,            "First, User"
-TS4,            "Second User"
-TS5,            "Alpha task"
-TS6,            "Beta task"
-TS7,            "Gamma task"
-TS8,            "Simple Task"
+TS1,            "Compile Data [CCTR]"
+TS2,            "Validate Data [CCTR]"
+TS3,            "Compile Request [CCA]"
+TS4,            "Authorize Request [CCA]"

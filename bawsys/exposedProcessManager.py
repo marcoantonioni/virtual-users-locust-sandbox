@@ -1,4 +1,4 @@
-import requests, json, logging
+import requests, json, logging, random
 import bawsys.loadEnvironment as bpmEnv
 import bawsys.bawSystem as bpmSys
 from json import JSONDecodeError
@@ -38,6 +38,14 @@ class BpmExposedProcessManager:
 
     def getBpdId(self):
         return self.bpdId
+    
+    def nextRandomProcessInfos(self):
+        processInfoKeys = self.getKeys()
+        totalKeys = len(processInfoKeys)
+        rndIdx : int = random.randint(0, (totalKeys-1))
+        key = processInfoKeys[rndIdx]
+        processInfo = self.getProcessInfos(key)  
+        return processInfo 
 
     def LoadProcessInstancesInfos(self, bpmEnvironment : bpmEnv.BpmEnvironment):
         iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)

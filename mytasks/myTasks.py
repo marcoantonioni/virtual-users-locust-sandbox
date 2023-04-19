@@ -7,6 +7,7 @@ from json import JSONDecodeError
 from mytasks.processInstanceManager import BpmProcessInstanceManager as bpmPIM
 from mytasks.processInstanceManager import BpmProcessInstance as bpmPI
 from bawsys import loadEnvironment as bpmEnv
+from bawsys import bawSystem as bpmSys 
 
 #-------------------------------------------
 # BPM types
@@ -677,17 +678,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS ):
                 pem = self.user.getEPM()
                 pim = self.user.getPIM()
-
-                #------------------------------
-                processInfoKeys = pem.getKeys()
-                totalKeys = len(processInfoKeys)
-                rndIdx : int = random.randint(0, (totalKeys-1))
-                key = processInfoKeys[rndIdx]
-                processName = key.split("/")[0]
-                processInfo = pem.getProcessInfos(key)  
+                processInfo: bpmSys.BpmExposedProcessInfo = pem.nextRandomProcessInfos()
+                processName = processInfo.getAppProcessName()
                 jsonPayloadInfos = self._buildPayload("Start-"+processName)
-                #------------------------------
-
                 jsonPayload = _extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
                 strPayload = json.dumps(jsonPayload)
                 processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), processInfo, strPayload, self.user.authorizationBearerToken)

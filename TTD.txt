@@ -19,3 +19,20 @@ cp4ba]$ oc get secret -n cp4ba icp4adeploy-openldap-customldif -o jsonpath='{.da
 # openldap phpadmin (vm bamoe)
 https://github.com/marcoantonioni/openldap-openshift/blob/main/phpldapadmin.md
 
+
+
+
+POST
+https://cpd-cp4ba-starter.apps.daffy-2g1uwuep.cloud.techzone.ibm.com/usermgmt/v1/user/bulk
+
+[
+  {
+    "username":"vuxuser8",
+    "displayName":"vuxuser8",
+    "email":"vuxuser8@vuxdomain.org",
+    "authenticator":"external",
+    "user_roles":["zen_user_role"],
+    "misc":{"realm_name":"vuxdomain1","extAttributes":{}}
+  }
+]
+

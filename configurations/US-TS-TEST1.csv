@@ -1,12 +1,12 @@
-USER,           TSN1,   TSN2,   TSN3,   TSN4,   TSN5,   TSN6,   TSN7,   TSN8,   TSN9,   TSN10
-user1,          TS1,    TS3,    TS8
-user2,          TS1,    TS4,    TS8
-user3,          TS1,    TS5,    TS6,    TS8
-user4,          TS1,    TS7,    TS8
-user5,          TS1,    TS8
-user6,          TS1,    TS8
-user7,          TS1,    TS8
-user8,          TS1,    TS8
-user9,          TS2,    TS8
-user10,         TS2,    TS8
-          
+USER,       TSN1,   TSN2,   TSN3,   TSN4,   TSN5,   TSN6,   TSN7,   TSN8,   TSN9,   TSN10
+vuxuser1,   TS1,    TS3
+vuxuser2,   TS1,    TS3
+vuxuser3,   TS1,    TS3
+vuxuser4,   TS1,    TS3
+vuxuser5,   TS1,    TS3
+vuxuser6,   TS2,    TS4
+vuxuser7,   TS2,    TS4
+vuxuser8,   TS2,    TS4
+vuxuser9,   TS2,    TS4
+vuxuser10,  TS2,    TS4
+
