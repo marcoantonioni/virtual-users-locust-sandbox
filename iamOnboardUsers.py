@@ -12,8 +12,6 @@ requests.packages.urllib3.disable_warnings()
 import urllib3
 
 
-# !!!!!! /BAS
-
 # IAM address (cp-console)
 def _accessToken(baseHost, userName, userPassword):
     access_token : str = None
@@ -55,38 +53,6 @@ def _cp4baToken(baseHost, userName, iamToken):
         logging.error("_cp4baToken error, status code: %d, messge: %s", response.status_code, response.text)
     return cp4ba_token
 
-"""
-# !!!! /BAS
-def _csrfToken(baseHost, userName, userPassword):
-    access_token : str = None
-    my_headers = {'Content-Type': 'application/json'}
-    basic = HTTPBasicAuth(userName, userPassword)
-    response = requests.post(url=baseHost+"/bas/bpm/system/login", headers=my_headers, data="{}", verify=False, auth=basic)
-    
-    print("",userName,userPassword)
-    print(baseHost+"/bas/bpm/system/login")
-    print("_csrfToken")
-    print(json.dumps(response.json(), indent = 2 ))
-
-    if logging.getLogger().isEnabledFor(logging.DEBUG):
-        logging.debug("_csrfToken status code: %s", response.status_code)
-    if response.status_code < 300:
-        try:
-            access_token = response.json()["csrf_token"]                
-        except JSONDecodeError:
-            logging.error("_accessToken error, user %s, response could not be decoded as JSON", userName)
-            response.failure("Response could not be decoded as JSON")
-        except KeyError:
-            logging.error("_accessToken error, user %s, did not contain expected key 'access_token'", userName)
-            response.failure("Response did not contain expected key 'access_token'")
-    else:
-        logging.error("_csrfToken error, status code: %d, messge: %s", response.status_code, response.text)
-    return access_token
-
-"""
-
-
-# IAM address (cp-console)
 def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, users, domainName):
         access_token : str = None
         hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
@@ -119,7 +85,6 @@ def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, users, domainName):
                 if response.status_code == 200:
                     try:
                         respJson = response.json()
-                        print(respJson)
                         respResult = respJson["result"]
                         respMsgCode: str = respJson["_messageCode_"]
                         respMessage = respJson["message"]
@@ -142,12 +107,8 @@ def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, users, domainName):
                     logging.error("_userOnboard error, status code: %d, messge: %s", response.status_code, response.text)
 
 
-def testUserOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, userName, userMail, domainName):
-    #user: creds.UserCredentials = creds.UserCredentials(userName, None, userMail)
-    #users = [user] 
-
-    creds.setupCredentials("./configurations/creds10.csv", bpmEnvironment)
-    
+def testUserOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, fullPathUsers, domainName):
+    creds.setupCredentials(fullPathUsers, bpmEnvironment)    
     _userOnboard(bpmEnvironment, creds.user_credentials, domainName)
 
 def main(argv):
@@ -156,16 +117,15 @@ def main(argv):
 
     bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
     cmdLineMgr = clpm.CommandLineParamsManager()
-    cmdLineMgr.builDictionary(argv, "e:u:m:d:", ["environment=","user=","mail=","domain="])
+    cmdLineMgr.builDictionary(argv, "e:f:d:", ["environment=","file=","domain="])
     if cmdLineMgr.isExit() == False:
         ok = True
         _fullPathBawEnv = cmdLineMgr.getParam("e", "environment")
-        userName = cmdLineMgr.getParam("u", "user")
-        userMail = cmdLineMgr.getParam("m", "mail")
+        _fullPathUsers = cmdLineMgr.getParam("f", "file")
         domainName = cmdLineMgr.getParam("d", "domain")
         bpmEnvironment.loadEnvironment(_fullPathBawEnv)
         bpmEnvironment.dumpValues()
-        testUserOnboard(bpmEnvironment, userName, userMail, domainName)
+        testUserOnboard(bpmEnvironment, _fullPathUsers, domainName)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

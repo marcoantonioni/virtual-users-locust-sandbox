@@ -159,17 +159,17 @@ class LdifGenerator:
         if _fullOutputPath != None:
             f = open(_fullOutputPath, "a")
             f.truncate(0)
-            f.writelines("NAME,PASSWORD")
+            f.writelines("NAME,PASSWORD,EMAIL")
             f.writelines("\r\n")
             for user in self.allUsers:            
-                f.writelines(user.userName+","+user.password)
+                f.writelines(user.userName+","+user.password+",none@nowhere.net")
                 f.writelines("\r\n")
             f.close()
         else:
             print("\n\n===== USER CREDENTIALS =====\n\n")
-            print("NAME,PASSWORD")
+            print("NAME,PASSWORD,EMAIL")
             for user in self.allUsers:            
-                print(user.userName+","+user.password+"\n")
+                print(user.userName+","+user.password+",none@nowhere.net"+"\n")
         print("\n\nGenerated "+str(len(self.allUsers))+" set of credentials")
 
 def createLdif(argv):
