@@ -1,2 +1,2 @@
-NAME,PASSWORD
-vuxuser1,vuxPassw0rd
+NAME,PASSWORD,EMAIL
+vuxuser1,vuxPassw0rd,none@nowhere.net

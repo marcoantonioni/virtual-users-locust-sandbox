@@ -1,5 +1,6 @@
 from bawsys import loadEnvironment as bpmEnv
 import bawsys.commandLineManager as clpm
+import bawsys.loadCredentials as creds
 from bawsys import bawSystem as bawSys
 import sys, logging, json
 from json import JSONDecodeError
@@ -86,9 +87,7 @@ def _csrfToken(baseHost, userName, userPassword):
 
 
 # IAM address (cp-console)
-def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, userName, userMail, domainName):
-    if userName != None and userMail != None and domainName != None and userName != "" and userMail != "" and domainName != "":
-
+def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, users, domainName):
         access_token : str = None
         hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
@@ -98,17 +97,21 @@ def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, userName, userMail, dom
         if access_token != None:
             zenToken = _cp4baToken(hostUrl, powerUser, access_token)
             if zenToken != None:
-                params = [{
-                            'username':userName,
-                            'displayName':userName,
-                            'email':userMail,
-                            'authenticator':'external',
-                            'user_roles':['zen_user_role'],
-                            'misc':{
-                                'realm_name':domainName,                        
-                                'extAttributes':{}
-                                }
-                        }]
+                params = []
+                user: creds.UserCredentials = None 
+                for user in users:
+                    userName = user.getName()
+                    userMail = user.getEmail()
+                    if userName != None and userMail != None and domainName != None and userName != "" and userMail != "" and domainName != "":
+                        jsonUserInfo = { 
+                                        'username':userName, 'displayName':userName, 'email':userMail,
+                                        'authenticator':'external', 'user_roles':['zen_user_role'],
+                                        'misc':{ 'realm_name':domainName, 'extAttributes':{} }
+                                        }
+                        params.append( jsonUserInfo )
+                    else:
+                        logging.error("_userOnboard error, wrong parameter values userName[%s], userMail[%s] domainName[%s]", userName, userMail, domainName)
+
                 my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer '+zenToken}
                 response = requests.post(url=hostUrl+"/usermgmt/v1/user/bulk", headers=my_headers, json=params, verify=False)
                 if logging.getLogger().isEnabledFor(logging.DEBUG):
@@ -116,30 +119,36 @@ def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, userName, userMail, dom
                 if response.status_code == 200:
                     try:
                         respJson = response.json()
-                        respResult = respJson["result"][0]
+                        print(respJson)
+                        respResult = respJson["result"]
                         respMsgCode: str = respJson["_messageCode_"]
                         respMessage = respJson["message"]
-                        resultUserUid = respResult["uid"]
-                        resultUserSuccess = respResult["success"]
-                        resultUserMessage = respResult["message"]
-                        if respMsgCode.lower() == "success":
-                            logging.info("User [%s] onboarded in domain [%s], message[%s], new user id[%s]", userName, domainName, resultUserMessage, resultUserUid )
-                        else:
-                            logging.error("ERROR _onboardUser, username[%s], message code[%s] message[%s] %s", userName, respMsgCode, respMessage, resultUserMessage)
+                        for rr in respResult:
+                            resultUserUid = rr["uid"]
+                            resultUserName = rr["username"]
+                            resultUserSuccess = rr["success"]
+                            resultUserMessage = rr["message"]
+                            if respMsgCode.lower() == "success":
+                                logging.info("User [%s] onboarded in domain [%s], message[%s], new user id[%s]", resultUserName, domainName, resultUserMessage, resultUserUid )
+                            else:
+                                logging.error("ERROR _onboardUser, username[%s], message code[%s] message[%s] %s", resultUserName, respMsgCode, respMessage, resultUserMessage)
                     except JSONDecodeError:
-                        logging.error("_onboardUser error, user %s, response could not be decoded as JSON", userName)
+                        logging.error("_onboardUser error, response could not be decoded as JSON")
                         response.failure("Response could not be decoded as JSON")
                     except KeyError:
-                        logging.error("_onboardUser error, user %s, did not contain expected key 'access_token'", userName)
+                        logging.error("_onboardUser error, did not contain expected key 'access_token'")
                         response.failure("Response did not contain expected key 'access_token'")
                 else:
                     logging.error("_userOnboard error, status code: %d, messge: %s", response.status_code, response.text)
-    else:
-        logging.error("_userOnboard error, wrong parameter values userName[%s], userMail[%s] domainName[%s]", userName, userMail, domainName)
 
 
 def testUserOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, userName, userMail, domainName):
-    _userOnboard(bpmEnvironment, userName, userMail, domainName)
+    #user: creds.UserCredentials = creds.UserCredentials(userName, None, userMail)
+    #users = [user] 
+
+    creds.setupCredentials("./configurations/creds10.csv", bpmEnvironment)
+    
+    _userOnboard(bpmEnvironment, creds.user_credentials, domainName)
 
 def main(argv):
     logger = logging.getLogger('root')

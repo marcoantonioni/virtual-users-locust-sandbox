@@ -1,3 +1,3 @@
-NAME,PASSWORD
-vuxuser9,vuxPassw0rd
-vuxuser10,vuxPassw0rd
+NAME,PASSWORD,EMAIL
+vuxuser9,vuxPassw0rd,none@nowhere.net
+vuxuser10,vuxPassw0rd,none@nowhere.net

@@ -9,9 +9,10 @@ user_credentials = []
 
 #--------------------------------------------
 class UserCredentials:
-    def __init__(self, name, password):
+    def __init__(self, name, password, email):
         self.name = name
         self.password = password
+        self.email = email
 
     def getName(self):
         return self.name
@@ -19,12 +20,15 @@ class UserCredentials:
     def getPassword(self):
         return self.password
     
+    def getEmail(self):
+        return self.email
+    
     pass
 
 #--------------------------------------------
 userStrategyTwins = False
 
-def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment  ):
+def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment ):
     global userStrategyTwins
 
     logging.debug("Loading credentials from: %s", fullPathName)
@@ -37,8 +41,9 @@ def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment  ):
         for item in csv.DictReader(data):
             userName = item['NAME'].strip()
             userPassword = item['PASSWORD'].strip()
-            temp_user_credentials.append(UserCredentials(userName, userPassword))
-            logging.debug('User %s, password %s', userName, userPassword)
+            userEmail = item['EMAIL'].strip()
+            temp_user_credentials.append(UserCredentials(userName, userPassword, userEmail))
+            logging.debug('User %s, password %s', userName, userPassword, userEmail)
     
     hasItems = True
     while hasItems:
@@ -52,7 +57,6 @@ def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment  ):
 
     logging.debug("Loaded [%d] users, using strategy [%s]", len(user_credentials), userStrategy)
     
-    pass        
 
 def getNextUserCredentials():
     if len(user_credentials) > 0:
