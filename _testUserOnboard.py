@@ -19,11 +19,6 @@ def _accessToken(baseHost, userName, userPassword):
     params : str = "grant_type=password&username="+userName+"&password="+userPassword+"&scope=openid"
     my_headers = {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}
     response = requests.post(url=baseHost+"/idprovider/v1/auth/identitytoken", data=params, headers=my_headers, verify=False)
-                                           
-    #print("",userName,userPassword)
-    #print("_accessToken")
-    #print(json.dumps(response.json(), indent = 2 ))
-
     if logging.getLogger().isEnabledFor(logging.DEBUG):
         logging.debug("_accessToken status code: %s", response.status_code)
     if response.status_code == 200:
@@ -36,19 +31,14 @@ def _accessToken(baseHost, userName, userPassword):
             logging.error("_accessToken error, user %s, did not contain expected key 'access_token'", userName)
             response.failure("Response did not contain expected key 'access_token'")
     else:
-        print(json.dumps(response.json(), indent = 2 ))
+        logging.error("_accessToken error, status code: %d, messge: %s", response.status_code, response.text)
     return access_token
 
 # CP4BA address (cpd-cp4ba)
 def _cp4baToken(baseHost, userName, iamToken):
     cp4ba_token : str = None
-    my_headers = {'username': userName, 'iam-token': iamToken }
-    
+    my_headers = {'username': userName, 'iam-token': iamToken }    
     response = requests.get(url=baseHost+"/v1/preauth/validateAuth", headers=my_headers, verify=False)
-    
-    #print("_cp4baToken")
-    #print(json.dumps(response.json(), indent = 2 ))
-    
     if logging.getLogger().isEnabledFor(logging.DEBUG):
         logging.debug("_cp4baToken status code: %s", response.status_code)
     if response.status_code == 200:
@@ -61,7 +51,7 @@ def _cp4baToken(baseHost, userName, iamToken):
             logging.error("_cp4baToken error, user %s, did not contain expected key 'accessToken'", userName)
             response.failure("Response did not contain expected key 'accessToken'")
     else:
-        print(json.dumps(response.json(), indent = 2 ))
+        logging.error("_cp4baToken error, status code: %d, messge: %s", response.status_code, response.text)
     return cp4ba_token
 
 """
@@ -89,133 +79,67 @@ def _csrfToken(baseHost, userName, userPassword):
             logging.error("_accessToken error, user %s, did not contain expected key 'access_token'", userName)
             response.failure("Response did not contain expected key 'access_token'")
     else:
-        print(json.dumps(response.json(), indent = 2 ))
+        logging.error("_csrfToken error, status code: %d, messge: %s", response.status_code, response.text)
     return access_token
 
 """
 
 
 # IAM address (cp-console)
-def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, userName, domainName):
-    access_token : str = None
-    hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-    iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
+def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, userName, userMail, domainName):
+    if userName != None and userMail != None and domainName != None and userName != "" and userMail != "" and domainName != "":
 
-    powerUser = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_USER_NAME)
-    powerUserPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_USER_PASSWORD)
-    
-    access_token : str = _accessToken(iamUrl, powerUser, powerUserPassword)
-    if access_token != None:
-        zenToken = _cp4baToken(hostUrl, powerUser, access_token)
-
-        #print("")
-        #print("")
-        #print("user ", powerUser, powerUserPassword)
-        #print("URL per iamtoken: ", iamUrl)
-        #print("URL per zentoken: ", hostUrl)
-        #print("iamtoken: ",access_token)
-        #print("zentoken: ",zenToken)
-        #print("")
-        #print("")
-
-        if zenToken != None:
-
-            params = [{
-                        'username':userName,
-                        'displayName':userName,
-                        'email':userName+'@vuxdomain.org',
-                        'authenticator':'external',
-                        'user_roles':['zen_user_role'],
-                        'misc':{
-                            'realm_name':domainName,                        
-                            'extAttributes':{}
-                            }
-                    }]
-                    
-            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer '+zenToken}
-
-            response = requests.post(url=hostUrl+"/usermgmt/v1/user/bulk", headers=my_headers, json=params, verify=False)
-
-            print(json.dumps(response.json(), indent = 2 ))
-            
-            if logging.getLogger().isEnabledFor(logging.DEBUG):
-                logging.debug("_onboardUser status code: %s", response.status_code)
-            if response.status_code == 200:
-                try:
-                    """
-                    {
-                    "result": [
-                        {
-                        "uid": "1000331033",
-                        "username": "vuxuser9",
-                        "displayName": "vuxuser9",
-                        "success": "true",
-                        "message": "User created"
-                        }
-                    ],
-                    "_messageCode_": "Success",
-                    "message": "Success"
-                    }
-
-                    {
-                    "result": [
-                        {
-                        "uid": "",
-                        "username": "vuxuser5",
-                        "displayName": "vuxuser5",
-                        "success": "false",
-                        "message": "username_exist"
-                        }
-                    ],
-                    "_messageCode_": "Success",
-                    "message": "Success"
-                    }
-
-                    # utente non esistente, dominio valido, lo crea senza controllare esistenza !!!
-                    {
-                    "result": [
-                        {
-                        "uid": "1000331034",
-                        "username": "anonimo",
-                        "displayName": "anonimo",
-                        "success": "true",
-                        "message": "User created"
-                        }
-                    ],
-                    "_messageCode_": "Success",
-                    "message": "Success"
-                    }
-
-                    # utente NON esistente e dominio NON valido, lo crea senza controllare esistenza !!!
-                    {
-                    "result": [
-                        {
-                        "uid": "1000331035",
-                        "username": "anonimobis",
-                        "displayName": "anonimobis",
-                        "success": "true",
-                        "message": "User created"
-                        }
-                    ],
-                    "_messageCode_": "Success",
-                    "message": "Success"
-                    }
-
-                    """
-                    print("OK")              
-                except JSONDecodeError:
-                    logging.error("_onboardUser error, user %s, response could not be decoded as JSON", userName)
-                    response.failure("Response could not be decoded as JSON")
-                except KeyError:
-                    logging.error("_onboardUser error, user %s, did not contain expected key 'access_token'", userName)
-                    response.failure("Response did not contain expected key 'access_token'")
-            else:
-                print(response.status_code)
-                # print(json.dumps(response.json(), indent = 2 ))
+        access_token : str = None
+        hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
+        powerUser = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_USER_NAME)
+        powerUserPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_USER_PASSWORD)
+        access_token : str = _accessToken(iamUrl, powerUser, powerUserPassword)
+        if access_token != None:
+            zenToken = _cp4baToken(hostUrl, powerUser, access_token)
+            if zenToken != None:
+                params = [{
+                            'username':userName,
+                            'displayName':userName,
+                            'email':userMail,
+                            'authenticator':'external',
+                            'user_roles':['zen_user_role'],
+                            'misc':{
+                                'realm_name':domainName,                        
+                                'extAttributes':{}
+                                }
+                        }]
+                my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer '+zenToken}
+                response = requests.post(url=hostUrl+"/usermgmt/v1/user/bulk", headers=my_headers, json=params, verify=False)
+                if logging.getLogger().isEnabledFor(logging.DEBUG):
+                    logging.debug("_onboardUser status code: %s", response.status_code)
+                if response.status_code == 200:
+                    try:
+                        respJson = response.json()
+                        respResult = respJson["result"][0]
+                        respMsgCode: str = respJson["_messageCode_"]
+                        respMessage = respJson["message"]
+                        resultUserUid = respResult["uid"]
+                        resultUserSuccess = respResult["success"]
+                        resultUserMessage = respResult["message"]
+                        if respMsgCode.lower() == "success":
+                            logging.info("User [%s] onboarded in domain [%s], message[%s], new user id[%s]", userName, domainName, resultUserMessage, resultUserUid )
+                        else:
+                            logging.error("ERROR _onboardUser, username[%s], message code[%s] message[%s] %s", userName, respMsgCode, respMessage, resultUserMessage)
+                    except JSONDecodeError:
+                        logging.error("_onboardUser error, user %s, response could not be decoded as JSON", userName)
+                        response.failure("Response could not be decoded as JSON")
+                    except KeyError:
+                        logging.error("_onboardUser error, user %s, did not contain expected key 'access_token'", userName)
+                        response.failure("Response did not contain expected key 'access_token'")
+                else:
+                    logging.error("_userOnboard error, status code: %d, messge: %s", response.status_code, response.text)
+    else:
+        logging.error("_userOnboard error, wrong parameter values userName[%s], userMail[%s] domainName[%s]", userName, userMail, domainName)
 
 
-def testUserOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, userName, domainName):
-    _userOnboard(bpmEnvironment, userName, domainName)
+def testUserOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, userName, userMail, domainName):
+    _userOnboard(bpmEnvironment, userName, userMail, domainName)
 
 def main(argv):
     logger = logging.getLogger('root')
@@ -223,16 +147,16 @@ def main(argv):
 
     bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
     cmdLineMgr = clpm.CommandLineParamsManager()
-    cmdLineMgr.builDictionary(argv, "e:u:d:", ["environment=","user=","domain="])
+    cmdLineMgr.builDictionary(argv, "e:u:m:d:", ["environment=","user=","mail=","domain="])
     if cmdLineMgr.isExit() == False:
         ok = True
         _fullPathBawEnv = cmdLineMgr.getParam("e", "environment")
         userName = cmdLineMgr.getParam("u", "user")
+        userMail = cmdLineMgr.getParam("m", "mail")
         domainName = cmdLineMgr.getParam("d", "domain")
-
         bpmEnvironment.loadEnvironment(_fullPathBawEnv)
         bpmEnvironment.dumpValues()
-        testUserOnboard(bpmEnvironment, userName, domainName)
+        testUserOnboard(bpmEnvironment, userName, userMail, domainName)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
