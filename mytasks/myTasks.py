@@ -93,8 +93,10 @@ class BpmTask:
 
     def getActions(self):
         return self.actions
+    
     def setActions(self, actions):
         self.actions = actions
+
     def hasAction(self, action):
         for act in self.actions:
             if act == action:
@@ -103,13 +105,16 @@ class BpmTask:
     
     def setTaskData(self, data):
         self.data = data
+
     def getTaskData(self):
         return self.data
 
     def setFederatedSystem(self, fedSys):
         self.federatedSystem = fedSys
+
     def getFederatedSystem(self):
         return self.federatedSystem
+
     def isFederatedSystem(self):
         return self.federatedSystem != None
 
@@ -227,15 +232,15 @@ class RestResponseManager:
     contextName = None
     response = None
     userName = None
-    taskId = None
+    bpmTask = None
     ignoreCodes = None
     js = None
 
-    def __init__(self, contextName, response, userName, taskId, ignoreCodes):
+    def __init__(self, contextName, response, userName, bpmTask, ignoreCodes):
         self.contextName = contextName
         self.response = response
         self.userName = userName
-        self.taskId = taskId
+        self.bpmTask = bpmTask
         self.ignoreCodes = ignoreCodes
         self.js = {}
         try:
@@ -250,15 +255,25 @@ class RestResponseManager:
             for rc in ignoreCodes:
                 if response.status_code == rc:
                     response.success()
+            taskId = ""
+            taskSubject = ""
+            taskData = None
+            if self.bpmTask != None:
+                taskId = self.bpmTask.getId()
+                taskSubject = self.bpmTask.getSubject()
+                taskData = self.bpmTask.getTaskData()
             try:
                 data = self.js["Data"]
                 bpmErrorMessage = data["errorMessage"]
-                logging.error("%s error, user %s, status %d, error %s", self.contextName, self.userName, self.response.status_code, bpmErrorMessage)
+                logging.error("%s error, user %s, task %s, subject '%s', status %d, error %s", self.contextName, self.userName, taskId, taskSubject, self.response.status_code, bpmErrorMessage)
+                if taskData != None:
+                    logging.error("%s error, user %s, task %s, payload %s", self.contextName, self.userName, taskId, json.dumps(taskData))
+
             except JSONDecodeError:
-                logging.error("%s error, user %s, response could not be decoded as JSON", self.contextName, self.user.userCreds.getName())
+                logging.error("%s error, user %s, task %s, subject '%s', response could not be decoded as JSON", self.contextName, self.user.userCreds.getName(), taskId, taskSubject)
                 self.response.failure("Response could not be decoded as JSON")
             except KeyError:
-                logging.error("%s error, user %s, response did not contain expected key 'Data', 'errorMessage'", self.contextName, self.user.userCreds.getName())
+                logging.error("%s error, user %s, task %s, subject '%s', response did not contain expected key 'Data', 'errorMessage'", self.contextName, self.user.userCreds.getName(), taskId, taskSubject)
                 self.response.failure("Response did not contain expected key 'Data', 'errorMessage'")
 
     def getJson(self):
@@ -519,8 +534,8 @@ def isActionEnabled(self, key):
 
 class SequenceOfBpmTasks(SequentialTaskSet):
         
-    def _buildPayload(self, taskSubject):
-        return self.user._payload(taskSubject)
+    def _buildPayload(self, taskSubject, preExistPayload = None):
+        return self.user._payload(taskSubject, preExistPayload)
 
     def bawLogin(self):        
         if self.user.loggedIn == False:
@@ -584,11 +599,18 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                             logging.debug("User[%s] - bawCompleteTask TASK [%s] DETAIL BEFORE COMPLETE actions[%s] variables[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
 
                         if bpmTask.hasAction("ACTION_COMPLETE"):
-                            payloadInfos = self._buildPayload(bpmTask.getSubject())
-                            payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
-                            logging.info("User[%s] - bawCompleteTask working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
-                            if _taskComplete(self, bpmTask, payload) == True:
-                                logging.info("User[%s] - bawCompleteTask - completed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+
+                            if _taskGetData(self, bpmTask) == True:
+
+                                payloadInfos = self._buildPayload(bpmTask.getSubject(), bpmTask.getTaskData() )
+
+                                payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
+                                logging.info("User[%s] - bawCompleteTask working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                                if _taskComplete(self, bpmTask, payload) == True:
+                                    logging.info("User[%s] - bawCompleteTask - completed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                            else:
+                                if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                    logging.debug("User[%s] - bawCompleteTask TASK [%s] ERROR, cannot _taskGetData, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
 
                         else:
                             if logging.getLogger().isEnabledFor(logging.DEBUG):
@@ -630,14 +652,22 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                             logging.debug("User[%s] - bawSetTaskData TASK [%s] DETAIL BEFORE SET DATA actions[%s] data[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), json.dumps(bpmTask.getTaskData(), indent = 2))
 
                         if bpmTask.hasAction("ACTION_SETTASK"):
-                            payloadInfos = self._buildPayload(bpmTask.getSubject())
-                            payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
-                            logging.info("User[%s] - bawSetTaskData working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
-                            if _taskSetData(self, bpmTask, payload) == True:
-                                logging.info("User[%s] - bawSetTaskData - set data and postponed on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
-                            if logging.getLogger().isEnabledFor(logging.DEBUG):
-                                logging.debug("User[%s] - bawSetTaskData TASK [%s] UPDATED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
+                            if _taskGetData(self, bpmTask) == True:
+
+                                payloadInfos = self._buildPayload(bpmTask.getSubject(), bpmTask.getTaskData())
+
+                                payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
+                                logging.info("User[%s] - bawSetTaskData working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                                if _taskSetData(self, bpmTask, payload) == True:
+                                    logging.info("User[%s] - bawSetTaskData - set data and postponed on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+
+                                if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                    logging.debug("User[%s] - bawSetTaskData TASK [%s] UPDATED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
+                            else:
+                                if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                    logging.debug("User[%s] - bawSetTaskData TASK [%s] ERROR, cannot _taskGetData, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
+                        
                         else:
                             if logging.getLogger().isEnabledFor(logging.DEBUG):
                                 logging.debug("User[%s] - bawSetTaskData TASK [%s] HAS NO ACTION_SETTASK, available actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())

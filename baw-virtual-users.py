@@ -43,8 +43,8 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     #----------------------------------------
     # user functions
 
-    def _payload(self, subject):
-        return bpmDynamicModule.buildPayloadForSubject(subject)
+    def _payload(self, subject, preExistPayload = None):
+        return bpmDynamicModule.buildPayloadForSubject(subject, preExistPayload)
 
     def getEnvValue(self, key):
         return bpmEnvironment.getValue(key)
@@ -63,7 +63,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
             try:
                 taskSubjects = dictionary[userId]
                 for t in taskSubjects:
-                    if taskSubjectText.find(t) != -1:
+                    if bpmDynamicModule.isMatchingTaskSubject(taskSubjectText, t) != -1:
                         found = True
                         break
             except:

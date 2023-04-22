@@ -1,6 +1,7 @@
 
+- soluzione per identificare payload dei task da subject e tipologia/nome task con processo di appartenenza 
 
-- soluzione per identificare payload dei task da subject e tipologia/nome task
+- aggiungere gruppo ldap a Team applicazione
 
 - verifica funzionalità senza portale federato (traditional)
 -- login, query task list, url da task list, etc...

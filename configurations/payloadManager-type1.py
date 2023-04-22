@@ -5,12 +5,23 @@ import random
 
 #=============================
 # the funcion 'buildPayloadForSubject' must be present in any payload manager
+# it must return a Boolean, True when taskSubjectText match the subjext in a dictionary
+# the default logic is: search as substring
+# reimplement it as from your needs
+#=============================
+
+def isMatchingTaskSubject(taskSubjectText, subjectFromUserDictionary):
+    return taskSubjectText.find(subjectFromUserDictionary) != -1
+
+#=============================
+# the funcion 'buildPayloadForSubject' must be present in any payload manager
 # it must return a dict() object with keys
 # jsonObject = your payload in json format
 # thinkTime = your particular think thime for the subject in input; if the returned value is -1 the global think thime will be used
+# reimplement it as from your needs
 #=============================
 
-def buildPayloadForSubject(text):
+def buildPayloadForSubject(text, preExistPayload = None):
     retObject = dict()
     retObject["jsonObject"] = {}
     retObject["thinkTime"] = -1
@@ -31,7 +42,16 @@ def buildPayloadForSubject(text):
 
     if text.find('Validate Data [CCTR]') != -1:
         rndVal : int = random.randint(50, 150) + 1
-        retObject["jsonObject"] =  {'inputData': {'requestId': 'reqValidated', 'counter': rndVal}}
+
+        if preExistPayload != None:
+            # update prev values
+            inputData = preExistPayload["inputData"]
+            inputData["counter"] = rndVal
+            retObject["jsonObject"] = {'inputData': inputData} 
+        else:
+            # new values
+            retObject["jsonObject"] =  {'inputData': {'requestId': 'reqValidated', 'counter': rndVal}}
+
         retObject["thinkTime"] = random.randint(0, 5)
 
     """
@@ -61,8 +81,18 @@ def buildPayloadForSubject(text):
                 authorize = True
 
         rndVal : int = random.randint(50, 150) + 1
-        retObject["jsonObject"] =  {'inputData': {'requestId': 'reqValidated', 'counter': rndVal},
-                                    'authorizationData': {'authorized': authorize, 'comments': '', 'review': review}}
+
+        if preExistPayload != None:
+            # update prev values
+            inputData = preExistPayload["inputData"]
+            inputData["counter"] = rndVal
+            authorizationData = preExistPayload["authorizationData"]
+            authorizationData["authorized"] = authorize
+            authorizationData["review"] = review
+            retObject["jsonObject"] =  {'inputData': inputData, 'authorizationData': authorizationData}
+        else:
+            retObject["jsonObject"] =  {'inputData': {'requestId': 'reqValidated', 'counter': rndVal},
+                                        'authorizationData': {'authorized': authorize, 'comments': '', 'review': review}}
 
         retObject["thinkTime"] = random.randint(0, 5)
 
