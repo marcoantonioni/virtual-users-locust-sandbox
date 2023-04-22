@@ -2,15 +2,6 @@
 
 - soluzione per identificare payload dei task da subject e tipologia/nome task
 
-- tool cp4ba onboarding automatico
-- rest api per associazione gruppi idp a team applicazione
-    https://www.ibm.com/docs/en/baw/22.x?topic=calls-rest-api-authorization-user-group-team-actions
-    https://www.ibm.com/docs/en/baw/22.x?topic=apis-authorization-control-runtime-rest-api-calls
-    https://www.ibm.com/docs/en/baw/22.x?topic=snapshots-configuring-runtime-teams
-
-
-    !!! cercare api ricerca utente in IDP
-
 - verifica funzionalità senza portale federato (traditional)
 -- login, query task list, url da task list, etc...
 

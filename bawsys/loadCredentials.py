@@ -1,6 +1,7 @@
 
 import logging,sys,csv,random
 import bawsys.loadEnvironment as bpmEnv
+import bawsys.bawSystem as bawSys
 
 #--------------------------------------------
 # global vars
@@ -42,8 +43,26 @@ def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment ):
             userName = item['NAME'].strip()
             userPassword = item['PASSWORD'].strip()
             userEmail = item['EMAIL'].strip()
-            temp_user_credentials.append(UserCredentials(userName, userPassword, userEmail))
-            logging.debug('User %s, password %s', userName, userPassword, userEmail)
+
+            usersList = []
+            rangeOfUsers = bawSys.usersRange( userName )
+            if rangeOfUsers != None:
+                userFrom = rangeOfUsers["infoFrom"]
+                userTo = rangeOfUsers["infoTo"]
+                idxFrom = userFrom["number"]
+                idxTo = userTo["number"]
+                namePrefix = userFrom["name"]
+                totUsers = (idxTo - idxFrom) + 1
+                i = 0
+                while idxFrom <= idxTo:
+                    usersList.append(namePrefix+str(idxFrom))
+                    idxFrom += 1                    
+            else:
+                usersList.append(userName)
+
+            for usr in usersList:
+                temp_user_credentials.append(UserCredentials(usr, userPassword, userEmail))
+                logging.debug('User %s, password %s', usr, userPassword, userEmail)
     
     hasItems = True
     while hasItems:

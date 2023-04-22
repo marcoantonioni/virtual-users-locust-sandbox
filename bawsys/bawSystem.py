@@ -1,6 +1,46 @@
 
-import requests, json
+import requests, json, logging, sys, re
 import bawsys.loadEnvironment as bpmEnv
+
+def getUserNumber( userId : str ):
+    # se primo carattere numero errore
+    if (userId[0] >= '0' and userId[0] <= '9') == True:
+        return None
+    
+    # se ultimo carattere non numero errore
+    lastChar = userId[len(userId)-1]
+    if (lastChar >= '0' and lastChar <= '9') == False:
+        return None
+    
+    matchNumbers = re.search(r'\d+', userId)
+    matchStart = matchNumbers.start()
+    userName = userId[0:matchStart]
+    userNum = int ( matchNumbers.group() )
+    return {'name': userName, 'number': userNum}
+
+def usersRange( userId: str ):
+    rangeOfUsers = None
+    if userId.find("..") != -1:
+        uSegs = userId.split("..")
+        if len(uSegs) == 2:
+            rangeOfUsers = { 'min': -1, 'max': -1}
+            infoFrom = getUserNumber( uSegs[0] )
+            infoTo = getUserNumber( uSegs[1] )
+            if infoFrom["name"] == infoTo["name"]:
+                if infoFrom["number"] <= infoTo["number"]:                
+                    rangeOfUsers = {'infoFrom': infoFrom, 'infoTo': infoTo}
+                else:
+                    logging.error("ERROR: wrong sequence for user number in range definition, error in %s", userId)
+                    sys.exit()
+            else:
+                logging.error("ERROR: wrong user names in range definition, error in %s", userId)
+                sys.exit()
+
+        else:
+            logging.error("ERROR: wrong user range definition, error in %s", userId)
+            sys.exit()
+        pass
+    return rangeOfUsers;
 
 class BpmExposedProcessInfo:
     def __init__(self, appName, appAcronym, processName, appId, appBpdId, startUrl):

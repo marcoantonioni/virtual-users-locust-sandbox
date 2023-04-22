@@ -1,7 +1,9 @@
 
 # test: python ./mytasks/loadUserTaskSubjects.py  | sed "s/'/\"/g" | jq .
 
-import logging,csv
+import logging, csv, sys, re
+import bawsys.loadEnvironment as bpmEnv
+import bawsys.bawSystem as bawSys
 
 #--------------------------------------------
 def setupTaskSubjects( fullPathNameTaskSubjects ):
@@ -26,6 +28,21 @@ def setupUserTaskSubjects( fullPathNameUserTaskSubjects ):
         for item in dictReader:
             userId = item['USER'].strip()
             if userId != "":
+                usersList = []
+                rangeOfUsers = bawSys.usersRange( userId )
+                if rangeOfUsers != None:
+                    userFrom = rangeOfUsers["infoFrom"]
+                    userTo = rangeOfUsers["infoTo"]
+                    idxFrom = userFrom["number"]
+                    idxTo = userTo["number"]
+                    namePrefix = userFrom["name"]
+                    totUsers = (idxTo - idxFrom) + 1
+                    i = 0
+                    while idxFrom <= idxTo:
+                        usersList.append(namePrefix+str(idxFrom))
+                        idxFrom += 1                    
+                else:
+                    usersList.append(userId)
                 taskSubjects = []
                 for idx in range(fieldNamesCount-1):
                     try:
@@ -34,7 +51,9 @@ def setupUserTaskSubjects( fullPathNameUserTaskSubjects ):
                         taskSubjects.append(taskSubjectText)
                     except:
                         pass
-                uts[userId] = taskSubjects
+
+                for uid in usersList:
+                    uts[uid] = taskSubjects
     return uts
 
 def createUserSubjectsDictionary(userTaskSubjects, taskSubjects):
@@ -64,12 +83,20 @@ class BpmUserSubjects:
 
 #----------------------------------
 """
+
 def main():
-    tasks_subjects = setupTaskSubjects("./configurations/TS-TEST1.csv")
-    user_task_subjects = setupUserTaskSubjects("./configurations/US-TS-TEST1.csv")
-    userSubjectsDictionary = createUserSubjectsDictionary(user_task_subjects, tasks_subjects)
-    print(userSubjectsDictionary)
+    #tasks_subjects = setupTaskSubjects("./configurations/TS-TEST1.csv")
+    #user_task_subjects = setupUserTaskSubjects("./configurations/US-TS-TEST1.csv")
+    #userSubjectsDictionary = createUserSubjectsDictionary(user_task_subjects, tasks_subjects)
+    #print(userSubjectsDictionary)
+
+    print( usersRange( "vuxuser1..vuxuser100" ) )
+    print( usersRange( "vuxuser24..vuxuser32" ) )
+    print( usersRange( "vuxuser43" ) )
+    print( usersRange( "vuxuser10..vuxser3" ) )
+    print( usersRange( "vuxuser1..vuuser100" ) )
 
 if __name__ == "__main__":
     main()
+
 """
