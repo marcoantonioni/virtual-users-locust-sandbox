@@ -12,6 +12,8 @@ class LdifConfiguration:
     keyLDIF_USER_PASSWORD : str = "LDIF_USER_PASSWORD"
     keyLDIF_USERS_TOTAL : str = "LDIF_USERS_TOTAL"
 
+    keyLDIF_GROUP_ALL_USER_PREFIX: str = "LDIF_GROUP_ALL_USER_PREFIX"
+
     # No spaces in group name, userOffset and totNextUsers are integers
     # userOffset: first user at offset (from 0 to LDIF_LDIF_USERS_TOTAL - 1 from the list of all users 
     # totNextUsers: how match users in the group following the first user at userOffset

@@ -36,6 +36,8 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     min_think_time : int = 0
     max_think_time : int = 1  
     loggedIn : bool = False
+    runningAgainstTraditional = False
+    cookieTraditional = None
     authorizationBearerToken : str = None    
     userCreds : bpmCreds.UserCredentials = None
     selectedUserActions = None

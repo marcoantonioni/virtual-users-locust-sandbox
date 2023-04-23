@@ -99,9 +99,8 @@ class LdifGenerator:
         self.allGroups.append(group)
         self.allGroupsByName[groupName] = group
 
-    def buildGroupInfo(self, ldifDomain: str, ldifGroupsInfo : str):
-        
-        self.createGroup("VUSAllUsers-"+ldifDomain, 0, len(self.allUsers))
+    def buildGroupInfo(self, ldifDomain: str, ldifGroupsInfo : str, ldifAllUsersGroupPrefix: str):
+        self.createGroup(ldifAllUsersGroupPrefix+"-"+ldifDomain, 0, len(self.allUsers))
 
         ldifGroupsInfo = ldifGroupsInfo.strip()
         ldifGroupsInfo = ldifGroupsInfo.replace(" ", "")
@@ -192,10 +191,11 @@ def createLdif(argv):
             ldifUserPassword = ldifCfg.getValue(ldifCfg.keyLDIF_USER_PASSWORD)
             ldifUserTotal = int(ldifCfg.getValue(ldifCfg.keyLDIF_USERS_TOTAL).strip())
             ldifGroupsInfo = ldifCfg.getValue(ldifCfg.keyLDIF_GROUPS)
+            ldifAllUsersGroupPrefix = ldifCfg.getValue(ldifCfg.keyLDIF_GROUP_ALL_USER_PREFIX)
 
             ldifGenerator: LdifGenerator = LdifGenerator(ldifDomain, ldifDomainSuffix, ldifUserPrefix, ldifUserPassword)
             ldifGenerator.createUsers(ldifUserTotal)
-            ldifGenerator.buildGroupInfo(ldifDomain, ldifGroupsInfo)
+            ldifGenerator.buildGroupInfo(ldifDomain, ldifGroupsInfo, ldifAllUsersGroupPrefix)
 
             ldifGenerator.generateLdif(_fullOutputPathLdif)
             ldifGenerator.generateUserCredentials(_fullOutputPathUsersCredentials)

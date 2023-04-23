@@ -149,7 +149,8 @@ class BpmTaskList:
     def getPreparedTask( self, idx ):
         bpmTask : BpmTask = self.getTasks()[idx];
         if bpmTask != None:
-            bpmTask.setFederatedSystem(self.bpmFederatedSystems[bpmTask.getSystemID()])
+            if bpmTask.getSystemID() != "":
+                bpmTask.setFederatedSystem(self.bpmFederatedSystems[bpmTask.getSystemID()])
         return bpmTask
     
     def getPreparedTaskRandom(self):
@@ -243,10 +244,13 @@ class RestResponseManager:
         self.bpmTask = bpmTask
         self.ignoreCodes = ignoreCodes
         self.js = {}
+        self.jsData = None
+        self.isJsObj = False
         try:
             self.js = response.json()
+            self.isJsObj = True
         except:
-            logging.error("%s status code: %s, empty/not-valid json content", contextName, response.status_code)
+            logging.error("%s, status code [%s], error text [%s], empty/not-valid json content", contextName, response.status_code, response.text)
 
         if logging.getLogger().isEnabledFor(logging.DEBUG):
             logging.debug("%s status code: %s", contextName, response.status_code)
@@ -262,19 +266,34 @@ class RestResponseManager:
                 taskId = self.bpmTask.getId()
                 taskSubject = self.bpmTask.getSubject()
                 taskData = self.bpmTask.getTaskData()
-            try:
-                data = self.js["Data"]
-                bpmErrorMessage = data["errorMessage"]
-                logging.error("%s error, user %s, task %s, subject '%s', status %d, error %s", self.contextName, self.userName, taskId, taskSubject, self.response.status_code, bpmErrorMessage)
-                if taskData != None:
-                    logging.error("%s error, user %s, task %s, payload %s", self.contextName, self.userName, taskId, json.dumps(taskData))
+            data = None
+            bpmErrorMessage = self.response.text
+            if self.isJsObj == True:
+                try:
+                    try:
+                        data = self.js["Data"]
+                        bpmErrorMessage = data["errorMessage"]
+                    except KeyError:
+                        pass
+                    logging.error("%s error, user %s, task %s, subject '%s', status %d, error %s", self.contextName, self.userName, taskId, taskSubject, self.response.status_code, bpmErrorMessage)
+                    if taskData != None:
+                        logging.error("%s error, user %s, task %s, payload %s", self.contextName, self.userName, taskId, json.dumps(taskData))
 
-            except JSONDecodeError:
-                logging.error("%s error, user %s, task %s, subject '%s', response could not be decoded as JSON", self.contextName, self.user.userCreds.getName(), taskId, taskSubject)
-                self.response.failure("Response could not be decoded as JSON")
+                except JSONDecodeError:
+                    logging.error("%s error, user %s, task %s, subject '%s', response could not be decoded as JSON", self.contextName, self.userName, taskId, taskSubject)
+                    self.response.failure("Response could not be decoded as JSON")
+                except KeyError:
+                    logging.error("%s error, user %s, task %s, subject '%s', response did not contain expected key 'Data', 'errorMessage'", self.contextName, self.userName, taskId, taskSubject)
+                    self.response.failure("Response did not contain expected key 'Data', 'errorMessage'")
+        else:
+            try:
+                self.jsData = self.js["Data"]
             except KeyError:
-                logging.error("%s error, user %s, task %s, subject '%s', response did not contain expected key 'Data', 'errorMessage'", self.contextName, self.user.userCreds.getName(), taskId, taskSubject)
-                self.response.failure("Response did not contain expected key 'Data', 'errorMessage'")
+                try:
+                    self.jsData = self.js["data"]
+                except KeyError:
+                    pass
+                pass
 
     def getJson(self):
         return self.js
@@ -284,12 +303,13 @@ class RestResponseManager:
     
     def getObject(self, key: str):
         try:
-            return self.js[key]
+            #return self.js[key]
+            return self.jsData[key]
         except JSONDecodeError:
-            logging.error("%s error, user %s, response could not be decoded as JSON", self.contextName, self.user.userCreds.getName())
+            logging.error("%s error, user %s, response could not be decoded as JSON", self.contextName, self.userName)
             self.response.failure("Response could not be decoded as JSON")
         except KeyError:
-            logging.error("%s error, user %s, response did not contain expected key '%s'", self.contextName, self.user.userCreds.getName(), key)
+            logging.error("%s error, user %s, response did not contain expected key '%s'", self.contextName, self.userName, key)
             self.response.failure("Response did not contain expected key '"+key+"'")
         return None
     
@@ -310,7 +330,11 @@ def _buildTaskList(self, tasksCount, tasksList, interaction):
         bpmStatus = bpmTask["STATUS"]
         bpmSubject = bpmTask["TAD_DISPLAY_NAME"]
         bpmRole = bpmTask["ASSIGNED_TO_ROLE_DISPLAY_NAME"]
-        bpmSystemID = bpmTask["systemID"]
+        bpmSystemID = ""
+        try:
+            bpmSystemID = bpmTask["systemID"]
+        except:
+            pass
         if bpmRole != None and isClaiming == True:             
             if self.user.isSubjectForUser(bpmSubject) == True:
                 bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole, bpmSystemID))
@@ -331,8 +355,7 @@ def _listTasks(self, interaction, size):
                   'aliases': [], 
                   'interaction': interaction, 
                   'size': size }
-        authValue : str = "Bearer "+self.user.authorizationBearerToken
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+
         constParams : str = "calcStats=false&includeAllIndexes=false&includeAllBusinessData=false&avoidBasicAuthChallenge=true"
         offset = "0"
         processAppName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
@@ -341,25 +364,37 @@ def _listTasks(self, interaction, size):
         taskListFederated = False
         taskListStrategy = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_TASK_LIST_STRATEGY)
         
+        #my_cookies = None
+        # self.user.runningAgainstTraditional == False
         if taskListStrategy == bpmEnv.BpmEnvironment.valBAW_TASK_LIST_STRATEGY_FEDERATEDPORTAL:
             taskListFederated = True
             uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
+            authValue : str = "Bearer "+self.user.authorizationBearerToken
+            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
         else:
             baseUri = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
             if baseUri == None:
                 baseUri = ""
             uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
+            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+            #my_cookies = self.user.cookieTraditional
 
         hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&processAppName="+processAppName
         
-        with self.client.put(url=fullUrl, headers=my_headers, data=json.dumps(params), catch_response=True) as response:
+        # print(fullUrl)
+        # basic = HTTPBasicAuth('user', 'pass')
+
+        # !!!!!!!!!!!!!! test su ambiente container
+        with self.client.put(url=fullUrl, headers=my_headers, auth=(self.user.userCreds.getName(), self.user.userCreds.getPassword()), data=json.dumps(params), catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_listTasks", response, self.user.userCreds.getName(), None, [401, 409])
 
             if restResponseManager.getStatusCode() == 200:
                 size = restResponseManager.getObject("size")
                 items = restResponseManager.getObject("items")
+
+                # print(json.dumps(items, indent=2))
 
                 if logging.getLogger().isEnabledFor(logging.DEBUG):
                     logging.debug("_listTasks [%s] user %s, size %d, numtasks %d, response %s", interaction, self.user.userCreds.getName(), size, len(items), json.dumps(restResponseManager.getJson(), indent = 2))
@@ -543,19 +578,34 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 uName = "n/a"
                 if self.user.userCreds != None:
 
-                    userName : str = self.user.userCreds.getName()
-                    userPassword : str = self.user.userCreds.getPassword()
-                    iamUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
-                    hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+                    if bpmSys._isBawTraditional(self.user.getEnvironment()):
 
-                    access_token : str = _accessToken(self, iamUrl, userName, userPassword)
-                    if access_token != None:
-                        self.user.authorizationBearerToken = _cp4baToken(self, hostUrl, userName, access_token)
-                        if self.user.authorizationBearerToken != None:
+                        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+                        userName = self.user.userCreds.getName()
+                        userPassword = self.user.userCreds.getPassword()
+
+                        self.user.cookieTraditional = bpmSys._loginTraditional(self.user.getEnvironment(), hostUrl, userName, userPassword)
+
+                        if self.user.cookieTraditional != None:
+                            self.user.runningAgainstTraditional = True
                             self.user.loggedIn = True
                             logging.info("User[%s] - bawLogin - logged in", userName)
                         else:
                             logging.error("User[%s] - bawLogin - failed login ***ERROR***", userName)
+                    else:
+                        userName : str = self.user.userCreds.getName()
+                        userPassword : str = self.user.userCreds.getPassword()
+                        iamUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
+                        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+
+                        access_token : str = _accessToken(self, iamUrl, userName, userPassword)
+                        if access_token != None:
+                            self.user.authorizationBearerToken = _cp4baToken(self, hostUrl, userName, access_token)
+                            if self.user.authorizationBearerToken != None:
+                                self.user.loggedIn = True
+                                logging.info("User[%s] - bawLogin - logged in", userName)
+                            else:
+                                logging.error("User[%s] - bawLogin - failed login ***ERROR***", userName)
         pass
 
     def bawClaimTask(self):

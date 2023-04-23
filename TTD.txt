@@ -1,9 +1,13 @@
 
-- aggiungere gruppo ldap a Team applicazione
 
 - verifica funzionalità senza portale federato (traditional)
+-- baw.standalone.net (8.6.30022.10)
 -- login, query task list, url da task list, etc...
 
+- tool per lettura payload istanze processo completate/terminate/failed
+-- export record formato json per analisi risultato
+
+- ??? aggiungere gruppo ldap a Team applicazione
 
 #----------------------------------
 

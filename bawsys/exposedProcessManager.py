@@ -50,13 +50,33 @@ class BpmExposedProcessManager:
     def LoadProcessInstancesInfos(self, bpmEnvironment : bpmEnv.BpmEnvironment):
         iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
         hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        cp4ba_token : str = bpmSys._loginZen(bpmEnvironment, iamUrl, hostUrl)
-        if cp4ba_token != None:
-            authValue : str = "Bearer "+cp4ba_token
-            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        token = None
+
+        if bpmSys._isBawTraditional(bpmEnvironment):
+            userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
+            userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
+            token = bpmSys._loginTraditional(bpmEnvironment, hostUrl, userName, userPassword) 
+        else:
+            token = bpmSys._loginZen(bpmEnvironment, iamUrl, hostUrl)
+        
+        if token != None:
+            response = None
             baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
             urlExposed = hostUrl+baseUri+"/rest/bpm/wle/v1/exposed/process?excludeProcessStartUrl=false"
-            response = requests.get(url=urlExposed, headers=my_headers, verify=False)
+
+            my_headers = None
+            if bpmSys._isBawTraditional(bpmEnvironment):
+                my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+                response = requests.get(url=urlExposed, headers=my_headers, cookies=token, verify=False)
+            else:
+                # authValue : str = "Bearer "+token
+                
+                #???? provare uso cookies con valore None
+                # my_cookies = None
+                # cookies=my_cookies, 
+                my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer '+token }
+                response = requests.get(url=urlExposed, headers=my_headers, verify=False)
+            
             if response.status_code == 200:
                 data = response.json()["data"]
                 exposedItemsList = data["exposedItemsList"]
@@ -66,14 +86,18 @@ class BpmExposedProcessManager:
                 appProcessNames = processNames.split(",")
                 listOfProcessInfos = []
                 for expIt in exposedItemsList:
-                    if appProcName == expIt["processAppName"] and appProcAcronym == expIt["processAppAcronym"]:
-                        if self.appId == None:
-                            self.appId = expIt["processAppID"] 
-                            self.bpdId = expIt["itemID"]
-                        processName = expIt["display"]                        
-                        for pn in appProcessNames:
-                            if pn == processName:                        
-                              listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(appProcName, appProcAcronym, processName, expIt["processAppID"], expIt["itemID"], expIt["startURL"]) )
+                    try:
+                        if appProcName == expIt["processAppName"] and appProcAcronym == expIt["processAppAcronym"]:
+                            if self.appId == None:
+                                self.appId = expIt["processAppID"] 
+                                self.bpdId = expIt["itemID"]
+                            processName = expIt["display"]                        
+                            for pn in appProcessNames:
+                                if pn == processName:                        
+                                    listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(appProcName, appProcAcronym, processName, expIt["processAppID"], expIt["itemID"], expIt["startURL"]) )
+                    except KeyError:
+                        pass
+
                 for appProcInfo in listOfProcessInfos:
                     key = appProcInfo.getAppProcessName()+"/"+appProcInfo.getAppName()+"/"+appProcInfo.getAppAcronym()
                     self.addProcessInfos(key, appProcInfo)

@@ -1,6 +1,7 @@
 
-import requests, json, logging, sys, re
+import requests, json, logging, sys, re, base64
 import bawsys.loadEnvironment as bpmEnv
+from requests.auth import HTTPBasicAuth
 
 def getUserNumber( userId : str ):
     # se primo carattere numero errore
@@ -69,6 +70,13 @@ class BpmExposedProcessInfo:
     def getStartUrl(self):
         return self.startUrl
 
+def _isBawTraditional( bpmEnvironment : bpmEnv.BpmEnvironment ):
+    runTraditional = True
+    runMode = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_TASK_LIST_STRATEGY)    
+    if runMode == bpmEnv.BpmEnvironment.valBAW_TASK_LIST_STRATEGY_FEDERATEDPORTAL:
+        runTraditional = False
+    return runTraditional
+
 def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, iamUrl: str, hostUrl: str):
     userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
     userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
@@ -90,4 +98,20 @@ def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, iamUrl: str, hostUrl: str)
         if response.status_code == 200:
             token = response.json()["accessToken"]
             return token
+    return None
+
+def _loginTraditional(bpmEnvironment : bpmEnv.BpmEnvironment, hostUrl: str, userName: str, userPassword: str):
+    if hostUrl.endswith('/'):
+        hostUrl = hostUrl[:-1]
+    baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+    if baseUri == None:
+        baseUri = ""
+    my_headers = {'Accept': 'application/json'}    
+    fullUrl = hostUrl+baseUri+"/rest/bpm/wle/v1/user/current?includeInternalMemberships=false&includeEditableUserPreferences=false&parts=none"
+    response = requests.get(url=fullUrl, headers=my_headers, verify=False, auth = HTTPBasicAuth(userName, userPassword) )
+    if response.status_code == 200:
+        return response.cookies
+    else:
+        logging.error("_loginTraditional", response.status_code, response.text)
+        
     return None
