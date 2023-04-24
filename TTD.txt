@@ -4,6 +4,8 @@
 -- baw.standalone.net (8.6.30022.10)
 -- login, query task list, url da task list, etc...
 
+- policy sequenza login utenze (SORTED_FIFO | SORTED_LIFO | RANDOM)
+
 - tool per lettura payload istanze processo completate/terminate/failed
 -- export record formato json per analisi risultato
 

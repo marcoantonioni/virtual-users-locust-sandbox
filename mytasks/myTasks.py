@@ -338,10 +338,19 @@ def _buildTaskList(self, tasksCount, tasksList, interaction):
 
     return BpmTaskList(len(bpmTaksItems), bpmTaksItems)
 
+
 def _listTasks(self, interaction, size):
     if self.user.loggedIn == True:
 
+        # set constants
+        uriBaseTaskList = ""
+        taskListFederated = False
+        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        processAppName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
+
         # query task list
+        offset = "0"
+        constParams : str = "calcStats=false&includeAllIndexes=false&includeAllBusinessData=false&avoidBasicAuthChallenge=true"
         params = {'organization': 'byTask',
                   'shared': 'false',
                   'conditions': [{ 'field': 'taskActivityType', 'operator': 'Equals', 'value': 'USER_TASK' }],
@@ -350,32 +359,20 @@ def _listTasks(self, interaction, size):
                   'interaction': interaction, 
                   'size': size }
 
-        constParams : str = "calcStats=false&includeAllIndexes=false&includeAllBusinessData=false&avoidBasicAuthChallenge=true"
-        offset = "0"
-        processAppName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
-
-        uriBaseTaskList = ""
-        taskListFederated = False
-        taskListStrategy = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_TASK_LIST_STRATEGY)
-
+        # headers and uthentication
         basicAuth = None        
-        #my_cookies = None
-        # self.user.runningAgainstTraditional == False
-        if taskListStrategy == bpmEnv.BpmEnvironment.valBAW_TASK_LIST_STRATEGY_FEDERATEDPORTAL:
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        if self.user.runningAgainstFederatedPortal == True:
             taskListFederated = True
             uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
-            authValue : str = "Bearer "+self.user.authorizationBearerToken
-            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
         else:
             baseUri = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
             if baseUri == None:
                 baseUri = ""
             uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
-            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
             basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
-            #my_cookies = self.user.cookieTraditional
 
-        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&processAppName="+processAppName
 
         with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, data=json.dumps(params), catch_response=True) as response:
@@ -478,12 +475,21 @@ def _taskSetData(self, bpmTask, payload):
 
 def _taskClaim(self, bpmTask : BpmTask):
     if self.user.loggedIn == True:
-        authValue : str = "Bearer "+self.user.authorizationBearerToken
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+
+        # ??? authValue : str = "Bearer "+self.user.authorizationBearerToken
+        # my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+
+        # headers and uthentication
+        basicAuth = None        
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        if self.user.runningAgainstFederatedPortal == True:
+            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+        else:
+            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=assign&toMe=true&parts=none"
 
-        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
+        with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_taskClaim", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -579,7 +585,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         self.user.cookieTraditional = bpmSys._loginTraditional(self.user.getEnvironment(), hostUrl, userName, userPassword)
 
                         if self.user.cookieTraditional != None:
-                            self.user.runningAgainstTraditional = True
+                            self.user.runningAgainstFederatedPortal = False
                             self.user.loggedIn = True
                             logging.info("User[%s] - bawLogin - logged in", userName)
                         else:
@@ -594,6 +600,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         if access_token != None:
                             self.user.authorizationBearerToken = _cp4baToken(self, hostUrl, userName, access_token)
                             if self.user.authorizationBearerToken != None:
+                                self.user.runningAgainstFederatedPortal = True
                                 self.user.loggedIn = True
                                 logging.info("User[%s] - bawLogin - logged in", userName)
                             else:

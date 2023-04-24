@@ -40,11 +40,13 @@ class BpmExposedProcessManager:
         return self.bpdId
     
     def nextRandomProcessInfos(self):
+        processInfo = None
         processInfoKeys = self.getKeys()
         totalKeys = len(processInfoKeys)
-        rndIdx : int = random.randint(0, (totalKeys-1))
-        key = processInfoKeys[rndIdx]
-        processInfo = self.getProcessInfos(key)  
+        if totalKeys >= 1:
+            rndIdx : int = random.randint(0, (totalKeys-1))
+            key = processInfoKeys[rndIdx]
+            processInfo = self.getProcessInfos(key)  
         return processInfo 
 
     def LoadProcessInstancesInfos(self, bpmEnvironment : bpmEnv.BpmEnvironment):
@@ -114,10 +116,10 @@ class BpmExposedProcessManager:
                     try:
                         data = js["Data"]
                         bpmErrorMessage = data["errorMessage"]
-                        logging.error("%s error, user %s, status %d, error %s", self.contextName, self.userName, self.response.status_code, bpmErrorMessage)
+                        logging.error("%s error, message [%s]", contextName, bpmErrorMessage)
                     except JSONDecodeError:
-                        logging.error("%s error, user %s, response could not be decoded as JSON", self.contextName, self.user.userCreds.getName())
+                        logging.error("%s error, response could not be decoded as JSON", contextName)
                         self.response.failure("Response could not be decoded as JSON")
                     except KeyError:
-                        logging.error("%s error, user %s, response did not contain expected key 'Data', 'errorMessage'", self.contextName, self.user.userCreds.getName())
+                        logging.error("%s error, response did not contain expected key 'Data', 'errorMessage'", contextName)
                         self.response.failure("Response did not contain expected key 'Data', 'errorMessage'")

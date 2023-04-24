@@ -1,13 +1,4 @@
 USER,       TSN1,   TSN2,   TSN3,   TSN4,   TSN5,   TSN6,   TSN7,   TSN8,   TSN9,   TSN10
-vuxuser1,   TS1,    TS3
-vuxuser2,   TS1,    TS3
-vuxuser3,   TS1,    TS3
-vuxuser4,   TS1,    TS3
-vuxuser5,   TS1,    TS3
-vuxuser6,   TS2,    TS4
-vuxuser7,   TS2,    TS4
-vuxuser8,   TS2,    TS4
-vuxuser9,   TS2,    TS4
-vuxuser10,  TS2,    TS4
-vuxuser11..vuxuser25,  TS2,    TS4
+vuxuser1..vuxuser30,   TS1,    TS3
+vuxuser50..vuxuser60,  TS2,    TS4
 
