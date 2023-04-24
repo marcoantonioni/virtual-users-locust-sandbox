@@ -1,6 +1,7 @@
 # tasks
 
 import logging, time, random, json
+from requests.auth import HTTPBasicAuth
 from locust import task, tag, SequentialTaskSet
 from locust.exception import RescheduleTaskImmediately
 from json import JSONDecodeError
@@ -244,10 +245,10 @@ class RestResponseManager:
         self.bpmTask = bpmTask
         self.ignoreCodes = ignoreCodes
         self.js = {}
-        self.jsData = None
         self.isJsObj = False
         try:
             self.js = response.json()
+            # print(json.dumps(self.js, indent=2))
             self.isJsObj = True
         except:
             logging.error("%s, status code [%s], error text [%s], empty/not-valid json content", contextName, response.status_code, response.text)
@@ -285,15 +286,6 @@ class RestResponseManager:
                 except KeyError:
                     logging.error("%s error, user %s, task %s, subject '%s', response did not contain expected key 'Data', 'errorMessage'", self.contextName, self.userName, taskId, taskSubject)
                     self.response.failure("Response did not contain expected key 'Data', 'errorMessage'")
-        else:
-            try:
-                self.jsData = self.js["Data"]
-            except KeyError:
-                try:
-                    self.jsData = self.js["data"]
-                except KeyError:
-                    pass
-                pass
 
     def getJson(self):
         return self.js
@@ -303,8 +295,10 @@ class RestResponseManager:
     
     def getObject(self, key: str):
         try:
-            #return self.js[key]
-            return self.jsData[key]
+            if self.isJsObj == True:
+                return self.js[key]
+            else:
+                return None
         except JSONDecodeError:
             logging.error("%s error, user %s, response could not be decoded as JSON", self.contextName, self.userName)
             self.response.failure("Response could not be decoded as JSON")
@@ -363,7 +357,8 @@ def _listTasks(self, interaction, size):
         uriBaseTaskList = ""
         taskListFederated = False
         taskListStrategy = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_TASK_LIST_STRATEGY)
-        
+
+        basicAuth = None        
         #my_cookies = None
         # self.user.runningAgainstTraditional == False
         if taskListStrategy == bpmEnv.BpmEnvironment.valBAW_TASK_LIST_STRATEGY_FEDERATEDPORTAL:
@@ -377,16 +372,13 @@ def _listTasks(self, interaction, size):
                 baseUri = ""
             uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
             my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
             #my_cookies = self.user.cookieTraditional
 
         hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&processAppName="+processAppName
-        
-        # print(fullUrl)
-        # basic = HTTPBasicAuth('user', 'pass')
 
-        # !!!!!!!!!!!!!! test su ambiente container
-        with self.client.put(url=fullUrl, headers=my_headers, auth=(self.user.userCreds.getName(), self.user.userCreds.getPassword()), data=json.dumps(params), catch_response=True) as response:
+        with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, data=json.dumps(params), catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_listTasks", response, self.user.userCreds.getName(), None, [401, 409])
 

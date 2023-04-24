@@ -43,7 +43,8 @@ python ./generatePayloadTemplates.py -e ./configurations/env1.properties -i true
 python generateLDIFForVirtualUsers.py -c ./configurations/ldif4vu-cfg1.properties -l ./configurations/vux-cfg1.ldif -u ./configurations/creds-cfg1.csv
 
 # onboard utenze in IAM
-python ./iamOnboardUsers.py -e ./configurations/env1.properties -d vuxdomain1 -f ./configurations/creds10.csv
+python ./iamOnboardUsers.py -e ./configurations/env1.properties -d vuxdomain -f ./configurations/creds-cfg1.csv
+
 
 # https://github.com/locustio/locust/blob/master/examples/test_data_management.py
 # https://github.com/locustio/locust/blob/master/examples/dynamic_user_credentials.py
