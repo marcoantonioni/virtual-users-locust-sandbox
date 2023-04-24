@@ -409,12 +409,20 @@ def _buildTaskUrl(bpmTask : BpmTask, user):
 
 def _taskGetDetails(self, bpmTask : BpmTask):
     if self.user.loggedIn == True:
-        authValue : str = "Bearer "+self.user.authorizationBearerToken
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        #authValue : str = "Bearer "+self.user.authorizationBearerToken
+        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+
+        # headers and uthentication (auth=basicAuth)
+        basicAuth = None        
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        if self.user.runningAgainstFederatedPortal == True:
+            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+        else:
+            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?parts=data,actions"
         
-        with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
+        with self.client.get(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_taskGetDetails", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -431,13 +439,21 @@ def _taskGetDetails(self, bpmTask : BpmTask):
 def _taskGetData(self, bpmTask: BpmTask):
     if self.user.loggedIn == True:
         if _taskGetDetails(self, bpmTask) == True:
-            authValue : str = "Bearer "+self.user.authorizationBearerToken
-            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+            #authValue : str = "Bearer "+self.user.authorizationBearerToken
+            #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+
+            # headers and uthentication (auth=basicAuth)
+            basicAuth = None        
+            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+            if self.user.runningAgainstFederatedPortal == True:
+                my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+            else:
+                basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
             paramNames = bpmTask.buildListOfVarNames()
             fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=getData&fields="+paramNames
 
-            with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
+            with self.client.get(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
 
                 restResponseManager: RestResponseManager = RestResponseManager("_taskGetData", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -453,13 +469,21 @@ def _taskGetData(self, bpmTask: BpmTask):
 
 def _taskSetData(self, bpmTask, payload):
     if self.user.loggedIn == True:
-        authValue : str = "Bearer "+self.user.authorizationBearerToken
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        #authValue : str = "Bearer "+self.user.authorizationBearerToken
+        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+
+        # headers and uthentication (auth=basicAuth)
+        basicAuth = None        
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        if self.user.runningAgainstFederatedPortal == True:
+            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+        else:
+            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         jsonStr = json.dumps(payload)
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=setData&params="+jsonStr
 
-        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
+        with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_taskSetData", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -475,9 +499,6 @@ def _taskSetData(self, bpmTask, payload):
 
 def _taskClaim(self, bpmTask : BpmTask):
     if self.user.loggedIn == True:
-
-        # ??? authValue : str = "Bearer "+self.user.authorizationBearerToken
-        # my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
 
         # headers and uthentication
         basicAuth = None        
@@ -504,12 +525,20 @@ def _taskClaim(self, bpmTask : BpmTask):
 
 def _taskRelease(self, bpmTask: BpmTask):
     if self.user.loggedIn == True:
-        authValue : str = "Bearer "+self.user.authorizationBearerToken
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        #authValue : str = "Bearer "+self.user.authorizationBearerToken
+        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+
+        # headers and uthentication (auth=basicAuth)
+        basicAuth = None        
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        if self.user.runningAgainstFederatedPortal == True:
+            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+        else:
+            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=assign&back=true&parts=none"
 
-        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
+        with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_taskRelease", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -524,13 +553,21 @@ def _taskRelease(self, bpmTask: BpmTask):
 
 def _taskComplete(self, bpmTask, payload):
     if self.user.loggedIn == True:
-        authValue : str = "Bearer "+self.user.authorizationBearerToken
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        # authValue : str = "Bearer "+self.user.authorizationBearerToken
+        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+
+        # headers and uthentication (auth=basicAuth)
+        basicAuth = None        
+        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        if self.user.runningAgainstFederatedPortal == True:
+            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+        else:
+            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         jsonStr = json.dumps(payload)
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=complete&parts=none&params="+jsonStr
 
-        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
+        with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_taskComplete", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -563,6 +600,19 @@ def isActionEnabled(self, key):
         pass
     return actionEnabled
 
+def isVerboseEnabled(self):
+    verbose = False
+    strVerbose : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_VU_VERBOSE)
+    if strVerbose != None:
+        verbose = strVerbose.lower() == "true"
+    return verbose
+
+def isIdleUser(self):
+    if self.user.idleCounter > self.user.maxIdleLoops:
+        self.user.idleCounter = 0
+        return True
+    return False
+
 #-------------------------------------------
 
 class SequenceOfBpmTasks(SequentialTaskSet):
@@ -587,6 +637,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         if self.user.cookieTraditional != None:
                             self.user.runningAgainstFederatedPortal = False
                             self.user.loggedIn = True
+                            self.user.idleCounter = 0
                             logging.info("User[%s] - bawLogin - logged in", userName)
                         else:
                             logging.error("User[%s] - bawLogin - failed login ***ERROR***", userName)
@@ -621,6 +672,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
 
                         if bpmTask.hasAction("ACTION_CLAIM"):
                             if _taskClaim(self, bpmTask) == True:
+                                self.user.idleCounter = 0
                                 logging.info("User[%s] - bawClaimTask - claimed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
                             if logging.getLogger().isEnabledFor(logging.DEBUG):
@@ -631,8 +683,12 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("User[%s] - bawClaimTask TASK [%s] CONFLICT, cannot claim task, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
 
                 else:
-                    logging.info("User[%s] - bawClaimTask no task to claim", self.user.userCreds.getName() )
-        pass
+                    if isVerboseEnabled(self) == True:
+                        logging.info("User[%s] - bawClaimTask no task to claim", self.user.userCreds.getName() )
+                    else:
+                        self.user.idleCounter += 1
+                        if isIdleUser(self) == True:
+                            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
 
     def bawCompleteTask(self):
         if self.user.loggedIn == True:
@@ -656,6 +712,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
                                 logging.info("User[%s] - bawCompleteTask working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
                                 if _taskComplete(self, bpmTask, payload) == True:
+                                    self.user.idleCounter = 0
                                     logging.info("User[%s] - bawCompleteTask - completed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
                             else:
                                 if logging.getLogger().isEnabledFor(logging.DEBUG):
@@ -666,8 +723,12 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("User[%s] - bawCompleteTask TASK [%s] CONFLICT, cannot complete already claimed task, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
 
                 else:
-                    logging.info("User[%s] - bawCompleteTask no task to complete", self.user.userCreds.getName() )
-        pass
+                    if isVerboseEnabled(self) == True:
+                        logging.info("User[%s] - bawCompleteTask no task to complete", self.user.userCreds.getName() )
+                    else:
+                        self.user.idleCounter += 1
+                        if isIdleUser(self) == True:
+                            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
 
     def bawGetTaskData(self):
         if self.user.loggedIn == True:
@@ -678,14 +739,19 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     bpmTask : BpmTask = taskList.getPreparedTaskRandom()
 
                     if _taskGetData(self, bpmTask) == True:
+                        self.user.idleCounter = 0
                         logging.info("User[%s] - bawGetTaskData - got data from task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
                     if logging.getLogger().isEnabledFor(logging.DEBUG):
                         logging.debug("User[%s] - bawGetTaskData TASK [%s] CLEANED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
 
                 else:
-                    logging.info("User[%s] - bawGetTaskData no task to set data", self.user.userCreds.getName() )
-        pass
+                    if isVerboseEnabled(self) == True:
+                        logging.info("User[%s] - bawGetTaskData no task to set data", self.user.userCreds.getName() )
+                    else:
+                        self.user.idleCounter += 1
+                        if isIdleUser(self) == True:
+                            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
 
     def bawSetTaskData(self):
         if self.user.loggedIn == True:
@@ -709,6 +775,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 payload = _extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
                                 logging.info("User[%s] - bawSetTaskData working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
                                 if _taskSetData(self, bpmTask, payload) == True:
+                                    self.user.idleCounter = 0
                                     logging.info("User[%s] - bawSetTaskData - set data and postponed on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
                                 if logging.getLogger().isEnabledFor(logging.DEBUG):
@@ -722,8 +789,12 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("User[%s] - bawSetTaskData TASK [%s] HAS NO ACTION_SETTASK, available actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
 
                 else:
-                    logging.info("User[%s] - bawSetTaskData no task to set data", self.user.userCreds.getName() )
-        pass
+                    if isVerboseEnabled(self) == True:
+                        logging.info("User[%s] - bawSetTaskData no task to set data", self.user.userCreds.getName() )
+                    else:
+                        self.user.idleCounter += 1
+                        if isIdleUser(self) == True:
+                            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
 
     def bawReleaseTask(self):
         if self.user.loggedIn == True:
@@ -740,6 +811,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         
                         if bpmTask.hasAction("ACTION_CANCELCLAIM"):
                             if _taskRelease(self, bpmTask) == True:
+                                self.user.idleCounter = 0
                                 logging.info("User[%s] - bawReleaseTask - released task[%s]", self.user.userCreds.getName(), bpmTask.getId())
 
                             if logging.getLogger().isEnabledFor(logging.DEBUG):
@@ -749,8 +821,12 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("User[%s] - bawReleaseTask TASK [%s] HAS NO ACTION_CANCELCLAIM, available actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
 
                 else:
-                    logging.info("User[%s] - bawReleaseTask no task to release", self.user.userCreds.getName() )
-        pass
+                    if isVerboseEnabled(self) == True:
+                        logging.info("User[%s] - bawReleaseTask no task to release", self.user.userCreds.getName() )
+                    else:
+                        self.user.idleCounter += 1
+                        if isIdleUser(self) == True:
+                            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
 
     def bawCreateInstance(self):
         if self.user.loggedIn == True:
@@ -765,7 +841,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), processInfo, strPayload, self.user.authorizationBearerToken)
                 if processInstanceInfo != None:
                     logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
-        pass
+
 
     # list of enabled tasks
     tasks = [bawLogin, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask, bawCreateInstance]

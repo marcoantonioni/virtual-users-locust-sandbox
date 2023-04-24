@@ -41,6 +41,8 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     authorizationBearerToken : str = None    
     userCreds : bpmCreds.UserCredentials = None
     selectedUserActions = None
+    idleCounter = 0
+    maxIdleLoops = 100
 
     #----------------------------------------
     # user functions
