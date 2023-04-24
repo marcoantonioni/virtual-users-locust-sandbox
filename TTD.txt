@@ -1,7 +1,5 @@
 
-- verifica funzionalità senza portale federato (traditional)
--- baw.standalone.net (8.6.30022.10)
--- login, query task list, url da task list, etc...
+- rivedere login createProcessInstance.py e exposedProcessManager.py
 
 - policy sequenza login utenze (SORTED_FIFO | SORTED_LIFO | RANDOM)
 

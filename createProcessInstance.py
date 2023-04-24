@@ -4,6 +4,7 @@ import bawsys.commandLineManager as clpm
 import bawsys.exposedProcessManager as bpmExpProcs
 from bawsys import bawSystem as bawSys
 import mytasks.processInstanceManager as bpmPIM
+from base64 import b64encode
 
 bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
 bpmProcessInstanceManager : bpmPIM.BpmProcessInstanceManager = bpmPIM.BpmProcessInstanceManager()
@@ -55,7 +56,19 @@ def createProcessInstances(argv):
             global bpmDynamicModule 
             bpmDynamicModule = import_module(dynamicPLM)
 
-            bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
+            authorizationBearerToken = bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
+
+            userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
+            userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
+            runningAgainstFederatedPortal = bawSys._isBawTraditional(bpmEnvironment) == False
+            userName = userName.encode("latin1")
+            userPassword = userPassword.encode("latin1")                
+
+            _headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+            if runningAgainstFederatedPortal == True:
+                _headers['Authorization'] = 'Bearer '+authorizationBearerToken
+            else:
+                _headers['Authorization'] = 'Basic ' + b64encode(b":".join((userName, userPassword))).strip().decode("ascii")
 
             processInfoKeys = bpmExposedProcessManager.getKeys()
             totalKeys = len(processInfoKeys)
@@ -68,10 +81,9 @@ def createProcessInstances(argv):
                 processName = key.split("/")[0]
                 processInfo = bpmExposedProcessManager.getProcessInfos(key)  
                 jsonPayloadInfos = bpmDynamicModule.buildPayloadForSubject("Start-"+processName)
-                
                 jsonPayload = jsonPayloadInfos["jsonObject"]
                 strPayload = json.dumps(jsonPayload)
-                processInstanceInfo : bpmPIM.BpmProcessInstance = bpmProcessInstanceManager.createInstance(bpmEnvironment, processInfo, strPayload, None)
+                processInstanceInfo : bpmPIM.BpmProcessInstance = bpmProcessInstanceManager.createInstance(bpmEnvironment, runningAgainstFederatedPortal, userName, processInfo, strPayload, _headers)
                 if processInstanceInfo != None:
                     print("Created process "+processName+" instance id["+processInstanceInfo.getPiid()+"], state["+processInstanceInfo.getState()+"]")
                 count += 1

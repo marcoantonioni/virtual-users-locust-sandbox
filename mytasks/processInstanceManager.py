@@ -65,16 +65,14 @@ class BpmProcessInstance:
 
 class BpmProcessInstanceManager:
 
-    def createInstance(self, seqOfBpmTasks, processInfo: bpmSys.BpmExposedProcessInfo, payload : str, my_headers):
-        
-        bpmEnvironment : bpmEnv.BpmEnvironment = seqOfBpmTasks.user.getEnvironment()
+    def createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, runningAgainstFederatedPortal, userName, processInfo: bpmSys.BpmExposedProcessInfo, payload : str, my_headers):                
         hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         urlStartInstance = hostUrl+processInfo.getStartUrl()+"&parts=header&params="+payload
         response = requests.post(url=urlStartInstance, headers=my_headers, verify=False)
         if response.status_code == 200:
             processInstance = None
             data = response.json()["data"]
-            if seqOfBpmTasks.user.runningAgainstFederatedPortal == True:
+            if runningAgainstFederatedPortal == True:
                 processInstance = BpmProcessInstance(data["state"], data["piid"], data["caseFolderID"], data["caseFolderServerName"], data["result"], 
                                                       data["startingDocumentServerName"], data["parentCaseId"], data["parentActivityId"], data["workflowApplication"], 
                                                       data["caseIdentifier"], data["caseTypeId"], data["caseStageStatus"], data["caseProcessTypeLocation"])
@@ -84,6 +82,6 @@ class BpmProcessInstanceManager:
                                                       None, None, None, None)
             return processInstance
         else:
-            logging.error("createInstance error, user %s, status code [%d], message [%s]", seqOfBpmTasks.user.userCreds.getName(), response.status_code, response.text)
+            logging.error("createInstance error, user %s, status code [%d], message [%s]", userName, response.status_code, response.text)
         return None
 

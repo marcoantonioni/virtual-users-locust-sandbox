@@ -29,6 +29,7 @@ locust -f ./baw-virtual-users.py --headless --only-summary --run-time 60s --user
 
 # creazione istanze
 python ./createProcessInstance.py  -e ./configurations/env1.properties -i 10
+python ./createProcessInstance.py  -e ./configurations/env1-traditional.properties -i 10
 
 # terminazione istanze
 python ./terminateProcessBulk.py -e ./configurations/env1.properties

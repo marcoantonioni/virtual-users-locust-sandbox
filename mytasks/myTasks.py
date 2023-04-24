@@ -846,7 +846,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 jsonPayload = _extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
                 strPayload = json.dumps(jsonPayload)
                 my_headers = _prepareHeaders(self)
-                processInstanceInfo : bpmPI = pim.createInstance(self, processInfo, strPayload, my_headers)
+                processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), self.user.runningAgainstFederatedPortal, self.user.userCreds.getName(), processInfo, strPayload, my_headers)
                 if processInstanceInfo != None:
                     logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
 

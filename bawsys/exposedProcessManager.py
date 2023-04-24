@@ -123,3 +123,4 @@ class BpmExposedProcessManager:
                     except KeyError:
                         logging.error("%s error, response did not contain expected key 'Data', 'errorMessage'", contextName)
                         self.response.failure("Response did not contain expected key 'Data', 'errorMessage'")
+        return token
