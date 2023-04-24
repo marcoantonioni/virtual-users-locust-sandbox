@@ -41,8 +41,9 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     authorizationBearerToken : str = None    
     userCreds : bpmCreds.UserCredentials = None
     selectedUserActions = None
+    idleNotify = False
     idleCounter = 0
-    maxIdleLoops = 100
+    maxIdleLoops = 0
 
     #----------------------------------------
     # user functions
@@ -92,13 +93,28 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
                 if (action == bpmEnv.BpmEnvironment.keyBAW_ACTION_CLAIM) or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_COMPLETE or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_RELEASE or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_GETDATA or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_SETDATA or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS:
                     self.selectedUserActions[action] = bpmEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
 
+    def setIdleMode(self):
+        strNotify : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_IDLE_NOTIFY)
+        strMaxInterctions : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_IDLE_NOTIFY_AFTER_NUM_INTERACTIONS)
+        if strNotify != None:
+            if strNotify.lower() == "true":
+                self.idleNotify = True
+                if strMaxInterctions != None:
+                    try:
+                        self.maxIdleLoops = int(strMaxInterctions)
+                    except:
+                        # abort run
+                        logging.error("Error in IDLE parameters !")
+                        self.environment.runner.quit()
+
     #----------------------------------------
     # for each virtual user
 
     def on_start(self):
-        self.host = host = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        self.host = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         self.min_think_time = int(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MIN))
         self.max_think_time = int(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MAX))
+        self.setIdleMode()
         self.configureVirtualUserActions()
 
         self.userCreds = bpmCreds.getNextUserCredentials()

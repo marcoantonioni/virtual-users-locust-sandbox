@@ -256,9 +256,11 @@ class RestResponseManager:
         if logging.getLogger().isEnabledFor(logging.DEBUG):
             logging.debug("%s status code: %s", contextName, response.status_code)
         if response.status_code >= 300:
+            ignoreCode = False
             # ignore codes in list
             for rc in ignoreCodes:
                 if response.status_code == rc:
+                    ignoreCode = True
                     response.success()
             taskId = ""
             taskSubject = ""
@@ -276,9 +278,11 @@ class RestResponseManager:
                         bpmErrorMessage = data["errorMessage"]
                     except KeyError:
                         pass
-                    logging.error("%s error, user %s, task %s, subject '%s', status %d, error %s", self.contextName, self.userName, taskId, taskSubject, self.response.status_code, bpmErrorMessage)
-                    if taskData != None:
-                        logging.error("%s error, user %s, task %s, payload %s", self.contextName, self.userName, taskId, json.dumps(taskData))
+
+                    if ignoreCode == False:
+                        logging.error("%s error, user %s, task %s, subject '%s', status %d, error %s", self.contextName, self.userName, taskId, taskSubject, self.response.status_code, bpmErrorMessage)
+                        if taskData != None:
+                            logging.error("%s error, user %s, task %s, payload %s", self.contextName, self.userName, taskId, json.dumps(taskData))
 
                 except JSONDecodeError:
                     logging.error("%s error, user %s, task %s, subject '%s', response could not be decoded as JSON", self.contextName, self.userName, taskId, taskSubject)
@@ -409,8 +413,6 @@ def _buildTaskUrl(bpmTask : BpmTask, user):
 
 def _taskGetDetails(self, bpmTask : BpmTask):
     if self.user.loggedIn == True:
-        #authValue : str = "Bearer "+self.user.authorizationBearerToken
-        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
 
         # headers and uthentication (auth=basicAuth)
         basicAuth = None        
@@ -439,8 +441,6 @@ def _taskGetDetails(self, bpmTask : BpmTask):
 def _taskGetData(self, bpmTask: BpmTask):
     if self.user.loggedIn == True:
         if _taskGetDetails(self, bpmTask) == True:
-            #authValue : str = "Bearer "+self.user.authorizationBearerToken
-            #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
 
             # headers and uthentication (auth=basicAuth)
             basicAuth = None        
@@ -469,8 +469,6 @@ def _taskGetData(self, bpmTask: BpmTask):
 
 def _taskSetData(self, bpmTask, payload):
     if self.user.loggedIn == True:
-        #authValue : str = "Bearer "+self.user.authorizationBearerToken
-        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
 
         # headers and uthentication (auth=basicAuth)
         basicAuth = None        
@@ -525,8 +523,6 @@ def _taskClaim(self, bpmTask : BpmTask):
 
 def _taskRelease(self, bpmTask: BpmTask):
     if self.user.loggedIn == True:
-        #authValue : str = "Bearer "+self.user.authorizationBearerToken
-        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
 
         # headers and uthentication (auth=basicAuth)
         basicAuth = None        
@@ -553,8 +549,6 @@ def _taskRelease(self, bpmTask: BpmTask):
 
 def _taskComplete(self, bpmTask, payload):
     if self.user.loggedIn == True:
-        # authValue : str = "Bearer "+self.user.authorizationBearerToken
-        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
 
         # headers and uthentication (auth=basicAuth)
         basicAuth = None        
@@ -607,11 +601,12 @@ def isVerboseEnabled(self):
         verbose = strVerbose.lower() == "true"
     return verbose
 
-def isIdleUser(self):
-    if self.user.idleCounter > self.user.maxIdleLoops:
-        self.user.idleCounter = 0
-        return True
-    return False
+def idleUser(self):
+    if self.user.idleNotify == True:
+        self.user.idleCounter += 1
+        if self.user.idleCounter > self.user.maxIdleLoops:
+            self.user.idleCounter = 0
+            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
 
 #-------------------------------------------
 
@@ -686,9 +681,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     if isVerboseEnabled(self) == True:
                         logging.info("User[%s] - bawClaimTask no task to claim", self.user.userCreds.getName() )
                     else:
-                        self.user.idleCounter += 1
-                        if isIdleUser(self) == True:
-                            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
+                        idleUser(self)
 
     def bawCompleteTask(self):
         if self.user.loggedIn == True:
@@ -726,9 +719,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     if isVerboseEnabled(self) == True:
                         logging.info("User[%s] - bawCompleteTask no task to complete", self.user.userCreds.getName() )
                     else:
-                        self.user.idleCounter += 1
-                        if isIdleUser(self) == True:
-                            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
+                        idleUser(self)
 
     def bawGetTaskData(self):
         if self.user.loggedIn == True:
@@ -749,9 +740,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     if isVerboseEnabled(self) == True:
                         logging.info("User[%s] - bawGetTaskData no task to set data", self.user.userCreds.getName() )
                     else:
-                        self.user.idleCounter += 1
-                        if isIdleUser(self) == True:
-                            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
+                        idleUser(self)
 
     def bawSetTaskData(self):
         if self.user.loggedIn == True:
@@ -792,9 +781,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     if isVerboseEnabled(self) == True:
                         logging.info("User[%s] - bawSetTaskData no task to set data", self.user.userCreds.getName() )
                     else:
-                        self.user.idleCounter += 1
-                        if isIdleUser(self) == True:
-                            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
+                        idleUser(self)
 
     def bawReleaseTask(self):
         if self.user.loggedIn == True:
@@ -824,9 +811,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     if isVerboseEnabled(self) == True:
                         logging.info("User[%s] - bawReleaseTask no task to release", self.user.userCreds.getName() )
                     else:
-                        self.user.idleCounter += 1
-                        if isIdleUser(self) == True:
-                            logging.info("User[%s] - idle ...", self.user.userCreds.getName() )
+                        idleUser(self)
 
     def bawCreateInstance(self):
         if self.user.loggedIn == True:

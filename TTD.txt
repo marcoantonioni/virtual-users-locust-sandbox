@@ -1,6 +1,4 @@
 
-- notifica idle ogni x loop
-
 - verifica funzionalità senza portale federato (traditional)
 -- baw.standalone.net (8.6.30022.10)
 -- login, query task list, url da task list, etc...
