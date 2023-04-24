@@ -8,7 +8,7 @@
 - tool per lettura payload istanze processo completate/terminate/failed
 -- export record formato json per analisi risultato
 
-- ??? aggiungere gruppo ldap a Team applicazione
+- ??? aggiungere utenti gruppo ldap a Gruppo bpm
 
 #----------------------------------
 

@@ -1,4 +1,4 @@
-import requests, json
+import requests, json, logging
 import bawsys.loadEnvironment as bpmEnv
 import bawsys.bawSystem as bpmSys
 import urllib
@@ -65,36 +65,25 @@ class BpmProcessInstance:
 
 class BpmProcessInstanceManager:
 
-    def __init__(self):
-      self.cp4ba_token : str = None
-
-    def createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, processInfo: bpmSys.BpmExposedProcessInfo, payload : str, token: str):
-        iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
-        hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-
-        if self.cp4ba_token == None:
-            if token != None:
-                self.cp4ba_token = token
-            else:
-                self.cp4ba_token = bpmSys._loginZen(bpmEnvironment, iamUrl, hostUrl)
-        if self.cp4ba_token != None:
-            return self._createInstance(bpmEnvironment, processInfo, payload)
-        return None
-
-    def _createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, processInfo: bpmSys.BpmExposedProcessInfo, payload : str):
+    def createInstance(self, seqOfBpmTasks, processInfo: bpmSys.BpmExposedProcessInfo, payload : str, my_headers):
+        
+        bpmEnvironment : bpmEnv.BpmEnvironment = seqOfBpmTasks.user.getEnvironment()
         hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        authValue : str = "Bearer "+self.cp4ba_token
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
         urlStartInstance = hostUrl+processInfo.getStartUrl()+"&parts=header&params="+payload
         response = requests.post(url=urlStartInstance, headers=my_headers, verify=False)
         if response.status_code == 200:
+            processInstance = None
             data = response.json()["data"]
-            return BpmProcessInstance(data["state"], data["piid"], data["caseFolderID"], data["caseFolderServerName"], data["result"], 
-                                        data["startingDocumentServerName"], data["parentCaseId"], data["parentActivityId"], data["workflowApplication"], data["caseIdentifier"], 
-                                        data["caseTypeId"], data["caseStageStatus"], data["caseProcessTypeLocation"])
+            if seqOfBpmTasks.user.runningAgainstFederatedPortal == True:
+                processInstance = BpmProcessInstance(data["state"], data["piid"], data["caseFolderID"], data["caseFolderServerName"], data["result"], 
+                                                      data["startingDocumentServerName"], data["parentCaseId"], data["parentActivityId"], data["workflowApplication"], 
+                                                      data["caseIdentifier"], data["caseTypeId"], data["caseStageStatus"], data["caseProcessTypeLocation"])
+            else:
+                processInstance = BpmProcessInstance(data["state"], data["piid"], data["caseFolderID"], data["caseFolderServerName"], data["result"], 
+                                                      data["startingDocumentServerName"], data["parentCaseId"], data["parentActivityId"], data["workflowApplication"], 
+                                                      None, None, None, None)
+            return processInstance
         else:
-            print(response.status_code)
-            print(response.text)                
+            logging.error("createInstance error, user %s, status code [%d], message [%s]", seqOfBpmTasks.user.userCreds.getName(), response.status_code, response.text)
         return None
-    
 

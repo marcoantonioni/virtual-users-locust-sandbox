@@ -1,7 +1,7 @@
 # tasks
 
 import logging, time, random, json
-from requests.auth import HTTPBasicAuth
+from base64 import b64encode
 from locust import task, tag, SequentialTaskSet
 from locust.exception import RescheduleTaskImmediately
 from json import JSONDecodeError
@@ -248,7 +248,7 @@ class RestResponseManager:
         self.isJsObj = False
         try:
             self.js = response.json()
-            # print(json.dumps(self.js, indent=2))
+            #print(json.dumps(self.js, indent=2))
             self.isJsObj = True
         except:
             logging.error("%s, status code [%s], error text [%s], empty/not-valid json content", contextName, response.status_code, response.text)
@@ -342,6 +342,18 @@ def _buildTaskList(self, tasksCount, tasksList, interaction):
 
     return BpmTaskList(len(bpmTaksItems), bpmTaksItems)
 
+def _basicAuthHeader(username, password):
+    username = username.encode("latin1")
+    password = password.encode("latin1")
+    return "Basic " + b64encode(b":".join((username, password))).strip().decode("ascii")
+
+def _prepareHeaders(self):
+    _headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+    if self.user.runningAgainstFederatedPortal == True:
+        _headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+    else:
+        _headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
+    return _headers
 
 def _listTasks(self, interaction, size):
     if self.user.loggedIn == True:
@@ -363,39 +375,48 @@ def _listTasks(self, interaction, size):
                   'interaction': interaction, 
                   'size': size }
 
-        # headers and uthentication
-        basicAuth = None        
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        # headers and authentication
+        my_headers = _prepareHeaders(self)
         if self.user.runningAgainstFederatedPortal == True:
             taskListFederated = True
             uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
-            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
         else:
             baseUri = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
             if baseUri == None:
                 baseUri = ""
             uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
-            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&processAppName="+processAppName
 
-        with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, data=json.dumps(params), catch_response=True) as response:
-
+        with self.client.put(url=fullUrl, headers=my_headers, data=json.dumps(params), catch_response=True) as response:
+            
             restResponseManager: RestResponseManager = RestResponseManager("_listTasks", response, self.user.userCreds.getName(), None, [401, 409])
 
             if restResponseManager.getStatusCode() == 200:
-                size = restResponseManager.getObject("size")
-                items = restResponseManager.getObject("items")
+                _taskList = None
+                size = 0
+                items = None
+                if self.user.runningAgainstFederatedPortal == True:
+                    size = restResponseManager.getObject("size")
+                    items = restResponseManager.getObject("items")
+                else:
+                    data = restResponseManager.getObject("data")
+                    size = data["size"]
+                    try:
+                        items = data["items"]
+                    except KeyError:
+                        pass
 
-                # print(json.dumps(items, indent=2))
+                if items != None:
+                    # print(json.dumps(items, indent=2))
 
-                if logging.getLogger().isEnabledFor(logging.DEBUG):
-                    logging.debug("_listTasks [%s] user %s, size %d, numtasks %d, response %s", interaction, self.user.userCreds.getName(), size, len(items), json.dumps(restResponseManager.getJson(), indent = 2))
+                    if logging.getLogger().isEnabledFor(logging.DEBUG):
+                        logging.debug("_listTasks [%s] user %s, size %d, numtasks %d, response %s", interaction, self.user.userCreds.getName(), size, len(items), json.dumps(restResponseManager.getJson(), indent = 2))
 
-                _taskList : BpmTaskList = _buildTaskList(self, size, items, interaction)
-                
-                if taskListFederated == True:
-                    _taskList.setFederationInfos(restResponseManager.getObject("federationResult"))
+                    _taskList : BpmTaskList = _buildTaskList(self, size, items, interaction)
+                    
+                    if taskListFederated == True:
+                        _taskList.setFederationInfos(restResponseManager.getObject("federationResult"))
                     
                 return _taskList
         return None
@@ -414,17 +435,18 @@ def _buildTaskUrl(bpmTask : BpmTask, user):
 def _taskGetDetails(self, bpmTask : BpmTask):
     if self.user.loggedIn == True:
 
-        # headers and uthentication (auth=basicAuth)
-        basicAuth = None        
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        if self.user.runningAgainstFederatedPortal == True:
-            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-        else:
-            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
+        # headers and authentication 
+        my_headers = _prepareHeaders(self)
+
+        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        #if self.user.runningAgainstFederatedPortal == True:
+        #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+        #else:
+        #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?parts=data,actions"
         
-        with self.client.get(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
+        with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_taskGetDetails", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -442,18 +464,18 @@ def _taskGetData(self, bpmTask: BpmTask):
     if self.user.loggedIn == True:
         if _taskGetDetails(self, bpmTask) == True:
 
-            # headers and uthentication (auth=basicAuth)
-            basicAuth = None        
-            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-            if self.user.runningAgainstFederatedPortal == True:
-                my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-            else:
-                basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
+            # headers and authentication 
+            my_headers = _prepareHeaders(self)
+            #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+            #if self.user.runningAgainstFederatedPortal == True:
+            #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+            #else:
+            #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
             paramNames = bpmTask.buildListOfVarNames()
             fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=getData&fields="+paramNames
 
-            with self.client.get(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
+            with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
 
                 restResponseManager: RestResponseManager = RestResponseManager("_taskGetData", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -470,18 +492,18 @@ def _taskGetData(self, bpmTask: BpmTask):
 def _taskSetData(self, bpmTask, payload):
     if self.user.loggedIn == True:
 
-        # headers and uthentication (auth=basicAuth)
-        basicAuth = None        
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        if self.user.runningAgainstFederatedPortal == True:
-            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-        else:
-            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
+        # headers and authentication 
+        my_headers = _prepareHeaders(self)
+        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        #if self.user.runningAgainstFederatedPortal == True:
+        #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+        #else:
+        #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         jsonStr = json.dumps(payload)
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=setData&params="+jsonStr
 
-        with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
+        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_taskSetData", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -498,17 +520,17 @@ def _taskSetData(self, bpmTask, payload):
 def _taskClaim(self, bpmTask : BpmTask):
     if self.user.loggedIn == True:
 
-        # headers and uthentication
-        basicAuth = None        
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        if self.user.runningAgainstFederatedPortal == True:
-            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-        else:
-            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
+        # headers and authentication
+        my_headers = _prepareHeaders(self)
+        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        #if self.user.runningAgainstFederatedPortal == True:
+        #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+        #else:
+        #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=assign&toMe=true&parts=none"
 
-        with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
+        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_taskClaim", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -524,17 +546,17 @@ def _taskClaim(self, bpmTask : BpmTask):
 def _taskRelease(self, bpmTask: BpmTask):
     if self.user.loggedIn == True:
 
-        # headers and uthentication (auth=basicAuth)
-        basicAuth = None        
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        if self.user.runningAgainstFederatedPortal == True:
-            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-        else:
-            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
+        # headers and authentication 
+        my_headers = _prepareHeaders(self)
+        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        #if self.user.runningAgainstFederatedPortal == True:
+        #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+        #else:
+        #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=assign&back=true&parts=none"
 
-        with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
+        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_taskRelease", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -550,18 +572,18 @@ def _taskRelease(self, bpmTask: BpmTask):
 def _taskComplete(self, bpmTask, payload):
     if self.user.loggedIn == True:
 
-        # headers and uthentication (auth=basicAuth)
-        basicAuth = None        
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        if self.user.runningAgainstFederatedPortal == True:
-            my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-        else:
-            basicAuth = HTTPBasicAuth(self.user.userCreds.getName(), self.user.userCreds.getPassword())
+        # headers and authentication 
+        my_headers = _prepareHeaders(self)
+        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        #if self.user.runningAgainstFederatedPortal == True:
+        #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
+        #else:
+        #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         jsonStr = json.dumps(payload)
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=complete&parts=none&params="+jsonStr
 
-        with self.client.put(url=fullUrl, headers=my_headers, auth=basicAuth, catch_response=True) as response:
+        with self.client.put(url=fullUrl, headers=my_headers, catch_response=True) as response:
 
             restResponseManager: RestResponseManager = RestResponseManager("_taskComplete", response, self.user.userCreds.getName(), bpmTask, [401, 409])
 
@@ -823,11 +845,11 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 jsonPayloadInfos = self._buildPayload("Start-"+processName)
                 jsonPayload = _extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
                 strPayload = json.dumps(jsonPayload)
-                processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), processInfo, strPayload, self.user.authorizationBearerToken)
+                my_headers = _prepareHeaders(self)
+                processInstanceInfo : bpmPI = pim.createInstance(self, processInfo, strPayload, my_headers)
                 if processInstanceInfo != None:
                     logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
 
-
     # list of enabled tasks
-    tasks = [bawLogin, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask, bawCreateInstance]
+    tasks = [bawLogin, bawCreateInstance, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask]
 
