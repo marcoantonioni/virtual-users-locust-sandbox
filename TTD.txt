@@ -1,5 +1,6 @@
+- limite massimo nuovi processi
 
-- rivedere login createProcessInstance.py e exposedProcessManager.py
+- parametrizzare size lista task
 
 - policy sequenza login utenze (SORTED_FIFO | SORTED_LIFO | RANDOM)
 

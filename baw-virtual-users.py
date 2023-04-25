@@ -45,6 +45,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     idleNotify = False
     idleCounter = 0
     maxIdleLoops = 0
+    verbose = False
 
     #----------------------------------------
     # user functions
@@ -118,6 +119,10 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         self.setIdleMode()
         self.configureVirtualUserActions()
         self.runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
+
+        strVerbose : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_VERBOSE)
+        if strVerbose != None:
+            self.verbose = strVerbose.lower() == "true"
 
         self.userCreds = bpmCreds.getNextUserCredentials()
         if self.userCreds != None:

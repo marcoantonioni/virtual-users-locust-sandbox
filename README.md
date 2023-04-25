@@ -8,13 +8,8 @@ Sandbox per struttura progetto finale
 pip install locust
 pip install jproperties
 
-# 8 utenti 1/8
 locust --config=./configurations/baw-vu-cfg-1.conf
 
-# 2 utenti 9/10
-locust --config=./configurations/baw-vu-cfg-2.conf
-
-# traditional
 locust --config=./configurations/baw-vu-cfg-1-traditional.conf
 
 
