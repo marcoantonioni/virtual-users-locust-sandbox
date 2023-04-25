@@ -5,6 +5,7 @@ from bawsys import loadEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys
 import urllib, requests, json, sys, logging
 from base64 import b64encode
+from bawsys import bawUtils as bawUtils 
 
 #----------------------------------
 
@@ -103,10 +104,7 @@ class PayloadTemplateManager:
             if runningTraditional == False:
                 self._headers['Authorization'] = 'Bearer '+self.authorizationBearerToken
             else:
-                userName = userName.encode("latin1")
-                userPassword = userPassword.encode("latin1")                
-                self._headers['Authorization'] = 'Basic ' + b64encode(b":".join((userName, userPassword))).strip().decode("ascii")
-
+                self._headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
 
     def buildDataTypeTemplates(self, hostUrl, baseUri, dtName, dtId, snapId, appId):
 

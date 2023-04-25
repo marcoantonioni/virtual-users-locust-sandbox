@@ -5,6 +5,7 @@ import bawsys.exposedProcessManager as bpmExpProcs
 from bawsys import bawSystem as bawSys
 import mytasks.processInstanceManager as bpmPIM
 from base64 import b64encode
+from bawsys import bawUtils as bawUtils 
 
 bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
 bpmProcessInstanceManager : bpmPIM.BpmProcessInstanceManager = bpmPIM.BpmProcessInstanceManager()
@@ -61,14 +62,12 @@ def createProcessInstances(argv):
             userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
             userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
             runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
-            userName = userName.encode("latin1")
-            userPassword = userPassword.encode("latin1")                
 
             _headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
             if runningTraditional == False:
                 _headers['Authorization'] = 'Bearer '+authorizationBearerToken
             else:
-                _headers['Authorization'] = 'Basic ' + b64encode(b":".join((userName, userPassword))).strip().decode("ascii")
+                _headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
 
             processInfoKeys = bpmExposedProcessManager.getKeys()
             totalKeys = len(processInfoKeys)
