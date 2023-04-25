@@ -84,6 +84,8 @@ class BpmProcessInstanceManager:
     def __init__(self):
         self.maxInstancesPerRun = 10
         self.createdInstancesPerRun = 0
+        self.loggedIn = False
+        self._headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
     def setupMaxInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment):
         if bpmEnvironment != None:
@@ -120,9 +122,8 @@ class BpmProcessInstanceManager:
 
     def searchProcessInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment, status: str, dateFrom: str, dateTo: str):
         listOfInstances = None
-        _headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
-        loggedIn = False
+        self.loggedIn = False
         authorizationBearerToken = None
         userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
         userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
@@ -130,17 +131,17 @@ class BpmProcessInstanceManager:
         if runningTraditional == True:
             cookieTraditional = bawSys._loginTraditional(bpmEnvironment, userName, userPassword)
             if cookieTraditional != None:
-                loggedIn = True
+                self.loggedIn = True
         else:
             authorizationBearerToken = bawSys._loginZen(bpmEnvironment, userName, userPassword)
             if authorizationBearerToken != None:
-                loggedIn = True
+                self.loggedIn = True
 
-        if loggedIn == True:
+        if self.loggedIn == True:
             if runningTraditional == False:
-                _headers['Authorization'] = 'Bearer '+authorizationBearerToken
+                self._headers['Authorization'] = 'Bearer '+authorizationBearerToken
             else:
-                _headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
+                self._headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
 
             hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
             baseUri : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
@@ -159,11 +160,9 @@ class BpmProcessInstanceManager:
                 modifiedBefore = "&modifiedBefore="+dateTo
 
             fullUrl = hostUrl+baseUri+"/rest/bpm/wle/v1/processes/search?projectFilter="+appAcronym+statusFilter+modifiedAfter+modifiedBefore
-            response = requests.post(url=fullUrl, headers=_headers, verify=False)
+            response = requests.post(url=fullUrl, headers=self._headers, verify=False)
             if response.status_code == 200:
                 jsObj = response.json()
-                # print(json.dumps(jsObj, indent = 2))
-
                 data = jsObj["data"]
                 processes = data["processes"]
                 numProcesses = len(processes)
@@ -176,10 +175,32 @@ class BpmProcessInstanceManager:
                       closedDate = p["closedDate"]
                     except KeyError:
                       pass
-
                     execProc = BpmExecProcessInstance(p["executionState"], p["piid"], p["name"], p["bpdName"], p["snapshotID"], 
                                                       p["projectID"], p["dueDate"], p["creationDate"], p["lastModificationTime"], closedDate)
                     listOfInstances.append(execProc)
                     idx += 1
 
         return listOfInstances
+
+    def _getProcessDetails(self, hostUrl, baseUri, pid):
+        fullUrl = hostUrl+baseUri+"/rest/bpm/wle/v1/process/"+pid+"?parts=data"
+        response = requests.get(url=fullUrl, headers=self._headers, verify=False)
+        if response.status_code == 200:
+            jsObj = response.json()
+            data = jsObj["data"]
+            variables = data["variables"]
+            cleanedVars = bawUtils._cleanVarData(variables)
+            print(json.dumps(cleanedVars, indent = 2))
+
+    def exportProcessInstancesData(self, bpmEnvironment : bpmEnv.BpmEnvironment, bpdName: str, status: str, dateFrom: str, dateTo: str):
+        listOfInstances = self.searchProcessInstances(bpmEnvironment, status, dateFrom, dateTo)
+        if listOfInstances != None:
+            hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+            baseUri : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+            numProcesses = len(listOfInstances)
+            idx = 0
+            while idx < numProcesses:
+                if bpdName == listOfInstances[idx].bpdName:                     
+                      print("export process ", listOfInstances[idx].piid, listOfInstances[idx].bpdName, listOfInstances[idx].executionState)
+                      self._getProcessDetails(hostUrl, baseUri, listOfInstances[idx].piid)
+                idx += 1
