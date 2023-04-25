@@ -32,6 +32,7 @@ python ./listProcessInstances.py -e ./configurations/env1-traditional.properties
 
 # export dati istanza processo
 python ./exportProcessInstancesData.py -e ./configurations/env1.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z -n VUSClaimCompleteTwoRoles
+python ./exportProcessInstancesData.py -e ./configurations/env1-traditional.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z -n VUSClaimCompleteTwoRoles
 
 # terminazione istanze
 python ./terminateProcessBulk.py -e ./configurations/env1.properties
