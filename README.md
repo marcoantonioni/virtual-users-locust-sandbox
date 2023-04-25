@@ -33,12 +33,15 @@ python ./createProcessInstance.py  -e ./configurations/env1-traditional.properti
 
 # terminazione istanze
 python ./terminateProcessBulk.py -e ./configurations/env1.properties
+python ./terminateProcessBulk.py  -e ./configurations/env1-traditional.properties
 
 # cancellazione istanze
 python ./deleteProcessBulk.py -e ./configurations/env1.properties -t true
+python ./deleteProcessBulk.py  -e ./configurations/env1-traditional.properties -t true
 
 # generazione template modello dati
 python ./generatePayloadTemplates.py -e ./configurations/env1.properties -i true
+python ./generatePayloadTemplates.py -e ./configurations/env1-traditional.properties -i true
 
 # creazione utenze e gruppi ldap
 python generateLDIFForVirtualUsers.py -c ./configurations/ldif4vu-cfg1.properties -l ./configurations/vux-cfg1.ldif -u ./configurations/creds-cfg1.csv

@@ -4,6 +4,7 @@ import bawsys.exposedProcessManager as bpmExpProcs
 from bawsys import loadEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys
 import urllib, requests, json, sys, logging
+from base64 import b64encode
 
 #----------------------------------
 
@@ -76,15 +77,38 @@ class DataTypeTemplate:
 
 class PayloadTemplateManager:
 
-    def __init__(self):
-      self.cp4ba_token : str = None
-      self.dataTypeTemplates = dict()
-      self.dataTypeTemplatesByClassRef = dict()
+    def __init__(self, bpmEnvironment : bpmEnv.BpmEnvironment):
+        self.dataTypeTemplates = dict()
+        self.dataTypeTemplatesByClassRef = dict()
+
+        self.loggedIn = False
+        self.authorizationBearerToken : str = None
+        self.cookieTraditional = None
+        self.bpmEnvironment = bpmEnvironment
+        self._headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+
+        userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
+        userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
+        runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
+        if runningTraditional == True:
+            self.cookieTraditional = bawSys._loginTraditional(self.bpmEnvironment, userName, userPassword)
+            if self.cookieTraditional != None:
+                self.loggedIn = True
+        else:
+            self.authorizationBearerToken = bawSys._loginZen(self.bpmEnvironment, userName, userPassword)
+            if self.authorizationBearerToken != None:
+                self.loggedIn = True
+
+        if self.loggedIn == True:
+            if runningTraditional == False:
+                self._headers['Authorization'] = 'Bearer '+self.authorizationBearerToken
+            else:
+                userName = userName.encode("latin1")
+                userPassword = userPassword.encode("latin1")                
+                self._headers['Authorization'] = 'Basic ' + b64encode(b":".join((userName, userPassword))).strip().decode("ascii")
+
 
     def buildDataTypeTemplates(self, hostUrl, baseUri, dtName, dtId, snapId, appId):
-
-        authValue : str = "Bearer "+self.cp4ba_token
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
 
         if baseUri == None:
             baseUri = ""
@@ -93,7 +117,7 @@ class PayloadTemplateManager:
         uriData = dtId+"?snapshotId="+snapId+"&processAppId="+appId
         urlDataType = hostUrl+uriBaseRest+"/businessobject/"+uriData
 
-        response = requests.get(url=urlDataType, headers=my_headers, verify=False)
+        response = requests.get(url=urlDataType, headers=self._headers, verify=False)
         if response.status_code == 200:
             data = response.json()["data"]
             properties = data["properties"]
@@ -101,15 +125,12 @@ class PayloadTemplateManager:
             self.dataTypeTemplates[dtName] = dtTempl            
             self.dataTypeTemplatesByClassRef[dtTempl.getClassRefKey()] = dtTempl
 
-    def getModel(self, bpmEnvironment : bpmEnv.BpmEnvironment):
+    def getModel(self):
         bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
-        bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
+        bpmExposedProcessManager.LoadProcessInstancesInfos(self.bpmEnvironment)
         appId = bpmExposedProcessManager.getAppId()
-        hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
-
-        authValue : str = "Bearer "+self.cp4ba_token
-        my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': authValue }
+        hostUrl : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        baseUri = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
 
         if baseUri == None:
             baseUri = ""
@@ -117,7 +138,7 @@ class PayloadTemplateManager:
 
         urlAssetts = hostUrl+uriBaseRest+"/assets?processAppId="+appId
 
-        response = requests.get(url=urlAssetts, headers=my_headers, verify=False)
+        response = requests.get(url=urlAssetts, headers=self._headers, verify=False)
         if response.status_code == 200:
             data = response.json()["data"]
             snapshotId = data["snapshotId"]
@@ -135,14 +156,11 @@ class PayloadTemplateManager:
             dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
             dtTemplate.builTemplate(self.dataTypeTemplates, self.dataTypeTemplatesByClassRef)
 
-    def generateTemplates(self, bpmEnvironment : bpmEnv.BpmEnvironment):
-        if self.cp4ba_token == None:
-            self.cp4ba_token = bawSys._loginZen(bpmEnvironment)
-        if self.cp4ba_token != None:
-            # load all data types, add in allDataTypes dict using boId+boSnapId key
-            self.getModel(bpmEnvironment)
-            # build data type template
-            self.buildTypeTemplate()
+    def generateTemplates(self):
+        # load all data types, add in allDataTypes dict using boId+boSnapId key
+        self.getModel()
+        # build data type template
+        self.buildTypeTemplate()
 
     def printDataTypes(self, _indentOutput: str):
         indent = False
@@ -174,9 +192,10 @@ def generatePayloadTemplates(argv):
             _indentOutput = cmdLineMgr.getParam("i", "indent")
             bpmEnvironment.loadEnvironment(_fullPathBawEnv)
             bpmEnvironment.dumpValues()
-            payloadTemplateMgr = PayloadTemplateManager()
-            payloadTemplateMgr.generateTemplates(bpmEnvironment)
-            payloadTemplateMgr.printDataTypes(_indentOutput)
+            payloadTemplateMgr = PayloadTemplateManager(bpmEnvironment)
+            if payloadTemplateMgr.loggedIn == True:
+                payloadTemplateMgr.generateTemplates()
+                payloadTemplateMgr.printDataTypes(_indentOutput)
     if ok == False:
         print("Wrong arguments, use -e param to specify environment file")
 

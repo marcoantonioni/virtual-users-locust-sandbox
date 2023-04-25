@@ -19,8 +19,8 @@ def deleteProcessInstances(argv):
             terminate = _term == "true"
             bpmEnvironment.loadEnvironment(_fullPathBawEnv)
             bpmEnvironment.dumpValues()
-            bulkOpsMgr = bulkProcessOperations.BpmProcessBulkOpsManager()
-            bulkOpsMgr.deleteInstances(bpmEnvironment, terminate)
+            bulkOpsMgr = bulkProcessOperations.BpmProcessBulkOpsManager(bpmEnvironment)
+            bulkOpsMgr.deleteInstances(terminate)
     if ok == False:
         print("Wrong arguments, use -e 'filename' param to specify environment file, use -t true to terminate process instances before delete")
 

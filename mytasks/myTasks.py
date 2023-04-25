@@ -420,7 +420,6 @@ class SequenceOfBpmTasks(SequentialTaskSet):
 
                     userName = self.user.userCreds.getName()
                     userPassword = self.user.userCreds.getPassword()    
-                    # self.user.runningTraditional = bawSys._isBawTraditional(self.user.getEnvironment())
 
                     if self.user.runningTraditional == True:
                         self.user.cookieTraditional = bawSys._loginTraditional(self.user.getEnvironment(), userName, userPassword)

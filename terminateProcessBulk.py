@@ -16,8 +16,8 @@ def terminateProcessInstances(argv):
             _fullPathBawEnv = cmdLineMgr.getParam("e", "environment")
             bpmEnvironment.loadEnvironment(_fullPathBawEnv)
             bpmEnvironment.dumpValues()
-            bulkOpsMgr = bulkProcessOperations.BpmProcessBulkOpsManager()
-            bulkOpsMgr.terminateInstances(bpmEnvironment)
+            bulkOpsMgr = bulkProcessOperations.BpmProcessBulkOpsManager(bpmEnvironment)
+            bulkOpsMgr.terminateInstances()
     if ok == False:
         print("Wrong arguments, use -e param to specify environment file")
 
