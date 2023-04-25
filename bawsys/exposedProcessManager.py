@@ -50,16 +50,15 @@ class BpmExposedProcessManager:
         return processInfo 
 
     def LoadProcessInstancesInfos(self, bpmEnvironment : bpmEnv.BpmEnvironment):
-        iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
         hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         token = None
 
+        userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
+        userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
         if bpmSys._isBawTraditional(bpmEnvironment):
-            userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
-            userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
-            token = bpmSys._loginTraditional(bpmEnvironment, hostUrl, userName, userPassword) 
+            token = bpmSys._loginTraditional(bpmEnvironment, userName, userPassword) 
         else:
-            token = bpmSys._loginZen(bpmEnvironment, iamUrl, hostUrl)
+            token = bpmSys._loginZen(bpmEnvironment, userName, userPassword)
         
         if token != None:
             response = None

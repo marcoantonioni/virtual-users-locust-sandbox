@@ -136,12 +136,8 @@ class PayloadTemplateManager:
             dtTemplate.builTemplate(self.dataTypeTemplates, self.dataTypeTemplatesByClassRef)
 
     def generateTemplates(self, bpmEnvironment : bpmEnv.BpmEnvironment):
-
-        iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
-        hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-
         if self.cp4ba_token == None:
-            self.cp4ba_token = bawSys._loginZen(bpmEnvironment, iamUrl, hostUrl)
+            self.cp4ba_token = bawSys._loginZen(bpmEnvironment)
         if self.cp4ba_token != None:
             # load all data types, add in allDataTypes dict using boId+boSnapId key
             self.getModel(bpmEnvironment)

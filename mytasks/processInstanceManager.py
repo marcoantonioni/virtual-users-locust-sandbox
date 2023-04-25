@@ -65,14 +65,14 @@ class BpmProcessInstance:
 
 class BpmProcessInstanceManager:
 
-    def createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, runningAgainstFederatedPortal, userName, processInfo: bpmSys.BpmExposedProcessInfo, payload : str, my_headers):                
+    def createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, runningTraditional, userName, processInfo: bpmSys.BpmExposedProcessInfo, payload : str, my_headers):                
         hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         urlStartInstance = hostUrl+processInfo.getStartUrl()+"&parts=header&params="+payload
         response = requests.post(url=urlStartInstance, headers=my_headers, verify=False)
         if response.status_code == 200:
             processInstance = None
             data = response.json()["data"]
-            if runningAgainstFederatedPortal == True:
+            if runningTraditional == False:
                 processInstance = BpmProcessInstance(data["state"], data["piid"], data["caseFolderID"], data["caseFolderServerName"], data["result"], 
                                                       data["startingDocumentServerName"], data["parentCaseId"], data["parentActivityId"], data["workflowApplication"], 
                                                       data["caseIdentifier"], data["caseTypeId"], data["caseStageStatus"], data["caseProcessTypeLocation"])

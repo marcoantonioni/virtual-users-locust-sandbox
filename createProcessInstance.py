@@ -60,12 +60,12 @@ def createProcessInstances(argv):
 
             userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
             userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
-            runningAgainstFederatedPortal = bawSys._isBawTraditional(bpmEnvironment) == False
+            runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
             userName = userName.encode("latin1")
             userPassword = userPassword.encode("latin1")                
 
             _headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-            if runningAgainstFederatedPortal == True:
+            if runningTraditional == False:
                 _headers['Authorization'] = 'Bearer '+authorizationBearerToken
             else:
                 _headers['Authorization'] = 'Basic ' + b64encode(b":".join((userName, userPassword))).strip().decode("ascii")
@@ -83,7 +83,7 @@ def createProcessInstances(argv):
                 jsonPayloadInfos = bpmDynamicModule.buildPayloadForSubject("Start-"+processName)
                 jsonPayload = jsonPayloadInfos["jsonObject"]
                 strPayload = json.dumps(jsonPayload)
-                processInstanceInfo : bpmPIM.BpmProcessInstance = bpmProcessInstanceManager.createInstance(bpmEnvironment, runningAgainstFederatedPortal, userName, processInfo, strPayload, _headers)
+                processInstanceInfo : bpmPIM.BpmProcessInstance = bpmProcessInstanceManager.createInstance(bpmEnvironment, runningTraditional, userName, processInfo, strPayload, _headers)
                 if processInstanceInfo != None:
                     print("Created process "+processName+" instance id["+processInstanceInfo.getPiid()+"], state["+processInstanceInfo.getState()+"]")
                 count += 1

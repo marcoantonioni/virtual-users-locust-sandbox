@@ -1,7 +1,229 @@
 
-import requests, json, logging, sys, re, base64
+import requests, random, logging, sys, re, base64, json
+from json import JSONDecodeError
 import bawsys.loadEnvironment as bpmEnv
 from requests.auth import HTTPBasicAuth
+
+#==========================================================================
+
+class BpmExposedProcessInfo:
+    def __init__(self, appName, appAcronym, processName, appId, appBpdId, startUrl):
+        self.appName : str = appName
+        self.appAcronym : str = appAcronym
+        self.processName : str = processName
+        self.appId : str = appId
+        self.appBpdId : str = appBpdId
+        self.startUrl : str = startUrl
+
+    def getAppName(self):
+        return self.appName
+    
+    def getAppAcronym(self):
+        return self.appAcronym
+    
+    def getAppProcessName(self):
+        return self.processName
+    
+    def getAppId(self):
+        return self.appId
+    
+    def getAppBpdId(self):
+        return self.appBpdId
+
+    def getStartUrl(self):
+        return self.startUrl
+
+class BpmFederatedSystem:
+    restUrlPrefix : str = None # /...server-base-uri.../rest/bpm/wle
+    systemID : str = None
+    displayName : str = None
+    systemType : str = None # SYSTEM_TYPE_WLE | SYSTEM_TYPE_CASE
+    id : str = None
+    taskCompletionUrlPrefix : str = None # /...server-base-uri.../teamworks
+    version : str = None
+    indexRefreshInterval : int = 0
+    statusCode : str = None
+    targetObjectStoreName : str = None # present only if systemType==SYSTEM_TYPE_CASE
+
+    def __init__(self, restUrlPrefix, systemID, displayName, systemType, id, taskCompletionUrlPrefix, version, indexRefreshInterval, statusCode, targetObjectStoreName):
+        self.restUrlPrefix = restUrlPrefix
+        self.systemID = systemID
+        self.displayName = displayName
+        self.systemType = systemType
+        self.id = id
+        self.taskCompletionUrlPrefix = taskCompletionUrlPrefix
+        self.version = version
+        self.indexRefreshInterval = indexRefreshInterval
+        self.statusCode = statusCode
+        self.targetObjectStoreName = targetObjectStoreName
+
+    def getSystemID(self):
+        return self.systemID
+
+    def getRestUrlPrefix(self):
+        return self.restUrlPrefix
+
+    def getStatusCode(self):
+        return self.statusCode
+
+class BpmTask:
+    id : str = None
+    subject : str = None
+    status : str = None
+    state: str = None
+    role: str = None
+    systemID: str = None
+    variableNames = []
+    actions = []
+    data: dict = None
+    federatedSystem : BpmFederatedSystem = None
+
+    def __init__(self, id, subject, status, state, role, systemID):
+        self.id = id
+        self.subject = subject
+        self.status = status
+        self.state = state
+        self.role = role
+        self.systemID = systemID
+
+    def getId(self):
+        return self.id
+
+    def getSubject(self):
+        return self.subject
+    
+    def getStatus(self):
+        return self.status
+    
+    def getState(self):
+        return self.state
+    def setState(self, state):
+        self.state = state
+    
+    def getRole(self):
+        return self.role
+
+    def getSystemID(self):
+        return self.systemID
+
+    def getVariableNames(self):
+        return self.variableNames
+    def setVariableNames(self, variableNames):
+        self.variableNames = variableNames
+
+    def getActions(self):
+        return self.actions
+    
+    def setActions(self, actions):
+        self.actions = actions
+
+    def hasAction(self, action):
+        for act in self.actions:
+            if act == action:
+                return True
+        return False
+    
+    def setTaskData(self, data):
+        self.data = data
+
+    def getTaskData(self):
+        return self.data
+
+    def setFederatedSystem(self, fedSys):
+        self.federatedSystem = fedSys
+
+    def getFederatedSystem(self):
+        return self.federatedSystem
+
+    def isFederatedSystem(self):
+        return self.federatedSystem != None
+
+    def buildListOfVarNames(self):
+        paramVarNames = ""
+        allNames = self.getVariableNames()
+        totNames = len(allNames)
+        for pName in allNames:
+            paramVarNames = paramVarNames + pName
+            totNames = totNames - 1
+            if totNames > 0:
+                paramVarNames = paramVarNames + ","
+        return paramVarNames
+
+class BpmTaskList:
+    count : int = 0
+    bpmTasks : BpmTask = None
+    bpmFederatedSystems = dict()
+
+    def __init__(self, count, bpmTasks):
+        self.count = count
+        self.bpmTasks = bpmTasks
+
+    def getCount(self):
+        return self.count
+
+    def getTasks(self):
+        return self.bpmTasks
+    
+    def getPreparedTask( self, idx ):
+        bpmTask : BpmTask = self.getTasks()[idx];
+        if bpmTask != None:
+            if bpmTask.getSystemID() != "":
+                bpmTask.setFederatedSystem(self.bpmFederatedSystems[bpmTask.getSystemID()])
+        return bpmTask
+    
+    def getPreparedTaskRandom(self):
+        idx : int = random.randint(0, self.getCount()-1)
+        return self.getPreparedTask( idx )
+    
+    def setFederationInfos( self, listOfBpmSystems ):
+        for bpmSystem in listOfBpmSystems:
+            targetObjectStoreName = None
+            systemType = bpmSystem["systemType"]
+            if systemType == "SYSTEM_TYPE_CASE":
+                targetObjectStoreName = bpmSystem["targetObjectStoreName"]
+            bpmFedSys : BpmFederatedSystem = BpmFederatedSystem(bpmSystem["restUrlPrefix"], bpmSystem["systemID"], bpmSystem["displayName"], systemType, bpmSystem["id"], bpmSystem["taskCompletionUrlPrefix"], bpmSystem["version"], bpmSystem["indexRefreshInterval"], bpmSystem["statusCode"], targetObjectStoreName)
+            self.bpmFederatedSystems[bpmFedSys.getSystemID()] = bpmFedSys
+
+#==========================================================================
+
+
+# Identity token - address (cp-console)
+def _identityToken(self, baseHost, userName, userPassword):
+    idTk : str = None
+    params : str = "grant_type=password&scope=openid&username="+userName+"&password="+userPassword
+    my_headers = {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}
+    with self.client.post(url=baseHost+"/idprovider/v1/auth/identitytoken", data=params, headers=my_headers, catch_response=True) as response:
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logging.debug("_identityToken status code: %s", response.status_code)
+        if response.status_code == 200:
+            try:
+                idTk = response.json()["access_token"]                
+            except JSONDecodeError:
+                logging.error("_identityToken error, user %s, response could not be decoded as JSON", userName)
+                response.failure("Response could not be decoded as JSON")
+            except KeyError:
+                logging.error("_identityToken error, user %s, did not contain expected key 'access_token'", userName)
+                response.failure("Response did not contain expected key 'access_token'")
+    return idTk
+
+# Zen token - address (cpd-cp4ba)
+def _zenToken(self, baseHost, userName, iamToken):
+    zenTk : str = None
+    my_headers = {'username': userName, 'iam-token': iamToken }
+    
+    with self.client.get(url=baseHost+"/v1/preauth/validateAuth", headers=my_headers, catch_response=True) as response:
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logging.debug("_cp4baToken status code: %s", response.status_code)
+        if response.status_code == 200:
+            try:
+                zenTk = response.json()["accessToken"]                
+            except JSONDecodeError:
+                logging.error("_cp4baToken error, user %s, response could not be decoded as JSON", userName)
+                response.failure("Response could not be decoded as JSON")
+            except KeyError:
+                logging.error("_cp4baToken error, user %s, did not contain expected key 'accessToken'", userName)
+                response.failure("Response did not contain expected key 'accessToken'")
+    return zenTk
 
 def getUserNumber( userId : str ):
     # se primo carattere numero errore
@@ -43,43 +265,20 @@ def usersRange( userId: str ):
         pass
     return rangeOfUsers;
 
-class BpmExposedProcessInfo:
-    def __init__(self, appName, appAcronym, processName, appId, appBpdId, startUrl):
-        self.appName : str = appName
-        self.appAcronym : str = appAcronym
-        self.processName : str = processName
-        self.appId : str = appId
-        self.appBpdId : str = appBpdId
-        self.startUrl : str = startUrl
-
-    def getAppName(self):
-        return self.appName
-    
-    def getAppAcronym(self):
-        return self.appAcronym
-    
-    def getAppProcessName(self):
-        return self.processName
-    
-    def getAppId(self):
-        return self.appId
-    
-    def getAppBpdId(self):
-        return self.appBpdId
-
-    def getStartUrl(self):
-        return self.startUrl
-
 def _isBawTraditional( bpmEnvironment : bpmEnv.BpmEnvironment ):
-    runTraditional = True
+    runTraditional = False
     runMode = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_TASK_LIST_STRATEGY)    
-    if runMode == bpmEnv.BpmEnvironment.valBAW_TASK_LIST_STRATEGY_FEDERATEDPORTAL:
-        runTraditional = False
+    if runMode == bpmEnv.BpmEnvironment.valBAW_TASK_LIST_STRATEGY_STANDALONE:
+        runTraditional = True
     return runTraditional
 
-def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, iamUrl: str, hostUrl: str):
-    userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
-    userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
+def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, userName = None, userPassword = None):
+    iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
+    hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+    if userName == None or userPassword == None:
+        userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
+        userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
+
     if iamUrl.endswith('/'):
         iamUrl = iamUrl[:-1]
     if hostUrl.endswith('/'):
@@ -100,7 +299,8 @@ def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, iamUrl: str, hostUrl: str)
             return token
     return None
 
-def _loginTraditional(bpmEnvironment : bpmEnv.BpmEnvironment, hostUrl: str, userName: str, userPassword: str):
+def _loginTraditional(bpmEnvironment : bpmEnv.BpmEnvironment, userName: str, userPassword: str):
+    hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
     if hostUrl.endswith('/'):
         hostUrl = hostUrl[:-1]
     baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)

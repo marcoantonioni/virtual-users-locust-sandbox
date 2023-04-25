@@ -1,172 +1,16 @@
 # tasks
 
 import logging, time, random, json
+from json import JSONDecodeError
 from base64 import b64encode
 from locust import task, tag, SequentialTaskSet
-from locust.exception import RescheduleTaskImmediately
-from json import JSONDecodeError
 from mytasks.processInstanceManager import BpmProcessInstanceManager as bpmPIM
 from mytasks.processInstanceManager import BpmProcessInstance as bpmPI
 from bawsys import loadEnvironment as bpmEnv
-from bawsys import bawSystem as bpmSys 
+from bawsys import bawSystem as bawSys 
 
 #-------------------------------------------
-# BPM types
-
-class BpmFederatedSystem:
-    restUrlPrefix : str = None # /...server-base-uri.../rest/bpm/wle
-    systemID : str = None
-    displayName : str = None
-    systemType : str = None # SYSTEM_TYPE_WLE | SYSTEM_TYPE_CASE
-    id : str = None
-    taskCompletionUrlPrefix : str = None # /...server-base-uri.../teamworks
-    version : str = None
-    indexRefreshInterval : int = 0
-    statusCode : str = None
-    targetObjectStoreName : str = None # present only if systemType==SYSTEM_TYPE_CASE
-
-    def __init__(self, restUrlPrefix, systemID, displayName, systemType, id, taskCompletionUrlPrefix, version, indexRefreshInterval, statusCode, targetObjectStoreName):
-        self.restUrlPrefix = restUrlPrefix
-        self.systemID = systemID
-        self.displayName = displayName
-        self.systemType = systemType
-        self.id = id
-        self.taskCompletionUrlPrefix = taskCompletionUrlPrefix
-        self.version = version
-        self.indexRefreshInterval = indexRefreshInterval
-        self.statusCode = statusCode
-        self.targetObjectStoreName = targetObjectStoreName
-
-    def getSystemID(self):
-        return self.systemID
-
-    def getRestUrlPrefix(self):
-        return self.restUrlPrefix
-
-    def getStatusCode(self):
-        return self.statusCode
-
-
-class BpmTask:
-    id : str = None
-    subject : str = None
-    status : str = None
-    state: str = None
-    role: str = None
-    systemID: str = None
-    variableNames = []
-    actions = []
-    data: dict = None
-    federatedSystem : BpmFederatedSystem = None
-
-    def __init__(self, id, subject, status, state, role, systemID):
-        self.id = id
-        self.subject = subject
-        self.status = status
-        self.state = state
-        self.role = role
-        self.systemID = systemID
-
-    def getId(self):
-        return self.id
-
-    def getSubject(self):
-        return self.subject
     
-    def getStatus(self):
-        return self.status
-    
-    def getState(self):
-        return self.state
-    def setState(self, state):
-        self.state = state
-    
-    def getRole(self):
-        return self.role
-
-    def getSystemID(self):
-        return self.systemID
-
-    def getVariableNames(self):
-        return self.variableNames
-    def setVariableNames(self, variableNames):
-        self.variableNames = variableNames
-
-    def getActions(self):
-        return self.actions
-    
-    def setActions(self, actions):
-        self.actions = actions
-
-    def hasAction(self, action):
-        for act in self.actions:
-            if act == action:
-                return True
-        return False
-    
-    def setTaskData(self, data):
-        self.data = data
-
-    def getTaskData(self):
-        return self.data
-
-    def setFederatedSystem(self, fedSys):
-        self.federatedSystem = fedSys
-
-    def getFederatedSystem(self):
-        return self.federatedSystem
-
-    def isFederatedSystem(self):
-        return self.federatedSystem != None
-
-    def buildListOfVarNames(self):
-        paramVarNames = ""
-        allNames = self.getVariableNames()
-        totNames = len(allNames)
-        for pName in allNames:
-            paramVarNames = paramVarNames + pName
-            totNames = totNames - 1
-            if totNames > 0:
-                paramVarNames = paramVarNames + ","
-        return paramVarNames
-    
-    pass
-
-class BpmTaskList:
-    count : int = 0
-    bpmTasks : BpmTask = None
-    bpmFederatedSystems = dict()
-
-    def __init__(self, count, bpmTasks):
-        self.count = count
-        self.bpmTasks = bpmTasks
-
-    def getCount(self):
-        return self.count
-
-    def getTasks(self):
-        return self.bpmTasks
-    
-    def getPreparedTask( self, idx ):
-        bpmTask : BpmTask = self.getTasks()[idx];
-        if bpmTask != None:
-            if bpmTask.getSystemID() != "":
-                bpmTask.setFederatedSystem(self.bpmFederatedSystems[bpmTask.getSystemID()])
-        return bpmTask
-    
-    def getPreparedTaskRandom(self):
-        idx : int = random.randint(0, self.getCount()-1)
-        return self.getPreparedTask( idx )
-    
-    def setFederationInfos( self, listOfBpmSystems ):
-        for bpmSystem in listOfBpmSystems:
-            targetObjectStoreName = None
-            systemType = bpmSystem["systemType"]
-            if systemType == "SYSTEM_TYPE_CASE":
-                targetObjectStoreName = bpmSystem["targetObjectStoreName"]
-            bpmFedSys : BpmFederatedSystem = BpmFederatedSystem(bpmSystem["restUrlPrefix"], bpmSystem["systemID"], bpmSystem["displayName"], systemType, bpmSystem["id"], bpmSystem["taskCompletionUrlPrefix"], bpmSystem["version"], bpmSystem["indexRefreshInterval"], bpmSystem["statusCode"], targetObjectStoreName)
-            self.bpmFederatedSystems[bpmFedSys.getSystemID()] = bpmFedSys
-
 
 def _getAttributeNamesFromDictionary(varDict):
     listOfVarNames = []
@@ -185,47 +29,6 @@ def _cleanVarData(varDict):
             except KeyError:
                 pass
     return varDict
-
-#-------------------------------------------
-# bpm authentication tokens
-
-# IAM address (cp-console)
-def _accessToken(self, baseHost, userName, userPassword):
-    access_token : str = None
-    params : str = "grant_type=password&scope=openid&username="+userName+"&password="+userPassword
-    my_headers = {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}
-    with self.client.post(url=baseHost+"/idprovider/v1/auth/identitytoken", data=params, headers=my_headers, catch_response=True) as response:
-        if logging.getLogger().isEnabledFor(logging.DEBUG):
-            logging.debug("_accessToken status code: %s", response.status_code)
-        if response.status_code == 200:
-            try:
-                access_token = response.json()["access_token"]                
-            except JSONDecodeError:
-                logging.error("_accessToken error, user %s, response could not be decoded as JSON", userName)
-                response.failure("Response could not be decoded as JSON")
-            except KeyError:
-                logging.error("_accessToken error, user %s, did not contain expected key 'access_token'", userName)
-                response.failure("Response did not contain expected key 'access_token'")
-    return access_token
-
-# CP4BA address (cpd-cp4ba)
-def _cp4baToken(self, baseHost, userName, iamToken):
-    cp4ba_token : str = None
-    my_headers = {'username': userName, 'iam-token': iamToken }
-    
-    with self.client.get(url=baseHost+"/v1/preauth/validateAuth", headers=my_headers, catch_response=True) as response:
-        if logging.getLogger().isEnabledFor(logging.DEBUG):
-            logging.debug("_cp4baToken status code: %s", response.status_code)
-        if response.status_code == 200:
-            try:
-                cp4ba_token = response.json()["accessToken"]                
-            except JSONDecodeError:
-                logging.error("_cp4baToken error, user %s, response could not be decoded as JSON", userName)
-                response.failure("Response could not be decoded as JSON")
-            except KeyError:
-                logging.error("_cp4baToken error, user %s, did not contain expected key 'accessToken'", userName)
-                response.failure("Response did not contain expected key 'accessToken'")
-    return cp4ba_token
 
 #-------------------------------------------
 # bpm logic
@@ -335,12 +138,12 @@ def _buildTaskList(self, tasksCount, tasksList, interaction):
             pass
         if bpmRole != None and isClaiming == True:             
             if self.user.isSubjectForUser(bpmSubject) == True:
-                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole, bpmSystemID))
+                bpmTaksItems.append(bawSys.BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole, bpmSystemID))
         if bpmRole == None and isClaiming == False:             
             if self.user.isSubjectForUser(bpmSubject) == True:
-                bpmTaksItems.append(BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole, bpmSystemID))
+                bpmTaksItems.append(bawSys.BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole, bpmSystemID))
 
-    return BpmTaskList(len(bpmTaksItems), bpmTaksItems)
+    return bawSys.BpmTaskList(len(bpmTaksItems), bpmTaksItems)
 
 def _basicAuthHeader(username, password):
     username = username.encode("latin1")
@@ -349,7 +152,7 @@ def _basicAuthHeader(username, password):
 
 def _prepareHeaders(self):
     _headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-    if self.user.runningAgainstFederatedPortal == True:
+    if self.user.runningTraditional == False:
         _headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
     else:
         _headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
@@ -377,7 +180,7 @@ def _listTasks(self, interaction, size):
 
         # headers and authentication
         my_headers = _prepareHeaders(self)
-        if self.user.runningAgainstFederatedPortal == True:
+        if self.user.runningTraditional == False:
             taskListFederated = True
             uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
         else:
@@ -396,7 +199,7 @@ def _listTasks(self, interaction, size):
                 _taskList = None
                 size = 0
                 items = None
-                if self.user.runningAgainstFederatedPortal == True:
+                if self.user.runningTraditional == False:
                     size = restResponseManager.getObject("size")
                     items = restResponseManager.getObject("items")
                 else:
@@ -413,7 +216,7 @@ def _listTasks(self, interaction, size):
                     if logging.getLogger().isEnabledFor(logging.DEBUG):
                         logging.debug("_listTasks [%s] user %s, size %d, numtasks %d, response %s", interaction, self.user.userCreds.getName(), size, len(items), json.dumps(restResponseManager.getJson(), indent = 2))
 
-                    _taskList : BpmTaskList = _buildTaskList(self, size, items, interaction)
+                    _taskList : bawSys.BpmTaskList = _buildTaskList(self, size, items, interaction)
                     
                     if taskListFederated == True:
                         _taskList.setFederationInfos(restResponseManager.getObject("federationResult"))
@@ -422,7 +225,7 @@ def _listTasks(self, interaction, size):
         return None
     pass
 
-def _buildTaskUrl(bpmTask : BpmTask, user):
+def _buildTaskUrl(bpmTask : bawSys.BpmTask, user):
     fullUrl = ""
     if bpmTask.isFederatedSystem():
         fullUrl = bpmTask.getFederatedSystem().getRestUrlPrefix()+"/v1/task/"+bpmTask.getId()
@@ -432,17 +235,11 @@ def _buildTaskUrl(bpmTask : BpmTask, user):
         fullUrl = hostUrl+baseUri+"/rest/bpm/wle/v1/task/"+bpmTask.getId()
     return fullUrl
 
-def _taskGetDetails(self, bpmTask : BpmTask):
+def _taskGetDetails(self, bpmTask : bawSys.BpmTask):
     if self.user.loggedIn == True:
 
         # headers and authentication 
         my_headers = _prepareHeaders(self)
-
-        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        #if self.user.runningAgainstFederatedPortal == True:
-        #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-        #else:
-        #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?parts=data,actions"
         
@@ -460,17 +257,12 @@ def _taskGetDetails(self, bpmTask : BpmTask):
 
     return False
 
-def _taskGetData(self, bpmTask: BpmTask):
+def _taskGetData(self, bpmTask: bawSys.BpmTask):
     if self.user.loggedIn == True:
         if _taskGetDetails(self, bpmTask) == True:
 
             # headers and authentication 
             my_headers = _prepareHeaders(self)
-            #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-            #if self.user.runningAgainstFederatedPortal == True:
-            #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-            #else:
-            #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
             paramNames = bpmTask.buildListOfVarNames()
             fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=getData&fields="+paramNames
@@ -489,16 +281,11 @@ def _taskGetData(self, bpmTask: BpmTask):
 
     return False
 
-def _taskSetData(self, bpmTask, payload):
+def _taskSetData(self, bpmTask: bawSys.BpmTask, payload):
     if self.user.loggedIn == True:
 
         # headers and authentication 
         my_headers = _prepareHeaders(self)
-        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        #if self.user.runningAgainstFederatedPortal == True:
-        #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-        #else:
-        #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         jsonStr = json.dumps(payload)
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=setData&params="+jsonStr
@@ -517,16 +304,11 @@ def _taskSetData(self, bpmTask, payload):
 
     return False
 
-def _taskClaim(self, bpmTask : BpmTask):
+def _taskClaim(self, bpmTask : bawSys.BpmTask):
     if self.user.loggedIn == True:
 
         # headers and authentication
         my_headers = _prepareHeaders(self)
-        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        #if self.user.runningAgainstFederatedPortal == True:
-        #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-        #else:
-        #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=assign&toMe=true&parts=none"
 
@@ -543,16 +325,11 @@ def _taskClaim(self, bpmTask : BpmTask):
 
     return False                
 
-def _taskRelease(self, bpmTask: BpmTask):
+def _taskRelease(self, bpmTask: bawSys.BpmTask):
     if self.user.loggedIn == True:
 
         # headers and authentication 
         my_headers = _prepareHeaders(self)
-        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        #if self.user.runningAgainstFederatedPortal == True:
-        #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-        #else:
-        #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=assign&back=true&parts=none"
 
@@ -569,16 +346,11 @@ def _taskRelease(self, bpmTask: BpmTask):
 
     return False
 
-def _taskComplete(self, bpmTask, payload):
+def _taskComplete(self, bpmTask: bawSys.BpmTask, payload):
     if self.user.loggedIn == True:
 
         # headers and authentication 
         my_headers = _prepareHeaders(self)
-        #my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-        #if self.user.runningAgainstFederatedPortal == True:
-        #    my_headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
-        #else:
-        #    my_headers['Authorization'] = _basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
 
         jsonStr = json.dumps(payload)
         fullUrl = _buildTaskUrl(bpmTask, self.user) + "?action=complete&parts=none&params="+jsonStr
@@ -642,45 +414,36 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_LOGIN ):
                 uName = "n/a"
                 if self.user.userCreds != None:
+                    self.user.loggedIn = False
+                    self.user.cookieTraditional = None
+                    self.user.authorizationBearerToken = None
 
-                    if bpmSys._isBawTraditional(self.user.getEnvironment()):
+                    userName = self.user.userCreds.getName()
+                    userPassword = self.user.userCreds.getPassword()    
+                    # self.user.runningTraditional = bawSys._isBawTraditional(self.user.getEnvironment())
 
-                        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-                        userName = self.user.userCreds.getName()
-                        userPassword = self.user.userCreds.getPassword()
-
-                        self.user.cookieTraditional = bpmSys._loginTraditional(self.user.getEnvironment(), hostUrl, userName, userPassword)
-
+                    if self.user.runningTraditional == True:
+                        self.user.cookieTraditional = bawSys._loginTraditional(self.user.getEnvironment(), userName, userPassword)
                         if self.user.cookieTraditional != None:
-                            self.user.runningAgainstFederatedPortal = False
                             self.user.loggedIn = True
-                            self.user.idleCounter = 0
-                            logging.info("User[%s] - bawLogin - logged in", userName)
-                        else:
-                            logging.error("User[%s] - bawLogin - failed login ***ERROR***", userName)
                     else:
-                        userName : str = self.user.userCreds.getName()
-                        userPassword : str = self.user.userCreds.getPassword()
-                        iamUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
-                        hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+                        self.user.authorizationBearerToken = bawSys._loginZen(self.user.getEnvironment(), userName, userPassword)
+                        if self.user.authorizationBearerToken != None:
+                            self.user.loggedIn = True
 
-                        access_token : str = _accessToken(self, iamUrl, userName, userPassword)
-                        if access_token != None:
-                            self.user.authorizationBearerToken = _cp4baToken(self, hostUrl, userName, access_token)
-                            if self.user.authorizationBearerToken != None:
-                                self.user.runningAgainstFederatedPortal = True
-                                self.user.loggedIn = True
-                                logging.info("User[%s] - bawLogin - logged in", userName)
-                            else:
-                                logging.error("User[%s] - bawLogin - failed login ***ERROR***", userName)
-        pass
+                    if self.user.loggedIn == True:
+                        self.user.idleCounter = 0
+                        logging.info("User[%s] - bawLogin - logged in", userName)
+                    else:
+                        logging.error("User[%s] - bawLogin - failed login", userName)
+
 
     def bawClaimTask(self):
         if self.user.loggedIn == True:
             if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_CLAIM ):
-                taskList : BpmTaskList = _listTasks(self, "available", 25)
+                taskList : bawSys.BpmTaskList = _listTasks(self, "available", 25)
                 if taskList != None and taskList.getCount() > 0:
-                    bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+                    bpmTask : bawSys.BpmTask = taskList.getPreparedTaskRandom()
 
                     if _taskGetDetails(self, bpmTask) == True:
 
@@ -711,7 +474,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 taskList = _listTasks(self, "claimed", 25)
 
                 if taskList != None and taskList.getCount() > 0:    
-                    bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+                    bpmTask : bawSys.BpmTask = taskList.getPreparedTaskRandom()
 
                     if _taskGetDetails(self, bpmTask) == True:
 
@@ -749,7 +512,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 taskList = _listTasks(self, "claimed", 25)
 
                 if taskList != None and taskList.getCount() > 0:    
-                    bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+                    bpmTask : bawSys.BpmTask = taskList.getPreparedTaskRandom()
 
                     if _taskGetData(self, bpmTask) == True:
                         self.user.idleCounter = 0
@@ -770,7 +533,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 taskList = _listTasks(self, "claimed", 25)
 
                 if taskList != None and taskList.getCount() > 0:    
-                    bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+                    bpmTask : bawSys.BpmTask = taskList.getPreparedTaskRandom()
 
                     if _taskGetDetails(self, bpmTask) == True:
 
@@ -811,7 +574,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 taskList = _listTasks(self, "claimed", 25)
 
                 if taskList != None and taskList.getCount() > 0:    
-                    bpmTask : BpmTask = taskList.getPreparedTaskRandom()
+                    bpmTask : bawSys.BpmTask = taskList.getPreparedTaskRandom()
 
                     if _taskGetDetails(self, bpmTask) == True:
 
@@ -840,13 +603,13 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             if isActionEnabled( self, bpmEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS ):
                 pem = self.user.getEPM()
                 pim = self.user.getPIM()
-                processInfo: bpmSys.BpmExposedProcessInfo = pem.nextRandomProcessInfos()
+                processInfo: bawSys.BpmExposedProcessInfo = pem.nextRandomProcessInfos()
                 processName = processInfo.getAppProcessName()
                 jsonPayloadInfos = self._buildPayload("Start-"+processName)
                 jsonPayload = _extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
                 strPayload = json.dumps(jsonPayload)
                 my_headers = _prepareHeaders(self)
-                processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), self.user.runningAgainstFederatedPortal, self.user.userCreds.getName(), processInfo, strPayload, my_headers)
+                processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), self.user.runningTraditional, self.user.userCreds.getName(), processInfo, strPayload, my_headers)
                 if processInstanceInfo != None:
                     logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
 

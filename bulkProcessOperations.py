@@ -11,22 +11,16 @@ class BpmProcessBulkOpsManager:
       self.cp4ba_token : str = None
 
     def terminateInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment):
-        iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
-        hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-
         if self.cp4ba_token == None:
-            self.cp4ba_token = bawSys._loginZen(bpmEnvironment, iamUrl, hostUrl)
+            self.cp4ba_token = bawSys._loginZen(bpmEnvironment)
         if self.cp4ba_token != None:
             print("Terminating instances...")
             return self._workOnInstances(bpmEnvironment, "terminate")
         return None
 
     def deleteInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment, terminate: bool):
-        iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
-        hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-
         if self.cp4ba_token == None:
-            self.cp4ba_token = bawSys._loginZen(bpmEnvironment, iamUrl, hostUrl)
+            self.cp4ba_token = bawSys._loginZen(bpmEnvironment)
         if self.cp4ba_token != None:
             if terminate == True:
                 print("Terminating instances...")

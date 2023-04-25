@@ -12,6 +12,7 @@ import bawsys.loadEnvironment as bpmEnv
 import bawsys.loadUserTaskSubjects as bpmUTS
 import bawsys.loadCredentials as bpmCreds
 import bawsys.exposedProcessManager as bpmExpProcs
+from bawsys import bawSystem as bawSys 
 
 bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
 bpmUserSubjects : bpmUTS.BpmUserSubjects =bpmUTS.BpmUserSubjects()
@@ -36,7 +37,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     min_think_time : int = 0
     max_think_time : int = 1  
     loggedIn : bool = False
-    runningAgainstFederatedPortal = False
+    runningTraditional = False
     cookieTraditional = None
     authorizationBearerToken : str = None    
     userCreds : bpmCreds.UserCredentials = None
@@ -116,6 +117,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         self.max_think_time = int(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MAX))
         self.setIdleMode()
         self.configureVirtualUserActions()
+        self.runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
 
         self.userCreds = bpmCreds.getNextUserCredentials()
         if self.userCreds != None:
