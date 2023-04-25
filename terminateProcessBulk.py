@@ -1,4 +1,4 @@
-import bulkProcessOperations
+import bawsys.bulkProcessOperations as bulkOps
 import bawsys.commandLineManager as clpm
 from bawsys import loadEnvironment as bawEnv
 import sys, logging
@@ -16,7 +16,7 @@ def terminateProcessInstances(argv):
             _fullPathBawEnv = cmdLineMgr.getParam("e", "environment")
             bpmEnvironment.loadEnvironment(_fullPathBawEnv)
             bpmEnvironment.dumpValues()
-            bulkOpsMgr = bulkProcessOperations.BpmProcessBulkOpsManager(bpmEnvironment)
+            bulkOpsMgr = bulkOps.BpmProcessBulkOpsManager(bpmEnvironment)
             bulkOpsMgr.terminateInstances()
     if ok == False:
         print("Wrong arguments, use -e param to specify environment file")

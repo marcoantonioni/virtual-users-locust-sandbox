@@ -1,4 +1,4 @@
-import bulkProcessOperations
+import bawsys.bulkProcessOperations as bulkOps
 import bawsys.commandLineManager as clpm
 from bawsys import loadEnvironment as bawEnv
 import sys, logging
@@ -19,7 +19,7 @@ def deleteProcessInstances(argv):
             terminate = _term == "true"
             bpmEnvironment.loadEnvironment(_fullPathBawEnv)
             bpmEnvironment.dumpValues()
-            bulkOpsMgr = bulkProcessOperations.BpmProcessBulkOpsManager(bpmEnvironment)
+            bulkOpsMgr = bulkOps.BpmProcessBulkOpsManager(bpmEnvironment)
             bulkOpsMgr.deleteInstances(terminate)
     if ok == False:
         print("Wrong arguments, use -e 'filename' param to specify environment file, use -t true to terminate process instances before delete")
