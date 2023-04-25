@@ -1,6 +1,4 @@
 
-- policy sequenza login utenze (SORTED_FIFO | SORTED_LIFO | RANDOM)
-
 - tool per lettura payload istanze processo completate/terminate/failed
 -- export record formato json per analisi risultato
 

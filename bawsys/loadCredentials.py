@@ -64,15 +64,32 @@ def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment ):
                 temp_user_credentials.append(UserCredentials(usr, userPassword, userEmail))
                 logging.debug('User %s, password %s', usr, userPassword, userEmail)
     
+    orderMode = 0
+    userOrderMode = bpmEnvironment.getValue(bpmEnvironment.keyBAW_USER_ORDER_MODE)
+    if userOrderMode != None:
+        if userOrderMode == bpmEnvironment.valBAW_USER_ORDER_MODE_SORTED_FIFO:
+            orderMode = 0
+        if userOrderMode == bpmEnvironment.valBAW_USER_ORDER_MODE_SORTED_LIFO:
+            orderMode = 1
+        if userOrderMode == bpmEnvironment.valBAW_USER_ORDER_MODE_SORTED_RANDOM:
+            orderMode = 2
+
+
     hasItems = True
     while hasItems:
         numUsers = len(temp_user_credentials)
         idx = 0
-        if numUsers > 1:
-            idx = random.randint(0, numUsers - 1)
+        if numUsers > 0:
+            if orderMode == 0:
+                idx = 0
+            if orderMode == 1:
+                idx = numUsers - 1
+            if orderMode == 2:
+                idx = random.randint(0, numUsers - 1)
         else:
             hasItems = False
-        user_credentials.append( temp_user_credentials.pop(idx) )
+        if hasItems == True:
+            user_credentials.append( temp_user_credentials.pop(idx) )
 
     logging.debug("Loaded [%d] users, using strategy [%s]", len(user_credentials), userStrategy)
     
