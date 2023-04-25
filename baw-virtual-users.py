@@ -235,3 +235,5 @@ def on_locust_init(environment, **kwargs):
         dynamicPLM : str = bpmEnvironment.getDynamicModuleFormatName()
         global bpmDynamicModule 
         bpmDynamicModule = import_module(dynamicPLM)
+        
+        bpmProcessInstanceManager.setupMaxInstances(bpmEnvironment)

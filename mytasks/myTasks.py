@@ -381,18 +381,22 @@ class SequenceOfBpmTasks(SequentialTaskSet):
 
     def bawCreateInstance(self):
         if self.user.loggedIn == True:
-            if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS ):
-                pem = self.user.getEPM()
+            if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS ):                
                 pim = self.user.getPIM()
-                processInfo: bawSys.BpmExposedProcessInfo = pem.nextRandomProcessInfos()
-                processName = processInfo.getAppProcessName()
-                jsonPayloadInfos = self._buildPayload("Start-"+processName)
-                jsonPayload = bawUtils._extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
-                strPayload = json.dumps(jsonPayload)
-                my_headers = self._prepareHeaders()
-                processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), self.user.runningTraditional, self.user.userCreds.getName(), processInfo, strPayload, my_headers)
-                if processInstanceInfo != None:
-                    logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
+                if pim.consumeInstance() == True:
+                    pem = self.user.getEPM()
+                    processInfo: bawSys.BpmExposedProcessInfo = pem.nextRandomProcessInfos()
+                    processName = processInfo.getAppProcessName()
+                    jsonPayloadInfos = self._buildPayload("Start-"+processName)
+                    jsonPayload = bawUtils._extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
+                    strPayload = json.dumps(jsonPayload)
+                    my_headers = self._prepareHeaders()
+                    processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), self.user.runningTraditional, self.user.userCreds.getName(), processInfo, strPayload, my_headers)
+                    if processInstanceInfo != None:
+                        logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
+                else:
+                    if logging.getLogger().isEnabledFor(logging.DEBUG):
+                        logging.debug("User[%s] - bawCreateInstance reached total limit", self.user.userCreds.getName())
 
     #==========================================================
     # List of enabled tasks

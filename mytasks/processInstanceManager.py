@@ -65,6 +65,23 @@ class BpmProcessInstance:
 
 class BpmProcessInstanceManager:
 
+    def __init__(self):
+        self.maxInstancesPerRun = 10
+        self.createdInstancesPerRun = 0
+
+    def setupMaxInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment):
+        if bpmEnvironment != None:
+            strMax = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_INSTANCES_MAX)
+            if strMax != None:
+                self.maxInstancesPerRun = int(strMax)
+       
+    def consumeInstance(self):
+        ok = False
+        if self.createdInstancesPerRun < self.maxInstancesPerRun:
+          self.createdInstancesPerRun += 1
+          ok = True
+        return ok
+
     def createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, runningTraditional, userName, processInfo: bpmSys.BpmExposedProcessInfo, payload : str, my_headers):                
         hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         urlStartInstance = hostUrl+processInfo.getStartUrl()+"&parts=header&params="+payload
