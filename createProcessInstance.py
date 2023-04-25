@@ -3,7 +3,7 @@ from bawsys import loadEnvironment as bpmEnv
 import bawsys.commandLineManager as clpm
 import bawsys.exposedProcessManager as bpmExpProcs
 from bawsys import bawSystem as bawSys
-import mytasks.processInstanceManager as bpmPIM
+import bawsys.processInstanceManager as bpmPIM
 from base64 import b64encode
 from bawsys import bawUtils as bawUtils 
 

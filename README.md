@@ -26,6 +26,10 @@ locust -f ./baw-virtual-users.py --headless --only-summary --run-time 60s --user
 python ./createProcessInstance.py  -e ./configurations/env1.properties -i 10
 python ./createProcessInstance.py  -e ./configurations/env1-traditional.properties -i 10
 
+# lista istanze
+python ./listProcessInstances.py -e ./configurations/env1.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z
+python ./listProcessInstances.py -e ./configurations/env1-traditional.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z
+
 # terminazione istanze
 python ./terminateProcessBulk.py -e ./configurations/env1.properties
 python ./terminateProcessBulk.py  -e ./configurations/env1-traditional.properties

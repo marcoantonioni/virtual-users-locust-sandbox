@@ -2,8 +2,8 @@
 
 import logging, json
 from locust import task, tag, SequentialTaskSet
-from mytasks.processInstanceManager import BpmProcessInstanceManager as bpmPIM
-from mytasks.processInstanceManager import BpmProcessInstance as bpmPI
+from bawsys.processInstanceManager import BpmProcessInstanceManager as bpmPIM
+from bawsys.processInstanceManager import BpmProcessInstance as bpmPI
 from bawsys import loadEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys 
 from bawsys import bawRestResponseManager as responseMgr 

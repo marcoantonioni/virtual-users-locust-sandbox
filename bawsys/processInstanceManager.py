@@ -1,6 +1,7 @@
 import requests, json, logging
 import bawsys.loadEnvironment as bpmEnv
-import bawsys.bawSystem as bpmSys
+import bawsys.bawSystem as bawSys
+import bawsys.bawUtils as bawUtils
 import urllib
 
 requests.packages.urllib3.disable_warnings() 
@@ -63,6 +64,21 @@ class BpmProcessInstance:
       return self.caseProcessTypeLocation
 
 
+class BpmExecProcessInstance:
+    def __init__(self, executionState: str, piid: str, name: str, bpdName: str, snapshotId: str, 
+                    projectId: str, dueDate: str, creationDate: str, lastModTime: str, closedDate: str):
+      self.executionState = executionState 
+      self.piid = piid
+      self.name = name
+      self.bpdName = bpdName
+      self.snapshotId = snapshotId
+      self.projectId = projectId
+      self.dueDate = dueDate
+      self.creationDate = creationDate
+      self.lastModTime = lastModTime
+      self.closedDate = closedDate
+
+
 class BpmProcessInstanceManager:
 
     def __init__(self):
@@ -82,7 +98,7 @@ class BpmProcessInstanceManager:
           ok = True
         return ok
 
-    def createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, runningTraditional, userName, processInfo: bpmSys.BpmExposedProcessInfo, payload : str, my_headers):                
+    def createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, runningTraditional, userName, processInfo: bawSys.BpmExposedProcessInfo, payload : str, my_headers):                
         hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         urlStartInstance = hostUrl+processInfo.getStartUrl()+"&parts=header&params="+payload
         response = requests.post(url=urlStartInstance, headers=my_headers, verify=False)
@@ -102,3 +118,68 @@ class BpmProcessInstanceManager:
             logging.error("createInstance error, user %s, status code [%d], message [%s]", userName, response.status_code, response.text)
         return None
 
+    def searchProcessInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment, status: str, dateFrom: str, dateTo: str):
+        listOfInstances = None
+        _headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+
+        loggedIn = False
+        authorizationBearerToken = None
+        userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
+        userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
+        runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
+        if runningTraditional == True:
+            cookieTraditional = bawSys._loginTraditional(bpmEnvironment, userName, userPassword)
+            if cookieTraditional != None:
+                loggedIn = True
+        else:
+            authorizationBearerToken = bawSys._loginZen(bpmEnvironment, userName, userPassword)
+            if authorizationBearerToken != None:
+                loggedIn = True
+
+        if loggedIn == True:
+            if runningTraditional == False:
+                _headers['Authorization'] = 'Bearer '+authorizationBearerToken
+            else:
+                _headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
+
+            hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+            baseUri : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+            appAcronym : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
+
+            statusFilter = ""
+            if status != None and status != "":
+                statusFilter = "&statusFilter="+status
+            
+            modifiedAfter = ""
+            if dateFrom != None and dateFrom != "":
+                modifiedAfter = "&modifiedAfter="+dateFrom
+
+            modifiedBefore = ""
+            if dateTo != None and dateTo != "":
+                modifiedBefore = "&modifiedBefore="+dateTo
+
+            fullUrl = hostUrl+baseUri+"/rest/bpm/wle/v1/processes/search?projectFilter="+appAcronym+statusFilter+modifiedAfter+modifiedBefore
+            response = requests.post(url=fullUrl, headers=_headers, verify=False)
+            if response.status_code == 200:
+                jsObj = response.json()
+                # print(json.dumps(jsObj, indent = 2))
+
+                data = jsObj["data"]
+                processes = data["processes"]
+                numProcesses = len(processes)
+                idx = 0
+                listOfInstances = []
+                while idx < numProcesses:
+                    p = processes[idx]
+                    closedDate = ""
+                    try:
+                      closedDate = p["closedDate"]
+                    except KeyError:
+                      pass
+
+                    execProc = BpmExecProcessInstance(p["executionState"], p["piid"], p["name"], p["bpdName"], p["snapshotID"], 
+                                                      p["projectID"], p["dueDate"], p["creationDate"], p["lastModificationTime"], closedDate)
+                    listOfInstances.append(execProc)
+                    idx += 1
+
+        return listOfInstances
