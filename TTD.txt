@@ -1,3 +1,12 @@
+- verificare possibilità operazioni su task per sola versione di SNAPSHOT
+-- caso di due run con processi attivi per differenti snapshot
+-- verifica operazioni di terminazione e cancellazione per specifico snapshot
+
+- verificare estrazione modello dati per singolo snapshot
+
+- gestione TeamBindings (solo su snapshot? cercare uso tip)
+
+- verifica e revisione login LoadProcessInstancesInfos
 
 - tool per lettura payload istanze processo completate/terminate/failed
 -- export record formato json per analisi risultato

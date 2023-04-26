@@ -6,7 +6,7 @@ from json import JSONDecodeError
 import logging, sys, importlib
 
 import mytasks.myTasks as bpmTask
-import mytasks.processInstanceManager as bpmPIM
+import bawsys.processInstanceManager as bpmPIM
 
 import bawsys.loadEnvironment as bpmEnv
 import bawsys.loadUserTaskSubjects as bpmUTS

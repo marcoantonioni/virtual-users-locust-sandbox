@@ -7,19 +7,29 @@ from requests.auth import HTTPBasicAuth
 #==========================================================================
 
 class BpmExposedProcessInfo:
-    def __init__(self, appName, appAcronym, processName, appId, appBpdId, startUrl):
+    def __init__(self, appName, appAcronym, snapshotName, tip, processName, appId, appBpdId, startUrl):
         self.appName : str = appName
         self.appAcronym : str = appAcronym
+        self.snapshotName : str = snapshotName
+        self.tip : bool = tip
         self.processName : str = processName
         self.appId : str = appId
         self.appBpdId : str = appBpdId
         self.startUrl : str = startUrl
+
+        print(appName+", "+appAcronym+", "+snapshotName+", "+str(tip)+", "+processName+", "+appId+", "+appBpdId)
 
     def getAppName(self):
         return self.appName
     
     def getAppAcronym(self):
         return self.appAcronym
+    
+    def getSnapshotName(self):
+        return self.snapshotName
+    
+    def isTip(self):
+        return self.tip
     
     def getAppProcessName(self):
         return self.processName

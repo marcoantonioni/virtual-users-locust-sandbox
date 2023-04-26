@@ -1,4 +1,4 @@
-import requests, json, logging, random
+import requests, json, logging, random, sys
 import bawsys.loadEnvironment as bpmEnv
 import bawsys.bawSystem as bpmSys
 from json import JSONDecodeError
@@ -12,6 +12,7 @@ class BpmExposedProcessManager:
       self.exposedProcesses = dict()
       self.appId = None
       self.bpdId = None
+      self.snapshotName = None
 
     def addProcessInfos(self, key: str, processInfo: bpmSys.BpmExposedProcessInfo):
         self.exposedProcesses[key] = processInfo  
@@ -80,27 +81,49 @@ class BpmExposedProcessManager:
             
             if response.status_code == 200:
                 data = response.json()["data"]
+
+                # print(json.dumps(data, indent=2))
+
                 exposedItemsList = data["exposedItemsList"]
                 appProcName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
                 appProcAcronym = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
+                appSnapshotName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_SNAPSHOT_NAME)
                 processNames = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_NAMES)
                 appProcessNames = processNames.split(",")
+                if appSnapshotName == None:
+                    appSnapshotName = ""
                 listOfProcessInfos = []
                 for expIt in exposedItemsList:
                     try:
-                        if appProcName == expIt["processAppName"] and appProcAcronym == expIt["processAppAcronym"]:
+                        snapOk = False
+                        if appProcName == expIt["processAppName"] and appProcAcronym == expIt["processAppAcronym"]: 
+                            snapName = expIt["snapshotName"]
+                            tip = expIt["tip"]
+
                             if self.appId == None:
                                 self.appId = expIt["processAppID"] 
                                 self.bpdId = expIt["itemID"]
-                            processName = expIt["display"]                        
-                            for pn in appProcessNames:
-                                if pn == processName:                        
-                                    listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(appProcName, appProcAcronym, processName, expIt["processAppID"], expIt["itemID"], expIt["startURL"]) )
+
+                            if appSnapshotName == "" and tip == True:                                
+                                snapOk = True
+                            else:
+                                if appSnapshotName == snapName:
+                                    snapOk = True
+                            if snapOk == True:
+                                processName = expIt["display"]                        
+                                for pn in appProcessNames:
+                                    if pn == processName:                        
+                                        listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(appProcName, appProcAcronym, snapName, tip, processName, expIt["processAppID"], expIt["itemID"], expIt["startURL"]) )
                     except KeyError:
                         pass
 
+
+                if len(listOfProcessInfos) == 0:
+                    logging.error("Error, configured snapshot '%s' not present or not activated. Use blank value in BAW_PROCESS_SNAPSHOT_NAME to run against the Tip", appSnapshotName)
+                    sys.exit()
+
                 for appProcInfo in listOfProcessInfos:
-                    key = appProcInfo.getAppProcessName()+"/"+appProcInfo.getAppName()+"/"+appProcInfo.getAppAcronym()
+                    key = appProcInfo.getAppProcessName()+"/"+appProcInfo.getAppName()+"/"+appProcInfo.getAppAcronym()+"/"+appProcInfo.getSnapshotName()
                     self.addProcessInfos(key, appProcInfo)
             else:
                 contextName = "LoadProcessInstancesInfos"
