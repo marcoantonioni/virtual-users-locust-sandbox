@@ -6,6 +6,31 @@ from requests.auth import HTTPBasicAuth
 
 #==========================================================================
 
+class ApplicationSnapshotInfo:
+    def __init__(self, appSnapInfo):
+        self.snapName = appSnapInfo["name"]
+        self.snapId = appSnapInfo["ID"] # 2064
+        self.snapAcronym = appSnapInfo["acronym"]
+        self.snapActive = appSnapInfo["active"]
+        self.snapTip = appSnapInfo["snapshotTip"]
+        self.snapBranchID = appSnapInfo["branchID"] # 2063
+
+class ApplicationInfo:
+    def __init__(self, appInfo):
+        self.appId = appInfo["ID"] # 2066
+        self.appAcronym = appInfo["shortName"]
+        self.appname = appInfo["name"]
+        self.appDefVersion = appInfo["defaultVersion"]
+        self.appDefBranchId = appInfo["defaultBranchID"] # 2063
+        self.versions = []
+
+        items = appInfo["installedSnapshots"]
+        for item in items:
+            self.versions.append(ApplicationSnapshotInfo(item))
+
+
+
+
 class BpmExposedProcessInfo:
     def __init__(self, appName, appAcronym, snapshotName, tip, processName, appId, appBpdId, startUrl):
         self.appName : str = appName

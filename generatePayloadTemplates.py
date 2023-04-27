@@ -1,4 +1,3 @@
-import bulkProcessOperations
 import bawsys.commandLineManager as clpm
 import bawsys.exposedProcessManager as bpmExpProcs
 from bawsys import loadEnvironment as bpmEnv
@@ -123,40 +122,74 @@ class PayloadTemplateManager:
             self.dataTypeTemplates[dtName] = dtTempl            
             self.dataTypeTemplatesByClassRef[dtTempl.getClassRefKey()] = dtTempl
 
-    def getModel(self):
+    def getModel(self, bpmEnvironment : bpmEnv.BpmEnvironment):
         bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
         bpmExposedProcessManager.LoadProcessInstancesInfos(self.bpmEnvironment)
         appId = bpmExposedProcessManager.getAppId()
-        hostUrl : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        baseUri = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+
+        appAcronym : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
+        appName : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
+        appSnapName : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
+        appSnapTip : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_USE_TIP)
+        useTip = False
+        if appSnapTip.lower() == "true":
+            useTip = True
+        if appSnapName == None or appSnapName == "":
+            useTip = True
 
         if baseUri == None:
             baseUri = ""
         uriBaseRest = baseUri+"/rest/bpm/wle/v1"
 
-        urlAssetts = hostUrl+uriBaseRest+"/assets?processAppId="+appId
 
-        response = requests.get(url=urlAssetts, headers=self._headers, verify=False)
+        # legge applicazioni
+        applicationInfo : bawSys.ApplicationInfo = None
+        urlApps = hostUrl+uriBaseRest+"/processApps"
+        response = requests.get(url=urlApps, headers=self._headers, verify=False)
         if response.status_code == 200:
             data = response.json()["data"]
-            snapshotId = data["snapshotId"]
-            dataTypesList = data["VariableType"]
-            for dataType in dataTypesList:
-                dtName = dataType["name"]
-                dtId = dataType["poId"]
-                self.buildDataTypeTemplates(hostUrl, baseUri, dtName, dtId, snapshotId, appId)
-        else:
-            print("ERROR, status code: ", response.status_code)
-            print(json.dumps(response.json(), indent = 2))
+            processAppsList = data["processAppsList"]
+            for app in processAppsList:
+                if app["shortName"] == appAcronym and app["name"] == appName:
+                    applicationInfo = bawSys.ApplicationInfo(app)
+                    break
+
+            if applicationInfo != None:
+                # legge assets
+                urlAssetts = hostUrl+uriBaseRest+"/assets?processAppId="+applicationInfo.appId
+
+                if useTip == False:
+                    for appVer in applicationInfo.versions:
+                        if appVer.snapName == appSnapName and appVer.snapTip == False:
+                            urlAssetts += "&snapshotId="+appVer.snapId+"&branchId="+appVer.snapBranchID
+                            break
+            else:
+                logging.error("Error, application not found")
+                sys.exit()
+
+            response = requests.get(url=urlAssetts, headers=self._headers, verify=False)
+            if response.status_code == 200:
+                data = response.json()["data"]
+                snapshotId = data["snapshotId"]
+                dataTypesList = data["VariableType"]
+                for dataType in dataTypesList:
+                    dtName = dataType["name"]
+                    dtId = dataType["poId"]
+                    self.buildDataTypeTemplates(hostUrl, baseUri, dtName, dtId, snapshotId, appId)
+            else:
+                print("ERROR, status code: ", response.status_code)
+                print(json.dumps(response.json(), indent = 2))
 
     def buildTypeTemplate(self):
         for dtName in self.dataTypeTemplates.keys():
             dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
             dtTemplate.builTemplate(self.dataTypeTemplates, self.dataTypeTemplatesByClassRef)
 
-    def generateTemplates(self):
+    def generateTemplates(self, bpmEnvironment : bpmEnv.BpmEnvironment):
         # load all data types, add in allDataTypes dict using boId+boSnapId key
-        self.getModel()
+        self.getModel(bpmEnvironment)
         # build data type template
         self.buildTypeTemplate()
 
@@ -192,7 +225,7 @@ def generatePayloadTemplates(argv):
             bpmEnvironment.dumpValues()
             payloadTemplateMgr = PayloadTemplateManager(bpmEnvironment)
             if payloadTemplateMgr.loggedIn == True:
-                payloadTemplateMgr.generateTemplates()
+                payloadTemplateMgr.generateTemplates(bpmEnvironment)
                 payloadTemplateMgr.printDataTypes(_indentOutput)
     if ok == False:
         print("Wrong arguments, use -e param to specify environment file")

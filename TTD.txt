@@ -1,5 +1,6 @@
 
 - verificare estrazione modello dati per singolo snapshot
+-- generazione payloadManager con nome snapshot o tip
 
 - gestione TeamBindings (solo su snapshot? cercare uso tip)
 
