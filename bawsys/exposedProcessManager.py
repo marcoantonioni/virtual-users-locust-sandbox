@@ -107,19 +107,29 @@ class BpmExposedProcessManager:
                 self.appName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
                 self.appAcronym = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
                 appSnapshotName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
+                strUseTip = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_USE_TIP)
                 processNames = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_NAMES)
                 self.appProcessNames = processNames.split(",")
-                if appSnapshotName == None:
+                useTip = False
+                if strUseTip != None:
+                    if strUseTip.lower() == "true":
+                        useTip = True
+                else:
+                    logging.error("Error, invalid 'tip' value, BAW_PROCESS_APPLICATION_SNAPSHOT_USE_TIP must be one of 'true' or 'false'")
+                    sys.exit()
+                if appSnapshotName == None or appSnapshotName == "":
                     appSnapshotName = ""
+                    useTip = True
+
                 listOfProcessInfos = []
                 for expIt in exposedItemsList:
                     try:
                         snapOk = False
                         if self.appName == expIt["processAppName"] and self.appAcronym == expIt["processAppAcronym"]: 
-                            if appSnapshotName == "" and expIt["tip"] == True:                                
+                            if appSnapshotName == "" and useTip == True and expIt["tip"] == True:                                
                                 snapOk = True
                             else:
-                                if appSnapshotName == expIt["snapshotName"]:
+                                if appSnapshotName == expIt["snapshotName"] and useTip == expIt["tip"]:
                                     snapOk = True
                             if snapOk == True:
                                 if self.appId == None:

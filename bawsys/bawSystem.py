@@ -94,12 +94,19 @@ class BpmTask:
         self.processAppAcronym = task["PROCESS_APP_ACRONYM"]
         self.systemID = ""
         self.snapshotName = ""
+        self.snapshotId = ""
         try:
             self.bpmSystemID = task["systemID"]
         except:
             pass
         try:
+            # null se Tip
             self.snapshotName = task["SNAPSHOT_NAME"]
+        except:
+            pass
+        try:
+            # null se Tip
+            self.snapshotId = task["SNAPSHOT_ID"]
         except:
             pass
 
@@ -137,8 +144,9 @@ class BpmTask:
     
     def getSnapshotName(self):
         return self.snapshotName
-    
-    
+
+    def getSnapshotId(self):
+        return self.snapshotId
 
     def getVariableNames(self):
         return self.variableNames

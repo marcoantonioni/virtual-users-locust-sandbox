@@ -19,7 +19,9 @@ class RestResponseManager:
         self.isJsObj = False
         try:
             self.js = response.json()
-            #print(json.dumps(self.js, indent=2))
+            
+            # print(json.dumps(self.js, indent=2))
+            
             self.isJsObj = True
         except:
             logging.error("%s, status code [%s], error text [%s], empty/not-valid json content", contextName, response.status_code, response.text)

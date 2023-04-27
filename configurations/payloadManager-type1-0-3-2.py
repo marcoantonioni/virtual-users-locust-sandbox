@@ -34,11 +34,11 @@ def buildPayloadForSubject(text, preExistPayload = None):
     """
     if text.find('Start-VUSClaimCompleteTwoRoles') != -1:
         rndVal : int = random.randint(0, 100) + 1
-        retObject["jsonObject"] = {'inputData': {'requestId': 'req'+str(rndVal), 'counterX': rndVal}}
+        retObject["jsonObject"] = {'inputData': {'requestId': 'req'+str(rndVal), 'counter': rndVal}}
 
     if text.find('Compile Data [CCTR]') != -1:
         rndVal : int = random.randint(0, 100) + 1
-        retObject["jsonObject"] = {'inputData': {'requestId': 'reqCompiled', 'counterX': rndVal}}
+        retObject["jsonObject"] = {'inputData': {'requestId': 'reqCompiled', 'counter': rndVal}}
 
     if text.find('Validate Data [CCTR]') != -1:
         rndVal : int = random.randint(50, 150) + 1
@@ -46,11 +46,11 @@ def buildPayloadForSubject(text, preExistPayload = None):
         if preExistPayload != None:
             # update prev values
             inputData = preExistPayload["inputData"]
-            inputData["counterX"] = rndVal
+            inputData["counter"] = rndVal
             retObject["jsonObject"] = {'inputData': inputData} 
         else:
             # new values
-            retObject["jsonObject"] =  {'inputData': {'requestId': 'reqValidated', 'counterX': rndVal}}
+            retObject["jsonObject"] =  {'inputData': {'requestId': 'reqValidated', 'counter': rndVal}}
 
         retObject["thinkTime"] = random.randint(0, 5)
 
@@ -62,11 +62,11 @@ def buildPayloadForSubject(text, preExistPayload = None):
     """
     if text.find('Start-VUSClaimCompleteAuthorize') != -1:
         rndVal : int = random.randint(0, 100) + 1
-        retObject["jsonObject"] = {'inputData': {'requestId': 'req'+str(rndVal), 'counterX': rndVal}}
+        retObject["jsonObject"] = {'inputData': {'requestId': 'req'+str(rndVal), 'counter': rndVal}}
 
     if text.find('Compile Data [CCA]') != -1:
         rndVal : int = random.randint(0, 100) + 1
-        retObject["jsonObject"] = {'inputData': {'requestId': 'reqCompiled', 'counterX': rndVal}}
+        retObject["jsonObject"] = {'inputData': {'requestId': 'reqCompiled', 'counter': rndVal}}
 
     if text.find('Validate Data [CCA]') != -1:
         authorize = False
@@ -85,13 +85,13 @@ def buildPayloadForSubject(text, preExistPayload = None):
         if preExistPayload != None:
             # update prev values
             inputData = preExistPayload["inputData"]
-            inputData["counterX"] = rndVal
+            inputData["counter"] = rndVal
             authorizationData = preExistPayload["authorizationData"]
             authorizationData["authorized"] = authorize
             authorizationData["review"] = review
             retObject["jsonObject"] =  {'inputData': inputData, 'authorizationData': authorizationData}
         else:
-            retObject["jsonObject"] =  {'inputData': {'requestId': 'reqValidated', 'counterX': rndVal},
+            retObject["jsonObject"] =  {'inputData': {'requestId': 'reqValidated', 'counter': rndVal},
                                         'authorizationData': {'authorized': authorize, 'comments': '', 'review': review}}
 
         retObject["thinkTime"] = random.randint(0, 5)
