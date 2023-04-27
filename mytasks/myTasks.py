@@ -70,7 +70,6 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             logging.debug("_buildTaskList - tasksCount %s, taskListLen %d", tasksCount, len(tasksList))
 
         # print(json.dumps(tasksList,indent=2))
-        # print("queryed tasks", len(tasksList))
 
         isClaiming = False
         if interaction == "available":
@@ -102,7 +101,6 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         if bpmTask.getSnapshotName() != None and bpmTask.getSnapshotName() == configuredSnapName:
                             selectTask = True
 
-                    # ??? bpmTask.getSnapshotId()
                     if selectTask == True:
                         listOfProcessNames = epm.getAppProcessNames()                                        
                         for procName in listOfProcessNames:
@@ -110,8 +108,6 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 if self.user.isSubjectForUser(bpmTask.getSubject()) == True:
                                     if (bpmTask.getRole() != None and isClaiming == True) or (bpmTask.getRole() == None and isClaiming == False):             
                                         bpmTaksItems.append(bpmTask)
-
-        # print("selected tasks", len(bpmTaksItems))
 
         return bawSys.BpmTaskList(len(bpmTaksItems), bpmTaksItems)
 
@@ -214,36 +210,12 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             uriBaseTaskList = ""
             taskListFederated = False
             hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-
-            # per PUT
-            processAppName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
-
-            # per GET
             processAppAcronym = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
             
             # query task list
             offset = "0"
-
-            # PUT
-            # constParams : str = "calcStats=false&includeAllIndexes=false&includeAllBusinessData=false&avoidBasicAuthChallenge=true"
-
-            # GET
             constParams : str = "interaction=claimed_and_available&calcStats=false&includeAllBusinessData=false"
 
-            """
-            https://www.ibm.com/docs/en/baw/22.x?topic=execution-put
-            "fields":[
-                "taskDueDate",
-                "taskPriority",
-                "taskIsAtRisk",
-                "taskAtRiskTime",
-                "taskActivityName",
-                "taskActivityType",
-                "instanceCaseProcessTypeLocation",
-                "instanceCaseStageStatus",
-                "caseIdentifier",
-                "caseTypeId"
-            """
             params = {'organization': 'byTask',
                     'shared': 'false',
                     'conditions': [{ 'field': 'taskActivityType', 'operator': 'Equals', 'value': 'USER_TASK' }],
@@ -260,14 +232,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 if baseUri == None:
                     baseUri = ""
                 uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
-
-            # PUT
-            #fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&processAppName="+processAppName
-            # GET
             fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&processAppName="+processAppAcronym
-
-
-            #with self.client.put(url=fullUrl, headers=my_headers, data=json.dumps(params), catch_response=True) as response:
             with self.client.get(url=fullUrl, headers=my_headers, data=json.dumps(params), catch_response=True) as response:
 
                 restResponseManager: responseMgr.RestResponseManager = responseMgr.RestResponseManager("_listTasks", response, self.user.userCreds.getName(), None, [401, 409])
