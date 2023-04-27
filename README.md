@@ -43,8 +43,8 @@ python ./deleteProcessBulk.py -e ./configurations/env1.properties -t true
 python ./deleteProcessBulk.py  -e ./configurations/env1-traditional.properties -t true
 
 # generazione template modello dati
-python ./generatePayloadTemplates.py -e ./configurations/env1.properties -i true
-python ./generatePayloadTemplates.py -e ./configurations/env1-traditional.properties -i true
+python ./generatePayloadTemplates.py -e ./configurations/env1.properties -o ./configurations/test.py
+python ./generatePayloadTemplates.py -e ./configurations/env1-traditional.properties -o ./configurations/test.py
 
 # creazione utenze e gruppi ldap
 python generateLDIFForVirtualUsers.py -c ./configurations/ldif4vu-cfg1.properties -l ./configurations/vux-cfg1.ldif -u ./configurations/creds-cfg1.csv

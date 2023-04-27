@@ -2,9 +2,11 @@ import bawsys.commandLineManager as clpm
 import bawsys.exposedProcessManager as bpmExpProcs
 from bawsys import loadEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys
-import urllib, requests, json, sys, logging
+import requests, json, sys, logging, os
 from base64 import b64encode
 from bawsys import bawUtils as bawUtils 
+
+from contextlib import redirect_stdout
 
 #----------------------------------
 
@@ -220,10 +222,8 @@ class PayloadTemplateManager:
         # build data type template
         self.buildTypeTemplate()
 
-    def printDataTypes(self, _indentOutput: str):
+    def printDataTypes(self, ):
         indent = False
-        if _indentOutput != None:
-            indent = _indentOutput.lower() == "true"
         print("# ==================================")
         print("# Python code for data model objects\n# Application ["+self.appName+"] Acronym ["+self.appAcronym+"] Snapshot ["+self.appSnapName+"] Tip ["+self.appSnapTip+"]")
         print("# ==================================\n")
@@ -232,23 +232,76 @@ class PayloadTemplateManager:
             payloadTemplate = dtTemplate.dtTypeTemplate            
             print(payloadTemplate+"\n\n")
 
+def writePayloadManagerTemplate(_outputPayloadManager):
+    templateName = "./bawsys/template-payload-manager.yp"
+
+    f1 = open(_outputPayloadManager, 'a+')
+    f2 = open(templateName, 'r')
+ 
+    # appending the contents of the second file to the first file
+    f1.write(f2.read())
+    f1.close()
+    f2.close()
+
 def generatePayloadTemplates(argv):
 
     ok = False
     if argv != None:
         bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
         cmdLineMgr = clpm.CommandLineParamsManager()
-        cmdLineMgr.builDictionary(argv, "e:i:", ["environment=", "indent="])
+        cmdLineMgr.builDictionary(argv, "e:o:a", ["environment=", "output=", "autoname="])
         if cmdLineMgr.isExit() == False:
             ok = True
             _fullPathBawEnv = cmdLineMgr.getParam("e", "environment")
-            _indentOutput = cmdLineMgr.getParam("i", "indent")
+            _outputPayloadManager = cmdLineMgr.getParam("o", "output")
+            _outputAutoName = cmdLineMgr.getParam("a", "autoname")
+            
+            if _outputPayloadManager == None:
+                _outputPayloadManager = ""
+            else:
+                if os.path.isdir(_outputPayloadManager):  
+                    _outputAutoName = True 
+                elif os.path.isfile(_outputPayloadManager):
+                    _outputAutoName = False
+                elif os.path.exists(_outputPayloadManager) == False:
+                    _outputAutoName = True
+                else:
+                    print("Wrong combination for output and autonaming")
+                    sys.exit()                
+
             bpmEnvironment.loadEnvironment(_fullPathBawEnv)
             bpmEnvironment.dumpValues()
             payloadTemplateMgr = PayloadTemplateManager(bpmEnvironment)
             if payloadTemplateMgr.loggedIn == True:
+                print("Working...")
                 payloadTemplateMgr.generateTemplates(bpmEnvironment)
-                payloadTemplateMgr.printDataTypes(_indentOutput)
+                redirectOutput = False
+                outName = "stdout"
+                if len(_outputPayloadManager) > 0:
+                    redirectOutput = True
+                    if _outputAutoName == True:
+                        tip = ""
+                        if payloadTemplateMgr.appSnapTip == "true":
+                            tip = "-tip"
+                        fName = "payloadManager-"+payloadTemplateMgr.appName+"-"+payloadTemplateMgr.appAcronym+"-"+payloadTemplateMgr.appSnapName+tip
+                        fName = fName.replace(".","-")
+                        if _outputPayloadManager[-1] == "/":
+                            _outputPayloadManager = _outputPayloadManager[:-1]
+                        else:
+                            if _outputPayloadManager[-1] == "\\":
+                                _outputPayloadManager = _outputPayloadManager[:-1]
+                        _outputPayloadManager = _outputPayloadManager+"/"+fName+".py"
+                    outName = _outputPayloadManager
+                print("Generating Python code for payload manager to "+outName+"\n# Application ["+payloadTemplateMgr.appName+"] Acronym ["+payloadTemplateMgr.appAcronym+"] Snapshot ["+payloadTemplateMgr.appSnapName+"] Tip ["+payloadTemplateMgr.appSnapTip+"]")
+                if redirectOutput:
+                    print("Ouput to file ", _outputPayloadManager)
+                    with open(_outputPayloadManager, 'w') as f:
+                        with redirect_stdout(f):
+                            payloadTemplateMgr.printDataTypes()
+                        f.close()
+                    writePayloadManagerTemplate(_outputPayloadManager)
+                else:
+                    payloadTemplateMgr.printDataTypes()
     if ok == False:
         print("Wrong arguments, use -e param to specify environment file")
 

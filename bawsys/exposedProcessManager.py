@@ -146,7 +146,7 @@ class BpmExposedProcessManager:
 
 
                 if len(listOfProcessInfos) == 0:
-                    logging.error("Error, configured snapshot '%s' not present or not activated. Use blank value in BAW_PROCESS_APPLICATION_SNAPSHOT_NAME to run against the Tip", appSnapshotName)
+                    logging.error("Error, configured snapshot '%s' not present or not activated or not available as tip.\nUse empty value in BAW_PROCESS_APPLICATION_SNAPSHOT_NAME to run against the Tip", appSnapshotName)
                     sys.exit()
 
                 for appProcInfo in listOfProcessInfos:
