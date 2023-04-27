@@ -30,34 +30,28 @@ class DataTypeTemplate:
 
         attrVal = '""'
         if pClass == "Boolean":
-            attrVal = "false"
+            attrVal = "False"
             
         if pClass == "Integer":
             attrVal = "0"
+
+        if pClass == "Decimal":
+            attrVal = "0.0"
             
+        if pClass == "Date":
+            attrVal = "None"
+
+        if pClass == "Time":
+            attrVal = "None"
+
         if referencedTypeName != None:
             attrVal = '{}'
 
         if pIsArr == True:
-            templatePayload = '"'+pName+'": ['+attrVal+']'
+            templatePayload = '"'+pName+'": []'
         else:
             templatePayload = '"'+pName+'": '+attrVal
         return templatePayload
-
-    """
-    def buildJsonArributeTemplate(self, idxTemplate: int, pName: str, pClass: str, pIsArr: bool, pClassRef: str, pClasSnapId: str, referencedTypeName: str):
-        templatePayload = ""
-        templIdxVal = ""
-        if referencedTypeName != None:
-            templIdxVal = "@@@-"+str(idxTemplate)+"-@@@-type("+referencedTypeName+")"
-        else:
-            templIdxVal = "@@@-"+str(idxTemplate)+"-@@@"
-        if pIsArr == True:
-            templatePayload = '\"'+pName+'":["'+templIdxVal+'"]'
-        else:
-            templatePayload = '\"'+pName+'":"'+templIdxVal+'"'
-        return templatePayload
-    """
 
     def builTemplate(self, dataTypeTemplates: dict, dataTypeTemplatesByClassRef: dict):
         self.templateBuilt = True
@@ -235,18 +229,8 @@ class PayloadTemplateManager:
         print("# ==================================\n")
         for dtName in self.dataTypeTemplates.keys():
             dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
-            """
-            payloadTemplate = None
-            if indent == True:
-                payloadTemplate = json.dumps( json.loads(dtTemplate.dtTypeTemplate), indent = 2)
-            else:
-                payloadTemplate = dtTemplate.dtTypeTemplate
-            """
-            payloadTemplate = dtTemplate.dtTypeTemplate
-            
-            print(payloadTemplate+"\n")
-
-            print()
+            payloadTemplate = dtTemplate.dtTypeTemplate            
+            print(payloadTemplate+"\n\n")
 
 def generatePayloadTemplates(argv):
 
