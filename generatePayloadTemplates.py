@@ -24,6 +24,27 @@ class DataTypeTemplate:
     def buildClassRefKey(self, pdtId, pdtSnapId):
         return pdtId+"/"+pdtSnapId
 
+    def buildJsonArribute(self, pName: str, pClass: str, pIsArr: bool, referencedTypeName: str):
+        templatePayload = ""
+        templIdxVal = ""
+
+        attrVal = '""'
+        if pClass == "Boolean":
+            attrVal = "false"
+            
+        if pClass == "Integer":
+            attrVal = "0"
+            
+        if referencedTypeName != None:
+            attrVal = '{}'
+
+        if pIsArr == True:
+            templatePayload = '"'+pName+'": ['+attrVal+']'
+        else:
+            templatePayload = '"'+pName+'": '+attrVal
+        return templatePayload
+
+    """
     def buildJsonArributeTemplate(self, idxTemplate: int, pName: str, pClass: str, pIsArr: bool, pClassRef: str, pClasSnapId: str, referencedTypeName: str):
         templatePayload = ""
         templIdxVal = ""
@@ -36,10 +57,11 @@ class DataTypeTemplate:
         else:
             templatePayload = '\"'+pName+'":"'+templIdxVal+'"'
         return templatePayload
+    """
 
     def builTemplate(self, dataTypeTemplates: dict, dataTypeTemplatesByClassRef: dict):
         self.templateBuilt = True
-
+        referencedTypes = []
         idxTemplate = 1
         attribs = ""
         tot = len(self.properties)
@@ -66,20 +88,31 @@ class DataTypeTemplate:
             if referencedType != None:
                 referencedTypeName = referencedType.dtName                       
 
-            attrib = self.buildJsonArributeTemplate(idxTemplate, pName, pClass, pIsArr, pClassRef, pClasSnapId, referencedTypeName)
+            # attrib = self.buildJsonArributeTemplate(idxTemplate, pName, pClass, pIsArr, pClassRef, pClasSnapId, referencedTypeName)
+            if referencedTypeName != None:
+                referencedTypes.append('\''+pName+'\' of type '+referencedTypeName)
+            attrib = self.buildJsonArribute(pName, pClass, pIsArr, referencedTypeName)
             attribs += attrib
             if (tot > 1):
-                attribs += ","
+                attribs += ", "
             idxTemplate = idxTemplate + 1
             tot = tot -1
-
-        self.dtTypeTemplate = '{"varName":{'+attribs+'}}'
+        refs = "#==========================\n# Create "+self.dtName+" json object\n" 
+        for r in referencedTypes:
+            refs += '# '+r
+            refs += "\n"
+        self.dtTypeTemplate = refs+'def new'+self.dtName+'():\n    return {'+attribs+'}'
 
 class PayloadTemplateManager:
 
     def __init__(self, bpmEnvironment : bpmEnv.BpmEnvironment):
         self.dataTypeTemplates = dict()
         self.dataTypeTemplatesByClassRef = dict()
+        self.appAcronym = None
+        self.appName = None
+        self.appSnapName = None 
+        self.appSnapTip = None
+        self.useTip = False
 
         self.loggedIn = False
         self.authorizationBearerToken : str = None
@@ -129,15 +162,15 @@ class PayloadTemplateManager:
         hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
 
-        appAcronym : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
-        appName : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
-        appSnapName : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
-        appSnapTip : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_USE_TIP)
-        useTip = False
-        if appSnapTip.lower() == "true":
-            useTip = True
-        if appSnapName == None or appSnapName == "":
-            useTip = True
+        self.appAcronym : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
+        self.appName : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
+        self.appSnapName : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
+        self.appSnapTip : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_USE_TIP)
+        self.useTip = False
+        if self.appSnapTip.lower() == "true":
+            self.useTip = True
+        if self.appSnapName == None or self.appSnapName == "":
+            self.useTip = True
 
         if baseUri == None:
             baseUri = ""
@@ -152,7 +185,7 @@ class PayloadTemplateManager:
             data = response.json()["data"]
             processAppsList = data["processAppsList"]
             for app in processAppsList:
-                if app["shortName"] == appAcronym and app["name"] == appName:
+                if app["shortName"] == self.appAcronym and app["name"] == self.appName:
                     applicationInfo = bawSys.ApplicationInfo(app)
                     break
 
@@ -160,9 +193,9 @@ class PayloadTemplateManager:
                 # legge assets
                 urlAssetts = hostUrl+uriBaseRest+"/assets?processAppId="+applicationInfo.appId
 
-                if useTip == False:
+                if self.useTip == False:
                     for appVer in applicationInfo.versions:
-                        if appVer.snapName == appSnapName and appVer.snapTip == False:
+                        if appVer.snapName == self.appSnapName and appVer.snapTip == False:
                             urlAssetts += "&snapshotId="+appVer.snapId+"&branchId="+appVer.snapBranchID
                             break
             else:
@@ -197,16 +230,21 @@ class PayloadTemplateManager:
         indent = False
         if _indentOutput != None:
             indent = _indentOutput.lower() == "true"
-        print()
+        print("# ==================================")
+        print("# Python code for data model objects\n# Application ["+self.appName+"] Acronym ["+self.appAcronym+"] Snapshot ["+self.appSnapName+"] Tip ["+self.appSnapTip+"]")
+        print("# ==================================\n")
         for dtName in self.dataTypeTemplates.keys():
             dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
+            """
             payloadTemplate = None
             if indent == True:
                 payloadTemplate = json.dumps( json.loads(dtTemplate.dtTypeTemplate), indent = 2)
             else:
                 payloadTemplate = dtTemplate.dtTypeTemplate
+            """
+            payloadTemplate = dtTemplate.dtTypeTemplate
             
-            print("Data type: "+dtTemplate.dtName+"\n"+payloadTemplate+"\n")
+            print(payloadTemplate+"\n")
 
             print()
 
