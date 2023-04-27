@@ -1,8 +1,3 @@
-- verificare possibilità operazioni su task per sola versione di SNAPSHOT
--- TEST !!! caso di due run con processi attivi per differenti snapshot
--- verifica operazioni di terminazione e cancellazione per specifico snapshot
-
-- rinominae e spostare in bawsys myTasks.py 
 
 - verificare estrazione modello dati per singolo snapshot
 

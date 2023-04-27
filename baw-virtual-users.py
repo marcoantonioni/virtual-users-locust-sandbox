@@ -5,7 +5,7 @@ from locust.runners import MasterRunner
 from json import JSONDecodeError
 import logging, sys, importlib
 
-import mytasks.myTasks as bpmTask
+import bawsys.bawTasks as bpmTask
 import bawsys.processInstanceManager as bpmPIM
 
 import bawsys.loadEnvironment as bpmEnv
