@@ -9,11 +9,15 @@ class BpmExposedProcessManager:
     exposedProcesses = dict()
 
     def __init__(self):
-      self.exposedProcesses = dict()
-      self.appId = None
-      self.bpdId = None
-      self.snapshotName = None
-
+        self.exposedProcesses = dict()
+        self.appName = None
+        self.appAcronym = None
+        self.appId = None
+        self.bpdId = None
+        self.snapshotName = None
+        self.tip = False
+        self.appProcessNames = None
+      
     def addProcessInfos(self, key: str, processInfo: bpmSys.BpmExposedProcessInfo):
         self.exposedProcesses[key] = processInfo  
 
@@ -34,11 +38,26 @@ class BpmExposedProcessManager:
             keysList.append(key)
         return keysList
     
+    def getAppName(self):
+        return self.appName
+    
+    def getAppAcronym(self):
+        return self.appAcronym
+    
     def getAppId(self):
         return self.appId
 
     def getBpdId(self):
         return self.bpdId
+
+    def getSnapshotName(self):
+        return self.snapshotName
+        
+    def isTip(self):
+        return self.tip
+    
+    def getAppProcessNames(self):
+        return self.appProcessNames
     
     def nextRandomProcessInfos(self):
         processInfo = None
@@ -85,41 +104,39 @@ class BpmExposedProcessManager:
                 # print(json.dumps(data, indent=2))
 
                 exposedItemsList = data["exposedItemsList"]
-                appProcName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
-                appProcAcronym = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
-                appSnapshotName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_SNAPSHOT_NAME)
+                self.appName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
+                self.appAcronym = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
+                appSnapshotName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
                 processNames = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_NAMES)
-                appProcessNames = processNames.split(",")
+                self.appProcessNames = processNames.split(",")
                 if appSnapshotName == None:
                     appSnapshotName = ""
                 listOfProcessInfos = []
                 for expIt in exposedItemsList:
                     try:
                         snapOk = False
-                        if appProcName == expIt["processAppName"] and appProcAcronym == expIt["processAppAcronym"]: 
-                            snapName = expIt["snapshotName"]
-                            tip = expIt["tip"]
-
-                            if self.appId == None:
-                                self.appId = expIt["processAppID"] 
-                                self.bpdId = expIt["itemID"]
-
-                            if appSnapshotName == "" and tip == True:                                
+                        if self.appName == expIt["processAppName"] and self.appAcronym == expIt["processAppAcronym"]: 
+                            if appSnapshotName == "" and expIt["tip"] == True:                                
                                 snapOk = True
                             else:
-                                if appSnapshotName == snapName:
+                                if appSnapshotName == expIt["snapshotName"]:
                                     snapOk = True
                             if snapOk == True:
+                                if self.appId == None:
+                                    self.appId = expIt["processAppID"] 
+                                    self.bpdId = expIt["itemID"]
+                                    self.snapshotName = expIt["snapshotName"]
+                                    self.tip = expIt["tip"]
                                 processName = expIt["display"]                        
-                                for pn in appProcessNames:
+                                for pn in self.appProcessNames:
                                     if pn == processName:                        
-                                        listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(appProcName, appProcAcronym, snapName, tip, processName, expIt["processAppID"], expIt["itemID"], expIt["startURL"]) )
+                                        listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(self.appName, self.appAcronym, self.snapshotName, self.tip, processName, expIt["processAppID"], expIt["itemID"], expIt["startURL"]) )
                     except KeyError:
                         pass
 
 
                 if len(listOfProcessInfos) == 0:
-                    logging.error("Error, configured snapshot '%s' not present or not activated. Use blank value in BAW_PROCESS_SNAPSHOT_NAME to run against the Tip", appSnapshotName)
+                    logging.error("Error, configured snapshot '%s' not present or not activated. Use blank value in BAW_PROCESS_APPLICATION_SNAPSHOT_NAME to run against the Tip", appSnapshotName)
                     sys.exit()
 
                 for appProcInfo in listOfProcessInfos:

@@ -17,7 +17,7 @@ class BpmExposedProcessInfo:
         self.appBpdId : str = appBpdId
         self.startUrl : str = startUrl
 
-        print(appName+", "+appAcronym+", "+snapshotName+", "+str(tip)+", "+processName+", "+appId+", "+appBpdId)
+        #print(appName+", "+appAcronym+", "+snapshotName+", "+str(tip)+", "+processName+", "+appId+", "+appBpdId)
 
     def getAppName(self):
         return self.appName
@@ -77,36 +77,49 @@ class BpmFederatedSystem:
         return self.statusCode
 
 class BpmTask:
-    id : str = None
-    subject : str = None
-    status : str = None
-    state: str = None
-    role: str = None
-    systemID: str = None
-    variableNames = []
-    actions = []
-    data: dict = None
-    federatedSystem : BpmFederatedSystem = None
 
-    def __init__(self, id, subject, status, state, role, systemID):
-        self.id = id
-        self.subject = subject
-        self.status = status
-        self.state = state
-        self.role = role
-        self.systemID = systemID
+    def __init__(self, task):
+
+        self.state: str = None
+        self.variableNames = []
+        self.actions = []
+        self.data: dict = None
+        self.federatedSystem : BpmFederatedSystem = None
+
+        self.id = task["TASK.TKIID"]
+        self.status = task["STATUS"]
+        self.subject = task["TAD_DISPLAY_NAME"]
+        self.role = task["ASSIGNED_TO_ROLE_DISPLAY_NAME"]
+        self.processName = task["PT_NAME"]
+        self.processAppAcronym = task["PROCESS_APP_ACRONYM"]
+        self.systemID = ""
+        self.snapshotName = ""
+        try:
+            self.bpmSystemID = task["systemID"]
+        except:
+            pass
+        try:
+            self.snapshotName = task["SNAPSHOT_NAME"]
+        except:
+            pass
+
+        """
+            "TASK.FLOW_OBJECT_ID": "eb16e17d-545c-4cda-b890-0b623d8363bf",
+        """
+
 
     def getId(self):
         return self.id
 
-    def getSubject(self):
-        return self.subject
-    
     def getStatus(self):
         return self.status
     
+    def getSubject(self):
+        return self.subject
+    
     def getState(self):
         return self.state
+
     def setState(self, state):
         self.state = state
     
@@ -115,6 +128,17 @@ class BpmTask:
 
     def getSystemID(self):
         return self.systemID
+    
+    def getProcessName(self):
+        return self.processName
+    
+    def getProcessAppAcronym(self):
+        return self.processAppAcronym
+    
+    def getSnapshotName(self):
+        return self.snapshotName
+    
+    
 
     def getVariableNames(self):
         return self.variableNames

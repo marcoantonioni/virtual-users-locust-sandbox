@@ -69,28 +69,30 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         if logging.getLogger().isEnabledFor(logging.DEBUG):
             logging.debug("_buildTaskList - tasksCount %s, taskListLen %d", tasksCount, len(tasksList))
 
+        #print(json.dumps(tasksList,indent=2))
+
         isClaiming = False
         if interaction == "available":
             isClaiming = True
 
         bpmTaksItems = []
-        while len(tasksList) > 0:
-            bpmTask = tasksList.pop()
-            bpmTaskId = bpmTask["TASK.TKIID"]
-            bpmStatus = bpmTask["STATUS"]
-            bpmSubject = bpmTask["TAD_DISPLAY_NAME"]
-            bpmRole = bpmTask["ASSIGNED_TO_ROLE_DISPLAY_NAME"]
-            bpmSystemID = ""
-            try:
-                bpmSystemID = bpmTask["systemID"]
-            except:
-                pass
-            if bpmRole != None and isClaiming == True:             
-                if self.user.isSubjectForUser(bpmSubject) == True:
-                    bpmTaksItems.append(bawSys.BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole, bpmSystemID))
-            if bpmRole == None and isClaiming == False:             
-                if self.user.isSubjectForUser(bpmSubject) == True:
-                    bpmTaksItems.append(bawSys.BpmTask(bpmTaskId, bpmSubject, bpmStatus, None, bpmRole, bpmSystemID))
+        while len(tasksList) > 0:            
+            bpmTask : bawSys.BpmTask = bawSys.BpmTask( tasksList.pop() )
+            
+            epm = self.user.getExposedProcessManager()
+            snapName = epm.getSnapshotName()    
+            appAcronym = epm.getAppAcronym()
+            if appAcronym == self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM):
+                configuredSnapName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
+                if configuredSnapName == None or configuredSnapName == "":
+                    configuredSnapName = snapName
+                if snapName == configuredSnapName:
+                    listOfProcessNames = epm.getAppProcessNames()                                        
+                    for procName in listOfProcessNames:
+                        if procName == bpmTask.getProcessName():
+                            if self.user.isSubjectForUser(bpmTask.getSubject()) == True:
+                                if (bpmTask.getRole() != None and isClaiming == True) or (bpmTask.getRole() == None and isClaiming == False):             
+                                    bpmTaksItems.append(bpmTask)
 
         return bawSys.BpmTaskList(len(bpmTaksItems), bpmTaksItems)
 
@@ -197,10 +199,25 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             # query task list
             offset = "0"
             constParams : str = "calcStats=false&includeAllIndexes=false&includeAllBusinessData=false&avoidBasicAuthChallenge=true"
+
+            """
+            https://www.ibm.com/docs/en/baw/22.x?topic=execution-put
+            "fields":[
+                "taskDueDate",
+                "taskPriority",
+                "taskIsAtRisk",
+                "taskAtRiskTime",
+                "taskActivityName",
+                "taskActivityType",
+                "instanceCaseProcessTypeLocation",
+                "instanceCaseStageStatus",
+                "caseIdentifier",
+                "caseTypeId"
+            """
             params = {'organization': 'byTask',
                     'shared': 'false',
                     'conditions': [{ 'field': 'taskActivityType', 'operator': 'Equals', 'value': 'USER_TASK' }],
-                    'fields': [ 'taskSubject', 'taskStatus', 'assignedToRoleDisplayName'],
+                    'fields': [ 'taskSubject', 'taskStatus', 'assignedToRoleDisplayName', 'instanceName', 'instanceId', 'instanceStatus', 'instanceProcessApp', 'instanceSnapshot', 'bpdName'],
                     'aliases': [], 
                     'interaction': interaction, 
                     'size': size }
