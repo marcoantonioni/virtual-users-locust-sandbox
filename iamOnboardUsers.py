@@ -30,7 +30,7 @@ def _accessToken(baseHost, userName, userPassword):
             logging.error("_accessToken error, user %s, did not contain expected key 'access_token'", userName)
             response.failure("Response did not contain expected key 'access_token'")
     else:
-        logging.error("_accessToken error, status code: %d, messge: %s", response.status_code, response.text)
+        logging.error("_accessToken error, status code: %d, message: %s", response.status_code, response.text)
     return access_token
 
 # CP4BA address (cpd-cp4ba)
@@ -106,11 +106,6 @@ def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, users, domainName):
                 else:
                     logging.error("_userOnboard error, status code: %d, messge: %s", response.status_code, response.text)
 
-
-def testUserOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, fullPathUsers, domainName):
-    creds.setupCredentials(fullPathUsers, bpmEnvironment)    
-    _userOnboard(bpmEnvironment, creds.user_credentials, domainName)
-
 def main(argv):
     logger = logging.getLogger('root')
     logger.setLevel(logging.INFO)    
@@ -125,7 +120,8 @@ def main(argv):
         domainName = cmdLineMgr.getParam("d", "domain")
         bpmEnvironment.loadEnvironment(_fullPathBawEnv)
         bpmEnvironment.dumpValues()
-        testUserOnboard(bpmEnvironment, _fullPathUsers, domainName)
+        creds.setupCredentials(_fullPathUsers, bpmEnvironment)    
+        _userOnboard(bpmEnvironment, creds.user_credentials, domainName)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

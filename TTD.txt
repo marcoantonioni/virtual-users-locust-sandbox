@@ -3,6 +3,8 @@
 - gestione TeamBindings (solo su snapshot? cercare uso tip)
 
 - verifica e revisione login LoadProcessInstancesInfos
+-- verificare uso cookie su tutti task
+-- verificare nuovo login per timeout (rigenerazione token zen / nuovo login) 
 
 - tool per lettura payload istanze processo completate/terminate/failed
 -- export record formato json per analisi risultato

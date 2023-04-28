@@ -28,7 +28,33 @@ class ApplicationInfo:
         for item in items:
             self.versions.append(ApplicationSnapshotInfo(item))
 
+class BpmGroupInfo:
+    def __init__(self, grp):
+        self.groupID = None
+        self.groupName = None
+        self.displayName = None
+        self.description = None
+        self.deleted = False
+        self.members = None
+        self.operateGroup = None
+        if grp != None:
+            self.groupID = grp["groupID"]
+            self.groupName = grp["groupName"]
+            self.displayName = grp["displayName"]
+            self.deleted = grp["deleted"]
+            try:
+                self.members = grp["members"]
+            except KeyError:
+                pass
+            try:
+                self.description = grp["description"]
+            except KeyError:
+                pass
 
+class BpmGroupOperate:
+    def __init__(self, name, users):
+        self.groupName = name
+        self.members = users
 
 
 class BpmExposedProcessInfo:
