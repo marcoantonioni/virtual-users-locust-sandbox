@@ -318,6 +318,26 @@ def _zenToken(self, baseHost, userName, iamToken):
                 response.failure("Response did not contain expected key 'accessToken'")
     return zenTk
 
+def _csrfToken(baseHost, userName, userPassword):
+    csrfToken : str = None
+    my_headers = {'Content-Type': 'application/json'}
+    basic = HTTPBasicAuth(userName, userPassword)
+    response = requests.post(url=baseHost+"/bas/bpm/system/login", headers=my_headers, data="{}", verify=False, auth=basic)
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
+        logging.debug("_csrfToken status code: %s", response.status_code)
+    if response.status_code < 300:
+        try:
+            csrfToken = response.json()["csrf_token"]                
+        except JSONDecodeError:
+            logging.error("_accessToken error, user %s, response could not be decoded as JSON", userName)
+            response.failure("Response could not be decoded as JSON")
+        except KeyError:
+            logging.error("_accessToken error, user %s, did not contain expected key 'access_token'", userName)
+            response.failure("Response did not contain expected key 'access_token'")
+    else:
+        logging.error("_csrfToken error, status code: %d, messge: %s", response.status_code, response.text)
+    return csrfToken
+
 def getUserNumber( userId : str ):
     # se primo carattere numero errore
     if (userId[0] >= '0' and userId[0] <= '9') == True:
