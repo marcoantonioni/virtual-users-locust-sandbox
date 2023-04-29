@@ -13,10 +13,12 @@ def _cleanVarData(varDict):
     for vn in listOfVarNames:
         vnObj = varDict[vn]
         if vnObj != None:
-            try:
-                del vnObj["@metadata"]
-            except KeyError:
-                pass
+            if type(vnObj) == dict:
+                _cleanVarData(vnObj)
+                try:
+                    del vnObj["@metadata"]
+                except KeyError:
+                    pass
     return varDict
 
 def _extractPayloadOptionalThinkTime(payloadInfos: dict, user, wait: bool):

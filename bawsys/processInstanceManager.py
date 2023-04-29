@@ -77,6 +77,7 @@ class BpmExecProcessInstance:
       self.creationDate = creationDate
       self.lastModTime = lastModTime
       self.closedDate = closedDate
+      self.variables = None
 
 
 class BpmProcessInstanceManager:
@@ -190,7 +191,9 @@ class BpmProcessInstanceManager:
             data = jsObj["data"]
             variables = data["variables"]
             cleanedVars = bawUtils._cleanVarData(variables)
-            print(json.dumps(cleanedVars, indent = 2))
+            #print(json.dumps(cleanedVars, indent = 2))
+            return cleanedVars
+        return None
 
     def exportProcessInstancesData(self, bpmEnvironment : bpmEnv.BpmEnvironment, bpdName: str, status: str, dateFrom: str, dateTo: str):
         listOfInstances = self.searchProcessInstances(bpmEnvironment, status, dateFrom, dateTo)
@@ -201,6 +204,7 @@ class BpmProcessInstanceManager:
             idx = 0
             while idx < numProcesses:
                 if bpdName == listOfInstances[idx].bpdName:                     
-                      print("export process ", listOfInstances[idx].piid, listOfInstances[idx].bpdName, listOfInstances[idx].executionState)
-                      self._getProcessDetails(hostUrl, baseUri, listOfInstances[idx].piid)
+                      # print("export process ", listOfInstances[idx].piid, listOfInstances[idx].bpdName, listOfInstances[idx].executionState)
+                      listOfInstances[idx].variables = self._getProcessDetails(hostUrl, baseUri, listOfInstances[idx].piid)                      
                 idx += 1
+        return listOfInstances
