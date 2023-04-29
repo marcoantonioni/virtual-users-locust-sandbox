@@ -1,6 +1,7 @@
 # tasks
 
 import logging, json
+from datetime import datetime
 from locust import task, tag, SequentialTaskSet
 from bawsys.processInstanceManager import BpmProcessInstanceManager as bpmPIM
 from bawsys.processInstanceManager import BpmProcessInstance as bpmPI
@@ -22,6 +23,12 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         self.user.cookieTraditional = None
         self.user.authorizationBearerToken = None
         self.bawLogin()
+
+        #================
+        # DEBUG ONLY
+        # now = datetime.now() # current date and time
+        # date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+        # logging.critical("FORCED LOGIN ["+self.user.userCreds.getName()+"] ",date_time)
 
     def isActionEnabled(self, key):
         actionEnabled = False

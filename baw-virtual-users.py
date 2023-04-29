@@ -4,7 +4,7 @@ from locust import FastHttpUser, task, between, tag, events
 from locust.runners import MasterRunner
 from json import JSONDecodeError
 import logging, sys, importlib
-
+from datetime import datetime
 import bawsys.bawTasks as bpmTask
 import bawsys.processInstanceManager as bpmPIM
 
@@ -186,6 +186,12 @@ def _(parser):
 @events.test_start.add_listener
 def on_test_start(environment, **kwargs):
     logging.info("A BPM test is starting, BAW_ENV[%s] BAW_USERS[%s]", environment.parsed_options.BAW_ENV, environment.parsed_options.BAW_USERS)
+
+    #===================
+    # DEBUG ONLY
+    # now = datetime.now() # current date and time
+    # date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+    # logging.critical("RUN STARTED AT ",date_time)
 
 @events.test_stop.add_listener
 def on_test_stop(environment, **kwargs):

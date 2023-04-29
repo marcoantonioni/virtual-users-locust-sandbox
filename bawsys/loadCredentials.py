@@ -62,7 +62,7 @@ def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment ):
 
             for usr in usersList:
                 temp_user_credentials.append(UserCredentials(usr, userPassword, userEmail))
-                logging.debug('User %s, password %s', usr, userPassword, userEmail)
+                logging.debug('User %s, password %s, email %s', usr, userPassword, userEmail)
     
     orderMode = 0
     userOrderMode = bpmEnvironment.getValue(bpmEnvironment.keyBAW_USER_ORDER_MODE)
