@@ -32,8 +32,8 @@ def listProcessInstances(argv):
             if listOfInstances != None:
                 numProcesses = len(listOfInstances)
                 idx = 0
-                instance = {}
                 while idx < numProcesses:
+                    instance = {}
                     instance["processName"] = listOfInstances[idx].bpdName
                     instance["processId"] = listOfInstances[idx].piid 
                     instance["state"] = listOfInstances[idx].executionState

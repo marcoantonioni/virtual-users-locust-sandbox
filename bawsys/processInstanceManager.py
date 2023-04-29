@@ -121,7 +121,7 @@ class BpmProcessInstanceManager:
             logging.error("createInstance error, user %s, status code [%d], message [%s]", userName, response.status_code, response.text)
         return None
 
-    def searchProcessInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment, status: str, dateFrom: str, dateTo: str):
+    def searchProcessInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment, bpdName: str, status: str, dateFrom: str, dateTo: str):
         listOfInstances = None
 
         self.loggedIn = False
@@ -176,9 +176,11 @@ class BpmProcessInstanceManager:
                       closedDate = p["closedDate"]
                     except KeyError:
                       pass
-                    execProc = BpmExecProcessInstance(p["executionState"], p["piid"], p["name"], p["bpdName"], p["snapshotID"], 
-                                                      p["projectID"], p["dueDate"], p["creationDate"], p["lastModificationTime"], closedDate)
-                    listOfInstances.append(execProc)
+
+                    if bpdName == p["bpdName"]:
+                      execProc = BpmExecProcessInstance(p["executionState"], p["piid"], p["name"], p["bpdName"], p["snapshotID"], 
+                                                        p["projectID"], p["dueDate"], p["creationDate"], p["lastModificationTime"], closedDate)
+                      listOfInstances.append(execProc)
                     idx += 1
 
         return listOfInstances
@@ -196,7 +198,7 @@ class BpmProcessInstanceManager:
         return None
 
     def exportProcessInstancesData(self, bpmEnvironment : bpmEnv.BpmEnvironment, bpdName: str, status: str, dateFrom: str, dateTo: str):
-        listOfInstances = self.searchProcessInstances(bpmEnvironment, status, dateFrom, dateTo)
+        listOfInstances = self.searchProcessInstances(bpmEnvironment, bpdName, status, dateFrom, dateTo)
         if listOfInstances != None:
             hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
             baseUri : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
