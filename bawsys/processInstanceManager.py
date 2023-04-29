@@ -177,7 +177,7 @@ class BpmProcessInstanceManager:
                     except KeyError:
                       pass
 
-                    if bpdName == p["bpdName"]:
+                    if bpdName == None or bpdName == p["bpdName"]:
                       execProc = BpmExecProcessInstance(p["executionState"], p["piid"], p["name"], p["bpdName"], p["snapshotID"], 
                                                         p["projectID"], p["dueDate"], p["creationDate"], p["lastModificationTime"], closedDate)
                       listOfInstances.append(execProc)
@@ -205,8 +205,8 @@ class BpmProcessInstanceManager:
             numProcesses = len(listOfInstances)
             idx = 0
             while idx < numProcesses:
-                if bpdName == listOfInstances[idx].bpdName:                     
-                      # print("export process ", listOfInstances[idx].piid, listOfInstances[idx].bpdName, listOfInstances[idx].executionState)
-                      listOfInstances[idx].variables = self._getProcessDetails(hostUrl, baseUri, listOfInstances[idx].piid)                      
+                if bpdName == None or bpdName == listOfInstances[idx].bpdName:                     
+                    # print("export process ", listOfInstances[idx].piid, listOfInstances[idx].bpdName, listOfInstances[idx].executionState)
+                    listOfInstances[idx].variables = self._getProcessDetails(hostUrl, baseUri, listOfInstances[idx].piid)                      
                 idx += 1
         return listOfInstances
