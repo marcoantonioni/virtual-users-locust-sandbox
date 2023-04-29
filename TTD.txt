@@ -1,7 +1,4 @@
 
-- verifica e revisione login LoadProcessInstancesInfos
--- verificare uso cookie su tutti task
--- verificare nuovo login per timeout (rigenerazione token zen / nuovo login) 
 
 
 #----------------------------------
