@@ -1,7 +1,4 @@
 
-
-- gestione TeamBindings (solo su snapshot? cercare uso tip)
-
 - verifica e revisione login LoadProcessInstancesInfos
 -- verificare uso cookie su tutti task
 -- verificare nuovo login per timeout (rigenerazione token zen / nuovo login) 
@@ -18,28 +15,6 @@ oc get secret -n cp4ba icp4adeploy-openldap-customldif -o jsonpath='{.data.ldap_
 # openldap phpadmin (vm bamoe)
 https://github.com/marcoantonioni/openldap-openshift/blob/main/phpldapadmin.md
 
-
-#-----------------------------------------
-# !!!! /BAS
-def _csrfToken(baseHost, userName, userPassword):
-    access_token : str = None
-    my_headers = {'Content-Type': 'application/json'}
-    basic = HTTPBasicAuth(userName, userPassword)
-    response = requests.post(url=baseHost+"/bas/bpm/system/login", headers=my_headers, data="{}", verify=False, auth=basic)
-    if logging.getLogger().isEnabledFor(logging.DEBUG):
-        logging.debug("_csrfToken status code: %s", response.status_code)
-    if response.status_code < 300:
-        try:
-            access_token = response.json()["csrf_token"]                
-        except JSONDecodeError:
-            logging.error("_accessToken error, user %s, response could not be decoded as JSON", userName)
-            response.failure("Response could not be decoded as JSON")
-        except KeyError:
-            logging.error("_accessToken error, user %s, did not contain expected key 'access_token'", userName)
-            response.failure("Response did not contain expected key 'access_token'")
-    else:
-        logging.error("_csrfToken error, status code: %d, messge: %s", response.status_code, response.text)
-    return access_token
 
 
 #=====================================
