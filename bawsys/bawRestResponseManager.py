@@ -24,7 +24,7 @@ class RestResponseManager:
             
             self.isJsObj = True
         except:
-            logging.error("%s, status code [%s], error text [%s], empty/not-valid json content", contextName, response.status_code, response.text)
+            logging.error("%s, user %s, status code [%s], error text [%s], empty/not-valid json content", contextName, userName, response.status_code, response.text)
 
         if logging.getLogger().isEnabledFor(logging.DEBUG):
             logging.debug("%s status code: %s", contextName, response.status_code)

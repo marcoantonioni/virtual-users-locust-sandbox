@@ -9,6 +9,7 @@ from bawsys import bawSystem as bawSys
 from bawsys import bawRestResponseManager as responseMgr 
 from bawsys import bawUtils as bawUtils 
 
+# from requests.cookies import cookiejar_from_dict
 
 class SequenceOfBpmTasks(SequentialTaskSet):
 
@@ -52,6 +53,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             _headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
         else:
             _headers['Authorization'] = bawUtils._basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
+            #ckHeaders = self.user.cookieTraditional.get_dict()
+            #_headers.update(ckHeaders)
+            #print("PREPARE HEADERS", _headers)
         return _headers
 
     def _buildTaskUrl(self, bpmTask : bawSys.BpmTask):
@@ -210,31 +214,28 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             uriBaseTaskList = ""
             taskListFederated = False
             hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+            processAppName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
             processAppAcronym = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
             
             # query task list
             offset = "0"
             constParams : str = "interaction=claimed_and_available&calcStats=false&includeAllBusinessData=false"
 
-            params = {'organization': 'byTask',
-                    'shared': 'false',
-                    'conditions': [{ 'field': 'taskActivityType', 'operator': 'Equals', 'value': 'USER_TASK' }],
-                    'fields': [ 'taskSubject', 'taskStatus', 'assignedToRoleDisplayName', 'instanceName', 'instanceId', 'instanceStatus', 'instanceProcessApp', 'instanceSnapshot', 'bpdName'],
-                    'aliases': [], 
-                    'interaction': interaction, 
-                    'size': size }
             my_headers = self._prepareHeaders()
+            nameType = None
             if self.user.runningTraditional == False:
                 taskListFederated = True
                 uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
+                nameType = processAppAcronym
             else:
                 baseUri = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
                 if baseUri == None:
                     baseUri = ""
                 uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
-            fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&processAppName="+processAppAcronym
-            with self.client.get(url=fullUrl, headers=my_headers, data=json.dumps(params), catch_response=True) as response:
+                nameType = processAppName
+            fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&size=25&processAppName="+nameType
 
+            with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
                 restResponseManager: responseMgr.RestResponseManager = responseMgr.RestResponseManager("_listTasks", response, self.user.userCreds.getName(), None, [401, 409])
                 if restResponseManager.getStatusCode() == 200:
                     _taskList = None

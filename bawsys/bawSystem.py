@@ -165,11 +165,11 @@ class BpmTask:
         self.status = task["STATUS"]
         self.subject = task["TAD_DISPLAY_NAME"]
         self.role = task["ASSIGNED_TO_ROLE_DISPLAY_NAME"]
-        self.processName = task["PT_NAME"]
         self.processAppAcronym = task["PROCESS_APP_ACRONYM"]
         self.systemID = ""
         self.snapshotName = ""
         self.snapshotId = ""
+        # next differs fields between traditional and container runtime
         try:
             self.bpmSystemID = task["systemID"]
         except:
@@ -184,6 +184,14 @@ class BpmTask:
             self.snapshotId = task["SNAPSHOT_ID"]
         except:
             pass
+        try:
+            self.processName = task["PT_NAME"]
+        except:
+            try:
+                tmpName = self.processName = task["PI_NAME"]
+                self.processName = tmpName.split(":")[0]
+            except:
+                pass
 
         """
             "TASK.FLOW_OBJECT_ID": "eb16e17d-545c-4cda-b890-0b623d8363bf",
