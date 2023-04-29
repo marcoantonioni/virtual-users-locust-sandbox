@@ -3,9 +3,6 @@
 -- verificare uso cookie su tutti task
 -- verificare nuovo login per timeout (rigenerazione token zen / nuovo login) 
 
-- tool per lettura payload istanze processo completate/terminate/failed
--- export record formato json per analisi risultato
-
 
 #----------------------------------
 
