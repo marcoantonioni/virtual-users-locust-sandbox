@@ -101,10 +101,10 @@ class BpmProcessInstanceManager:
           ok = True
         return ok
 
-    def createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, runningTraditional, userName, processInfo: bawSys.BpmExposedProcessInfo, payload : str, my_headers):                
+    def createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, runningTraditional, userName, processInfo: bawSys.BpmExposedProcessInfo, payload : str, my_headers, my_cookies=None):                
         hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
         urlStartInstance = hostUrl+processInfo.getStartUrl()+"&parts=header&params="+payload
-        response = requests.post(url=urlStartInstance, headers=my_headers, verify=False)
+        response = requests.post(url=urlStartInstance, headers=my_headers, cookies=my_cookies, verify=False)
         if response.status_code == 200:
             processInstance = None
             data = response.json()["data"]

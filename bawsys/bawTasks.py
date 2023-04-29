@@ -9,13 +9,19 @@ from bawsys import bawSystem as bawSys
 from bawsys import bawRestResponseManager as responseMgr 
 from bawsys import bawUtils as bawUtils 
 
-# from requests.cookies import cookiejar_from_dict
+from requests.cookies import cookiejar_from_dict
 
 class SequenceOfBpmTasks(SequentialTaskSet):
 
     #==========================================================
     # Supporting functions
     #==========================================================
+
+    def forceLogin(self):
+        self.user.loggedIn = False
+        self.user.cookieTraditional = None
+        self.user.authorizationBearerToken = None
+        self.bawLogin()
 
     def isActionEnabled(self, key):
         actionEnabled = False
@@ -47,15 +53,16 @@ class SequenceOfBpmTasks(SequentialTaskSet):
     def _buildPayload(self, taskSubject, preExistPayload = None):
         return self.user._payload(taskSubject, preExistPayload)
 
-    def _prepareHeaders(self):
+    def _prepareHeaders(self, forceBasicAuth=False):
         _headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
         if self.user.runningTraditional == False:
             _headers['Authorization'] = 'Bearer '+self.user.authorizationBearerToken
         else:
-            _headers['Authorization'] = bawUtils._basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
-            #ckHeaders = self.user.cookieTraditional.get_dict()
-            #_headers.update(ckHeaders)
-            #print("PREPARE HEADERS", _headers)
+            if forceBasicAuth == True:
+                _headers['Authorization'] = bawUtils._basicAuthHeader(self.user.userCreds.getName(), self.user.userCreds.getPassword())
+            else:
+                if self.user.cookieTraditional != None:
+                    cookiejar_from_dict(self.user.cookieTraditional.get_dict(), self.client.cookiejar)
         return _headers
 
     def _buildTaskUrl(self, bpmTask : bawSys.BpmTask):
@@ -131,6 +138,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         bpmTaskState = data["state"]
                         logging.debug("_taskClaim, user %s, task %s, state %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTaskState )
                     return True
+                else:
+                    if restResponseManager.getStatusCode() == 401:
+                        self.forceLogin()
         return False                
 
     def _taskRelease(self, bpmTask: bawSys.BpmTask):
@@ -145,6 +155,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         bpmTaskState = data["state"]
                         logging.debug("_taskRelease, user %s, task %s, state %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTaskState )
                     return True
+                else:
+                    if restResponseManager.getStatusCode() == 401:
+                        self.forceLogin()
         return False
 
     def _taskComplete(self, bpmTask: bawSys.BpmTask, payload):
@@ -160,6 +173,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         bpmTaskState = data["state"]
                         logging.debug("_taskComplete, user %s, task %s, state %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTaskState )
                     return True
+                else:
+                    if restResponseManager.getStatusCode() == 401:
+                        self.forceLogin()
         return False
 
     def _taskGetDetails(self, bpmTask : bawSys.BpmTask):
@@ -173,8 +189,10 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     data2 = data1["data"]
                     bpmTask.setActions(data1["actions"])
                     bpmTask.setVariableNames(bawUtils._getAttributeNamesFromDictionary(data2["variables"]))
-
                     return True
+                else:
+                    if restResponseManager.getStatusCode() == 401:
+                        self.forceLogin()
         return False
 
     def _taskGetData(self, bpmTask: bawSys.BpmTask):
@@ -192,6 +210,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         if logging.getLogger().isEnabledFor(logging.DEBUG):
                             logging.debug("_taskGetData, user %s, task %s", self.user.userCreds.getName(), bpmTask.getId() )
                         return True
+                    else:
+                        if restResponseManager.getStatusCode() == 401:
+                            self.forceLogin()
         return False
 
     def _taskSetData(self, bpmTask: bawSys.BpmTask, payload):
@@ -207,6 +228,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     if logging.getLogger().isEnabledFor(logging.DEBUG):
                         logging.debug("_taskSetData, user %s, task %s", self.user.userCreds.getName(), bpmTask.getId() )
                     return True
+                else:
+                    if restResponseManager.getStatusCode() == 401:
+                        self.forceLogin()
         return False
 
     def _listTasks(self, interaction, size):
@@ -259,6 +283,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         if taskListFederated == True:
                             _taskList.setFederationInfos(restResponseManager.getObject("federationResult"))                        
                     return _taskList
+                else:
+                    if restResponseManager.getStatusCode() == 401:
+                        self.forceLogin()
             return None
 
     #==========================================================
@@ -310,6 +337,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("User[%s] - bawClaimTask TASK [%s] CONFLICT, cannot claim task, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
                 else:
                     self.nothingToDo("bawClaimTask no task to claim")
+        else:
+            self.forceLogin()
 
     def bawCompleteTask(self):
         if self.user.loggedIn == True:
@@ -336,6 +365,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("User[%s] - bawCompleteTask TASK [%s] CONFLICT, cannot complete already claimed task, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
                 else:
                     self.nothingToDo("bawCompleteTask no task to complete")
+        else:
+            self.forceLogin()
 
     def bawGetTaskData(self):
         if self.user.loggedIn == True:
@@ -350,6 +381,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         logging.debug("User[%s] - bawGetTaskData TASK [%s] CLEANED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
                 else:
                     self.nothingToDo("bawGetTaskData no task to set data")
+        else:
+            self.forceLogin()
 
     def bawSetTaskData(self):
         if self.user.loggedIn == True:
@@ -378,6 +411,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("User[%s] - bawSetTaskData TASK [%s] HAS NO ACTION_SETTASK, available actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
                 else:
                     self.nothingToDo("bawSetTaskData no task to set data to")
+        else:
+            self.forceLogin()
 
     def bawReleaseTask(self):
         if self.user.loggedIn == True:
@@ -399,6 +434,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("User[%s] - bawReleaseTask TASK [%s] HAS NO ACTION_CANCELCLAIM, available actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
                 else:
                     self.nothingToDo("bawReleaseTask no task to release")
+        else:
+            self.forceLogin()
 
     def bawCreateInstance(self):
         if self.user.loggedIn == True:
@@ -413,14 +450,18 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         jsonPayload = bawUtils._extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
                         strPayload = json.dumps(jsonPayload)
                         my_headers = self._prepareHeaders()
-                        processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), self.user.runningTraditional, self.user.userCreds.getName(), processInfo, strPayload, my_headers)
+                        processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), self.user.runningTraditional, self.user.userCreds.getName(), processInfo, strPayload, my_headers, self.user.cookieTraditional)
                         if processInstanceInfo != None:
                             logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
                     else:
                         logging.error("User[%s] - bawCreateInstance no process info available", self.user.userCreds.getName())
+                        # da rivedere gestione errore creazione istanza
+                        self.forceLogin()
                 else:
                     if logging.getLogger().isEnabledFor(logging.DEBUG):
                         logging.debug("User[%s] - bawCreateInstance reached total limit", self.user.userCreds.getName())
+        else:
+            self.forceLogin()
 
     #==========================================================
     # List of enabled tasks
