@@ -189,9 +189,10 @@ def on_test_start(environment, **kwargs):
 
     #===================
     # DEBUG ONLY
-    # now = datetime.now() # current date and time
-    # date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-    # logging.critical("RUN STARTED AT ",date_time)
+    #if logging.getLogger().isEnabledFor(logging.CRITICAL):
+    #    now = datetime.now() # current date and time
+    #    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+    #    logging.critical("RUN STARTED AT ",date_time)
 
 @events.test_stop.add_listener
 def on_test_stop(environment, **kwargs):
