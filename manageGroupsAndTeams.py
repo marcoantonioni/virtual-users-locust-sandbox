@@ -29,6 +29,7 @@ class GroupsTeamsManager:
         
         self.listOfTeams = []
         self.dictOfTeams = {}
+        self.filteredListOfTeamInfo = []
 
         userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
         userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
@@ -51,6 +52,7 @@ class GroupsTeamsManager:
                 self._headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
 
     def _dumpError(self, context, response):
+        bpmErrorMessage = ''
         try:
             try:
                 jsObj = response.json()
@@ -67,7 +69,7 @@ class GroupsTeamsManager:
             logging.error("%s Error, response did not contain expected key 'Data', 'errorMessage', status %d", context, response.status_code)
 
     #============================================================
-    # Teams
+    # Groups
     #============================================================
     def _readGroupsArchive(self, fullPathName : str):
         # legge file e crea oggetto lista gruppi
@@ -102,6 +104,9 @@ class GroupsTeamsManager:
                     else:
                         if bpmGrpInfo.operateGroup.members != None:
                             bpmGrpInfo.operateGroup.members = bpmGrpInfo.operateGroup.members + group.members
+                        else:
+                            bpmGrpInfo.operateGroup.members = [] + group.members
+                            
                     self.filteredListOfGroupsInfo.append(bpmGrpInfo)
                 except:
                     logging.error("_readGroupsArchive error, group '%s' not present on server", groupName)
@@ -183,6 +188,55 @@ class GroupsTeamsManager:
     #============================================================
 
     def _readTeamsArchive(self, fullPathName : str):
+        # legge file e crea oggetto lista gruppi
+        with open(fullPathName,'r') as data:
+            for item in csv.DictReader(data):
+                teamName = item["TEAM"].strip()
+                groupName = item['GROUP'].strip()
+                userName = item['USER'].strip()
+                managerGroup = item["MANAGER"]
+                if managerGroup != None:
+                    managerGroup = managerGroup.strip()
+                
+                usersList = []
+                rangeOfUsers = bawSys.usersRange( userName )
+                if rangeOfUsers != None:
+                    userFrom = rangeOfUsers["infoFrom"]
+                    userTo = rangeOfUsers["infoTo"]
+                    idxFrom = userFrom["number"]
+                    idxTo = userTo["number"]
+                    namePrefix = userFrom["name"]
+                    totUsers = (idxTo - idxFrom) + 1
+                    i = 0
+                    while idxFrom <= idxTo:
+                        usersList.append(namePrefix+str(idxFrom))
+                        idxFrom += 1                    
+                else:
+                    usersList.append(userName)
+
+                # crea oggetto Team e associa utenze
+                try:
+                    bpmTeamInfo : bawSys.TeamBindingInfo = self.dictOfTeams[teamName]
+                    team = bawSys.TeamBindingOperate(teamName, groupName, usersList, managerGroup)
+                    self.listOfTeams.append(team)
+                    if bpmTeamInfo.operateTeam == None:
+                        bpmTeamInfo.operateTeam = team
+                    else:
+                        bpmTeamInfo.operateTeam.managerGroup = managerGroup
+                        if bpmTeamInfo.operateTeam.groups != None:
+                            bpmTeamInfo.operateTeam.groups = bpmTeamInfo.operateTeam.groups + [groupName]
+                        else:
+                            bpmTeamInfo.operateTeam.groups = [groupName]
+
+                        if bpmTeamInfo.operateTeam.members != None:
+                            bpmTeamInfo.operateTeam.members = bpmTeamInfo.operateTeam.members + usersList
+                        else:
+                            bpmTeamInfo.operateTeam.members = [] + usersList
+                    
+                    self.filteredListOfTeamInfo.append(bpmTeamInfo)
+                except:
+                    logging.error("_readTeamsArchive error, Team '%s' not present on server", teamName)
+                    return False
         return True
     
     def _queryTeamList(self):
@@ -214,9 +268,9 @@ class GroupsTeamsManager:
         response = requests.get(url=urlTeamBindings, headers=self._headers, verify=False)
         if response.status_code == 200:
             team_bindings = response.json()["team_bindings"]
-
-            print(json.dumps(team_bindings, indent=2))
-
+            for t in team_bindings:
+                teamInfo : bawSys.TeamBindingInfo = bawSys.TeamBindingInfo(t)
+                self.dictOfTeams[teamInfo.name] = teamInfo
             ok = True
         else:
             self._dumpError("_queryTeamList", response)
@@ -224,7 +278,47 @@ class GroupsTeamsManager:
         return ok
 
     def _operateTeams(self, mode : str):
-        return True
+        ok = False
+        # legge lista gruppi da server
+        hostUrl : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        baseUri = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        self.appAcronym : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
+        self.appSnapName : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
+        if baseUri == None:
+            baseUri = ""
+        uriBaseRest = baseUri+"/ops/std/bpm/containers"
+        self._headers['BPMCSRFToken'] = self.csrfToken
+        urlTeamBindingsBase = hostUrl+uriBaseRest+"/"+self.appAcronym+"/versions/"+self.appSnapName+"/team_bindings/"
+
+        teamInfo : bawSys.TeamBindingInfo = None 
+        for teamInfo in self.filteredListOfTeamInfo:
+            urlUpdate = urlTeamBindingsBase + teamInfo.name            
+            print("Updating team", teamInfo.name)
+            response = None
+            data = {}
+            if mode.lower() == 'add':
+                if teamInfo.operateTeam.members != None:
+                    data["add_users"] = teamInfo.operateTeam.members
+                if teamInfo.operateTeam.groups != None:
+                    data["add_groups"] = teamInfo.operateTeam.groups
+                if teamInfo.operateTeam.managerGroup != None:
+                    data["add_manager"] = teamInfo.operateTeam.managerGroup
+                response = requests.post(url=urlUpdate, headers=self._headers, json=data, verify=False)
+            else:
+                if teamInfo.operateTeam.members != None:
+                    data["remove_users"] = teamInfo.operateTeam.members
+                if teamInfo.operateTeam.groups != None:
+                    data["remove_groups"] = teamInfo.operateTeam.groups
+                if teamInfo.operateTeam.managerGroup != None:
+                    data["remove_manager"] = teamInfo.operateTeam.managerGroup
+                response = requests.delete(url=urlUpdate, headers=self._headers, json=data, verify=False)
+            
+            if response.status_code >= 300:
+                self._dumpError("_operateTeams", response)
+                ok = False
+                break
+
+        return ok
     
     def manageTeams(self, fullPathName: str, mode: str):
         if self._queryTeamList() == True:

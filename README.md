@@ -52,6 +52,15 @@ python generateLDIFForVirtualUsers.py -c ./configurations/ldif4vu-cfg1.propertie
 # onboard utenze in IAM
 python ./iamOnboardUsers.py -e ./configurations/env1.properties -d vuxdomain -f ./configurations/creds-cfg1.csv
 
+# gruppi e team bindings
+python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -o add
+python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -o remove
+
+python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./configurations/teams-vu-cfg1.csv -o add
+python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./configurations/teams-vu-cfg1.csv -o remove
+
+python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -t ./configurations/teams-vu-cfg1.csv -o add
+
 
 # https://github.com/locustio/locust/blob/master/examples/test_data_management.py
 # https://github.com/locustio/locust/blob/master/examples/dynamic_user_credentials.py

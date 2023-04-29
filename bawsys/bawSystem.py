@@ -56,6 +56,30 @@ class BpmGroupOperate:
         self.groupName = name
         self.members = users
 
+class TeamBindingInfo:
+    def __init__(self, tbi):
+        self.name = None
+        self.participantId = None
+        self.managerName = None
+        self.userMembers = None
+        self.groupMembers = None
+        self.operateTeam = None
+        if tbi != None:
+            self.name = tbi["name"]
+            self.participantId = tbi["participant_id"]
+            self.userMembers = tbi["user_members"]
+            self.groupMembers = tbi["group_members"]
+            try:
+                self.managerName = tbi["manager_name"]
+            except KeyError:
+                pass
+
+class TeamBindingOperate:
+    def __init__(self, name, group, users, managerGroup):
+        self.groupName = name
+        self.groups = [group]
+        self.members = users
+        self.managerGroup = managerGroup
 
 class BpmExposedProcessInfo:
     def __init__(self, appName, appAcronym, snapshotName, tip, processName, appId, appBpdId, startUrl):
