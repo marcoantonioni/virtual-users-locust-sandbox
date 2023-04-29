@@ -12,6 +12,16 @@ oc get secret -n cp4ba icp4adeploy-openldap-customldif -o jsonpath='{.data.ldap_
 https://github.com/marcoantonioni/openldap-openshift/blob/main/phpldapadmin.md
 
 
+#=====================================
+# avvio Locust da programma Python
+#=====================================
+import os, sys
+from locust.main import main as mainLocust
+
+if __name__ == "__main__":
+    mainLocust()
+
+# python ./runlocust.py --config=./configurations/baw-vu-cfg-1.conf
 
 #=====================================
 # debug http
