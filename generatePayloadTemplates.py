@@ -19,6 +19,7 @@ class DataTypeTemplate:
         self.properties : str = properties
         self.templateBuilt = False
         self.dtTypeTemplate = '{"varName":{}}'
+        self.dtSchemaTypeTemplate = ''
 
     def getClassRefKey(self):
         return self.dtId+"/"+self.dtSnapId
@@ -26,9 +27,86 @@ class DataTypeTemplate:
     def buildClassRefKey(self, pdtId, pdtSnapId):
         return pdtId+"/"+pdtSnapId
 
+
+    #================================
+    # Schema
+
+    def buildJsonArributeForSchema(self, pName: str, pClass: str, pIsArr: bool, referencedTypeName: str):
+        attrType = "object"
+        if pClass == "String":
+            attrType = "string"
+            
+        if pClass == "Boolean":
+            attrType = "boolean"
+            
+        if pClass == "Integer":
+            attrType = "integer"
+
+        if pClass == "Decimal":
+            attrType = "number"
+            
+        if pClass == "Date":
+            attrType = "string"
+
+        if pClass == "Time":
+            attrType = "string"
+
+        if referencedTypeName != None:
+            attrType = "object"
+
+        if pIsArr == True:
+            return '"'+pName+'": {"type": "array", "items": { "type": "'+attrType+'" }}'
+        return '"'+pName+'": {"type": "'+attrType+'"}'
+
+    def builTemplateForSchema(self, dataTypeTemplatesByClassRef: dict):
+        #self.templateBuilt = True
+        referencedTypes = []
+        idxTemplate = 1
+        attribs = ""
+        tot = len(self.properties)
+        for prop in self.properties:
+            pName = prop["name"]
+            pClass = prop["typeClass"]
+            pIsArr = prop["isArray"]
+            isArr = "False"
+            if pIsArr == True:
+                isArr = "True"
+            pClassRef = None
+            pClasSnapId = None
+            referencedType: DataTypeTemplate = None
+
+            try:
+                pClassRef = prop["typeClassRef"]
+                if pClassRef != None:
+                    pClasSnapId = prop["typeClassSnapshotId"]
+                    referencedType = dataTypeTemplatesByClassRef[self.buildClassRefKey(pClassRef, pClasSnapId)]
+            except KeyError:
+                pass
+
+            referencedTypeName = None
+            if referencedType != None:
+                referencedTypeName = referencedType.dtName                       
+
+            if referencedTypeName != None:
+                referencedTypes.append('\''+pName+'\' of type '+referencedTypeName)
+            attrib = self.buildJsonArributeForSchema(pName, pClass, pIsArr, referencedTypeName)
+            attribs += attrib
+            if (tot > 1):
+                attribs += ", "
+            idxTemplate = idxTemplate + 1
+            tot = tot -1
+        refs = "#==========================\n# Create Json schema for "+self.dtName+" json type\n" 
+        for r in referencedTypes:
+            refs += '# '+r
+            refs += "\n"
+        self.dtSchemaTypeTemplate = refs+'jschema_'+self.dtName+'= {\n    "name": "'+self.dtName+'",\n    "properties": {\n        '+attribs.replace("}, ","},\n        ")+'},\n    "additionalProperties": False\n}'
+
+    #================================
+
+
+
     def buildJsonArribute(self, pName: str, pClass: str, pIsArr: bool, referencedTypeName: str):
         templatePayload = ""
-        templIdxVal = ""
 
         attrVal = '""'
         if pClass == "Boolean":
@@ -55,7 +133,7 @@ class DataTypeTemplate:
             templatePayload = '"'+pName+'": '+attrVal
         return templatePayload
 
-    def builTemplate(self, dataTypeTemplates: dict, dataTypeTemplatesByClassRef: dict):
+    def builTemplate(self, dataTypeTemplatesByClassRef: dict):
         self.templateBuilt = True
         referencedTypes = []
         idxTemplate = 1
@@ -84,7 +162,6 @@ class DataTypeTemplate:
             if referencedType != None:
                 referencedTypeName = referencedType.dtName                       
 
-            # attrib = self.buildJsonArributeTemplate(idxTemplate, pName, pClass, pIsArr, pClassRef, pClasSnapId, referencedTypeName)
             if referencedTypeName != None:
                 referencedTypes.append('\''+pName+'\' of type '+referencedTypeName)
             attrib = self.buildJsonArribute(pName, pClass, pIsArr, referencedTypeName)
@@ -214,7 +291,8 @@ class PayloadTemplateManager:
     def buildTypeTemplate(self):
         for dtName in self.dataTypeTemplates.keys():
             dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
-            dtTemplate.builTemplate(self.dataTypeTemplates, self.dataTypeTemplatesByClassRef)
+            dtTemplate.builTemplate(self.dataTypeTemplatesByClassRef)
+            dtTemplate.builTemplateForSchema(self.dataTypeTemplatesByClassRef)
 
     def generateTemplates(self, bpmEnvironment : bpmEnv.BpmEnvironment):
         # load all data types, add in allDataTypes dict using boId+boSnapId key
@@ -222,7 +300,7 @@ class PayloadTemplateManager:
         # build data type template
         self.buildTypeTemplate()
 
-    def printDataTypes(self, ):
+    def printDataTypes(self):
         indent = False
         print("# ==================================")
         print("# Python code for data model objects\n# Application ["+self.appName+"] Acronym ["+self.appAcronym+"] Snapshot ["+self.appSnapName+"] Tip ["+self.appSnapTip+"]")
@@ -231,6 +309,17 @@ class PayloadTemplateManager:
             dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
             payloadTemplate = dtTemplate.dtTypeTemplate            
             print(payloadTemplate+"\n\n")
+
+    def printSchemaDataTypes(self):
+        indent = False
+        print("# ==================================")
+        print("# Python code for JSON schema data model objects\n# Application ["+self.appName+"] Acronym ["+self.appAcronym+"] Snapshot ["+self.appSnapName+"] Tip ["+self.appSnapTip+"]")
+        print("# ==================================\n")
+        for dtName in self.dataTypeTemplates.keys():
+            dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
+            payloadTemplate = dtTemplate.dtSchemaTypeTemplate            
+            print(payloadTemplate+"\n\n")
+
 
 def writePayloadManagerTemplate(_outputPayloadManager):
     templateName = "./bawsys/template-payload-manager.yp"
@@ -281,8 +370,10 @@ def generatePayloadTemplates(argv):
                     redirectOutput = True
                     if _outputAutoName == True:
                         tip = ""
-                        if payloadTemplateMgr.appSnapTip == "true":
+                        if payloadTemplateMgr.useTip == True:
                             tip = "-tip"
+                        if payloadTemplateMgr.appSnapName == None or payloadTemplateMgr.appSnapName == "":
+                            tip = "tip"
                         fName = "payloadManager-"+payloadTemplateMgr.appName+"-"+payloadTemplateMgr.appAcronym+"-"+payloadTemplateMgr.appSnapName+tip
                         fName = fName.replace(".","-")
                         if _outputPayloadManager[-1] == "/":
@@ -298,10 +389,12 @@ def generatePayloadTemplates(argv):
                     with open(_outputPayloadManager, 'w') as f:
                         with redirect_stdout(f):
                             payloadTemplateMgr.printDataTypes()
+                            payloadTemplateMgr.printSchemaDataTypes()
                         f.close()
                     writePayloadManagerTemplate(_outputPayloadManager)
                 else:
                     payloadTemplateMgr.printDataTypes()
+                    payloadTemplateMgr.printSchemaDataTypes()
     if ok == False:
         print("Wrong arguments, use -e param to specify environment file")
 
