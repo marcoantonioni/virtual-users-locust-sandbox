@@ -292,6 +292,10 @@ class PayloadTemplateManager:
         for dtName in self.dataTypeTemplates.keys():
             dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
             dtTemplate.builTemplate(self.dataTypeTemplatesByClassRef)
+
+    def buildTypeTemplateForSchema(self):
+        for dtName in self.dataTypeTemplates.keys():
+            dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
             dtTemplate.builTemplateForSchema(self.dataTypeTemplatesByClassRef)
 
     def generateTemplates(self, bpmEnvironment : bpmEnv.BpmEnvironment):
@@ -299,11 +303,12 @@ class PayloadTemplateManager:
         self.getModel(bpmEnvironment)
         # build data type template
         self.buildTypeTemplate()
+        self.buildTypeTemplateForSchema()
 
     def printDataTypes(self):
         indent = False
         print("# ==================================")
-        print("# Python code for data model objects\n# Application ["+self.appName+"] Acronym ["+self.appAcronym+"] Snapshot ["+self.appSnapName+"] Tip ["+self.appSnapTip+"]")
+        print("# Python code for data model objects\n# Application ["+self.appName+"] Acronym ["+self.appAcronym+"] Snapshot ["+self.appSnapName+"] Tip ["+str(self.useTip)+"]")
         print("# ==================================\n")
         for dtName in self.dataTypeTemplates.keys():
             dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
@@ -313,13 +318,16 @@ class PayloadTemplateManager:
     def printSchemaDataTypes(self):
         indent = False
         print("# ==================================")
-        print("# Python code for JSON schema data model objects\n# Application ["+self.appName+"] Acronym ["+self.appAcronym+"] Snapshot ["+self.appSnapName+"] Tip ["+self.appSnapTip+"]")
+        print("# Python code for JSON schema data model objects\n# Application ["+self.appName+"] Acronym ["+self.appAcronym+"] Snapshot ["+self.appSnapName+"] Tip ["+str(self.useTip)+"]")
         print("# ==================================\n")
+        print("import warlock, json\n")
         for dtName in self.dataTypeTemplates.keys():
             dtTemplate : DataTypeTemplate = self.dataTypeTemplates[dtName]
             payloadTemplate = dtTemplate.dtSchemaTypeTemplate            
-            print(payloadTemplate+"\n\n")
-
+            print(payloadTemplate+"\n")
+            print("# ----------------------------------")
+            print("# Class definition for "+dtName+"\n# usage samples: youVar = "+dtName+"(), yourVar = "+dtName+"( {...} )")
+            print(dtName+" = warlock.model_factory(jschema_"+dtName+")\n\n")
 
 def writePayloadManagerTemplate(_outputPayloadManager):
     templateName = "./bawsys/template-payload-manager.yp"
@@ -366,6 +374,7 @@ def generatePayloadTemplates(argv):
                 payloadTemplateMgr.generateTemplates(bpmEnvironment)
                 redirectOutput = False
                 outName = "stdout"
+                _outputNameSchema = "stdout"
                 if len(_outputPayloadManager) > 0:
                     redirectOutput = True
                     if _outputAutoName == True:
@@ -376,22 +385,29 @@ def generatePayloadTemplates(argv):
                             tip = "tip"
                         fName = "payloadManager-"+payloadTemplateMgr.appName+"-"+payloadTemplateMgr.appAcronym+"-"+payloadTemplateMgr.appSnapName+tip
                         fName = fName.replace(".","-")
+                        fNameSchema = fName+"-JsonSchema"
                         if _outputPayloadManager[-1] == "/":
                             _outputPayloadManager = _outputPayloadManager[:-1]
                         else:
                             if _outputPayloadManager[-1] == "\\":
                                 _outputPayloadManager = _outputPayloadManager[:-1]
-                        _outputPayloadManager = _outputPayloadManager+"/"+fName+".py"
+                        _outputNameSchema = _outputPayloadManager+"/"+fNameSchema+".py"
+                        _outputPayloadManager = _outputPayloadManager+"/"+fName+".py"                        
                     outName = _outputPayloadManager
                 print("Generating Python code for payload manager to "+outName+"\n# Application ["+payloadTemplateMgr.appName+"] Acronym ["+payloadTemplateMgr.appAcronym+"] Snapshot ["+payloadTemplateMgr.appSnapName+"] Tip ["+payloadTemplateMgr.appSnapTip+"]")
                 if redirectOutput:
-                    print("Ouput to file ", _outputPayloadManager)
+                    print("Ouput PayloadManager to file ", _outputPayloadManager)
                     with open(_outputPayloadManager, 'w') as f:
                         with redirect_stdout(f):
                             payloadTemplateMgr.printDataTypes()
-                            payloadTemplateMgr.printSchemaDataTypes()
                         f.close()
                     writePayloadManagerTemplate(_outputPayloadManager)
+
+                    print("Ouput JSON Schema to file ", _outputNameSchema)
+                    with open(_outputNameSchema, 'w') as fs:
+                        with redirect_stdout(fs):
+                            payloadTemplateMgr.printSchemaDataTypes()
+                        fs.close()
                 else:
                     payloadTemplateMgr.printDataTypes()
                     payloadTemplateMgr.printSchemaDataTypes()
