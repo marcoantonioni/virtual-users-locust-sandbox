@@ -110,15 +110,21 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 if configuredSnapName == None or configuredSnapName == "":
                     configuredSnapName = snapName
                     useTip = True
+                
                 if snapName == configuredSnapName:
+
+                    # print(snapName, configuredSnapName, bpmTask.getSnapshotName(), useTip)
                     selectTask = False
                     # se Tip
-                    if bpmTask.getSnapshotName() == None and useTip == True:
+                    if snapName == configuredSnapName and useTip == True:
                         selectTask = True
                     else:
-                        # se snapname
-                        if bpmTask.getSnapshotName() != None and bpmTask.getSnapshotName() == configuredSnapName:
+                        if bpmTask.getSnapshotName() == None and useTip == True:
                             selectTask = True
+                        else:
+                            # se snapname
+                            if bpmTask.getSnapshotName() != None and bpmTask.getSnapshotName() == configuredSnapName:
+                                selectTask = True
 
                     if selectTask == True:
                         listOfProcessNames = epm.getAppProcessNames()                                        
@@ -270,6 +276,9 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
                 restResponseManager: responseMgr.RestResponseManager = responseMgr.RestResponseManager("_listTasks", response, self.user.userCreds.getName(), None, [401, 409])
                 if restResponseManager.getStatusCode() == 200:
+
+                    # print(json.dumps(response.json(),indent=2))
+
                     _taskList = None
                     size = 0
                     items = None
@@ -453,14 +462,15 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     pem = self.user.getEPM()
                     processInfo: bawSys.BpmExposedProcessInfo = pem.nextRandomProcessInfos()
                     if processInfo != None:
-                        processName = processInfo.getAppProcessName()
-                        jsonPayloadInfos = self._buildPayload("Start-"+processName)
-                        jsonPayload = bawUtils._extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
-                        strPayload = json.dumps(jsonPayload)
-                        my_headers = self._prepareHeaders()
-                        processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), self.user.runningTraditional, self.user.userCreds.getName(), processInfo, strPayload, my_headers, self.user.cookieTraditional)
-                        if processInstanceInfo != None:
-                            logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
+                        if pem.loadExposedItemsForUser(self.user.getEnvironment(), processInfo, self.user):
+                            processName = processInfo.getAppProcessName()
+                            jsonPayloadInfos = self._buildPayload("Start-"+processName)
+                            jsonPayload = bawUtils._extractPayloadOptionalThinkTime(jsonPayloadInfos, self.user, True)
+                            strPayload = json.dumps(jsonPayload)
+                            my_headers = self._prepareHeaders()
+                            processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), self.user.runningTraditional, self.user.userCreds.getName(), processInfo, strPayload, my_headers, self.user.cookieTraditional)
+                            if processInstanceInfo != None:
+                                logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
                     else:
                         logging.error("User[%s] - bawCreateInstance no process info available", self.user.userCreds.getName())
                         # da rivedere gestione errore creazione istanza

@@ -84,6 +84,7 @@ def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, users, domainName):
                     logging.debug("_onboardUser status code: %s", response.status_code)
                 if response.status_code == 200:
                     try:
+                        countOnboarded = 0
                         respJson = response.json()
                         respResult = respJson["result"]
                         respMsgCode: str = respJson["_messageCode_"]
@@ -94,9 +95,12 @@ def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, users, domainName):
                             resultUserSuccess = rr["success"]
                             resultUserMessage = rr["message"]
                             if respMsgCode.lower() == "success":
+                                if resultUserMessage!= None and resultUserMessage == "User created":
+                                    countOnboarded += 1
                                 logging.info("User [%s] onboarded in domain [%s], message[%s], new user id[%s]", resultUserName, domainName, resultUserMessage, resultUserUid )
                             else:
                                 logging.error("ERROR _onboardUser, username[%s], message code[%s] message[%s] %s", resultUserName, respMsgCode, respMessage, resultUserMessage)
+                        logging.info("Total onboarded users [%d] in a list of [%d]", countOnboarded, len(respResult))
                     except JSONDecodeError:
                         logging.error("_onboardUser error, response could not be decoded as JSON")
                         response.failure("Response could not be decoded as JSON")

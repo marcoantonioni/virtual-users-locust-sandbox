@@ -118,7 +118,8 @@ class BpmProcessInstanceManager:
                                                       None, None, None, None)
             return processInstance
         else:
-            logging.error("createInstance error, user %s, status code [%d], message [%s]", userName, response.status_code, response.text)
+            if response.status_code >= 300 and response.status_code != 401:
+              logging.error("createInstance error, user %s, status code [%d], message [%s]", userName, response.status_code, response.text)
         return None
 
     def searchProcessInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment, bpdName: str, status: str, dateFrom: str, dateTo: str):

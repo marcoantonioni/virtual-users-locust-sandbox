@@ -1,4 +1,5 @@
 TEAM,GROUP,USER,MANAGER
-VUSTeamCompile,VUSGroup1,vuxuser80..vuxuser89,Managers
-VUSTeamValidate,VUSGroup2,vuxuser90..vuxuser100
+VUSTeamStart,VUSGroupStarter
+VUSTeamCompile,VUSGroup1,vuxuser50,Managers
+VUSTeamValidate,VUSGroup2,vuxuser70..vuxuser79
 

@@ -29,6 +29,15 @@ class UserCredentials:
 #--------------------------------------------
 userStrategyTwins = False
 
+def prepareItem(item, key):
+    try:
+        t = item[key]
+        if t != None:
+            return t.strip()
+    except KeyError:
+        pass
+    return None
+
 def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment ):
     global userStrategyTwins
 
@@ -40,9 +49,18 @@ def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment ):
 
     with open(fullPathName,'r') as data:
         for item in csv.DictReader(data):
-            userName = item['NAME'].strip()
-            userPassword = item['PASSWORD'].strip()
-            userEmail = item['EMAIL'].strip()
+            userName = prepareItem(item, 'NAME')
+            if userName == None or userName.startswith('#'):
+                continue
+
+            userPassword = prepareItem(item, 'PASSWORD')
+            if userPassword == None or userPassword == "":
+                logging.error('User %s skipped, has no password.', userName)
+                continue
+
+            userEmail = prepareItem(item, 'EMAIL')
+            if userEmail == None:
+                userEmail = ""
 
             usersList = []
             rangeOfUsers = bawSys.usersRange( userName )

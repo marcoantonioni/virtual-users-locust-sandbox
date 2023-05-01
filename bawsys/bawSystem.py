@@ -86,13 +86,17 @@ class BpmExposedProcessInfo:
         self.appName : str = appName
         self.appAcronym : str = appAcronym
         self.snapshotName : str = snapshotName
+        if self.snapshotName == None:
+            self.snapshotName = ""
         self.tip : bool = tip
         self.processName : str = processName
         self.appId : str = appId
         self.appBpdId : str = appBpdId
         self.startUrl : str = startUrl
 
-        #print(appName+", "+appAcronym+", "+snapshotName+", "+str(tip)+", "+processName+", "+appId+", "+appBpdId)
+        # print(appName, appAcronym, snapshotName, tip, processName, appId, appBpdId)
+    def getKey(self):
+        return self.getAppProcessName()+"/"+self.getAppName()+"/"+self.getAppAcronym()+"/"+self.getSnapshotName()
 
     def getAppName(self):
         return self.appName

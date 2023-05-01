@@ -90,11 +90,6 @@ class BpmExposedProcessManager:
                 my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
                 response = requests.get(url=urlExposed, headers=my_headers, cookies=token, verify=False)
             else:
-                # authValue : str = "Bearer "+token
-                
-                #???? provare uso cookies con valore None
-                # my_cookies = None
-                # cookies=my_cookies, 
                 my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer '+token }
                 response = requests.get(url=urlExposed, headers=my_headers, verify=False)
             
@@ -136,6 +131,8 @@ class BpmExposedProcessManager:
                                     self.appId = expIt["processAppID"] 
                                     self.bpdId = expIt["itemID"]
                                     self.snapshotName = expIt["snapshotName"]
+                                    if self.snapshotName == None:
+                                        self.snapshotName = ""
                                     self.tip = expIt["tip"]
                                 processName = expIt["display"]                        
                                 for pn in self.appProcessNames:
@@ -144,14 +141,12 @@ class BpmExposedProcessManager:
                     except KeyError:
                         pass
 
-
                 if len(listOfProcessInfos) == 0:
-                    logging.error("Error, configured snapshot '%s' not present or not activated or not available as tip.\nUse empty value in BAW_PROCESS_APPLICATION_SNAPSHOT_NAME to run against the Tip", appSnapshotName)
+                    logging.error("Error looking for application [%s] [%s], configured snapshot '%s' not present or not activated or not available as tip. Use empty value in BAW_PROCESS_APPLICATION_SNAPSHOT_NAME to run against the Tip", self.appName, self.appAcronym, appSnapshotName)
                     sys.exit()
 
                 for appProcInfo in listOfProcessInfos:
-                    key = appProcInfo.getAppProcessName()+"/"+appProcInfo.getAppName()+"/"+appProcInfo.getAppAcronym()+"/"+appProcInfo.getSnapshotName()
-                    self.addProcessInfos(key, appProcInfo)
+                    self.addProcessInfos(appProcInfo.getKey(), appProcInfo)
             else:
                 contextName = "LoadProcessInstancesInfos"
                 js = {}
@@ -173,3 +168,45 @@ class BpmExposedProcessManager:
                         logging.error("%s error, response did not contain expected key 'Data', 'errorMessage'", contextName)
                         self.response.failure("Response did not contain expected key 'Data', 'errorMessage'")
         return token
+    
+    def loadExposedItemsForUser(self, bpmEnvironment : bpmEnv.BpmEnvironment, processInfo: bpmSys.BpmExposedProcessInfo, user):
+        forMe = False
+        response = None
+        hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        urlExposed = hostUrl+baseUri+"/rest/bpm/wle/v1/exposed/process?excludeProcessStartUrl=false"
+
+        my_headers = None
+        if bpmSys._isBawTraditional(bpmEnvironment):
+            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+            response = requests.get(url=urlExposed, headers=my_headers, cookies=user.cookieTraditional, verify=False)
+        else:
+            my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer '+user.authorizationBearerToken }
+            response = requests.get(url=urlExposed, headers=my_headers, verify=False)
+        
+        if response.status_code == 200:
+            data = response.json()["data"]
+
+            # print(json.dumps(data, indent=2))
+
+            exposedItemsList = data["exposedItemsList"]
+            for expItem in exposedItemsList:
+                appName = expItem["processAppName"] 
+                acrName = expItem["processAppAcronym"]
+                procName = expItem["display"]
+                snapName = ""
+                try:
+                    snapName = expItem["snapshotName"]
+                    if snapName == None:
+                        snapName = ""
+                except:
+                    pass
+                
+                if appName == processInfo.getAppName() and acrName == processInfo.getAppAcronym() and procName == processInfo.getAppProcessName() and snapName == processInfo.getSnapshotName():
+                    forMe = True
+                    #print(json.dumps(expItem,indent=2))
+
+        else:
+            print(response.status_code, response.text)
+
+        return forMe 

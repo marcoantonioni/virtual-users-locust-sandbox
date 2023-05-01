@@ -1,5 +1,28 @@
 
+- gestire utenze se non presenti in creds-cfg
 
+- verifica utenza presente in team autorizzati ad avvio istanza
+  /bas/rest/bpm/wle/v1/exposed/process?excludeProcessStartUrl=false&forUser=vuxuser1
+
+- aggiungere team starter per processi
+
+ID:"2015.305",
+type:"process",
+itemID:"25.a5082c90-67b3-4b37-8523-ed1a80b34d39",
+itemReference:"/25.a5082c90-67b3-4b37-8523-ed1a80b34d39",
+processAppID:"2066.02de75fd-4fac-4fc0-85a7-9efd681cb238",
+processAppName:"VirtualUsersSandbox",
+processAppAcronym:"VUS",
+snapshotID:"2064.f7c81815-9558-47bf-9da9-ce5c6763df97",
+snapshotName:"0.3.4",
+snapshotCreatedOn:"2023-04-29T14:30:36.000+00:00",
+display:"VUSClaimCompleteAuthorize",
+tip:true,
+branchID:"2063.e3d5155c-4426-489e-a731-bc977ff4fb80",
+branchName:"Main",
+startURL:"/bas/rest/bpm/wle/v1/process?action=start&bpdId=25.a5082c90-67b3-4b37-8523-ed1a80b34d39&processAppId=2066.02de75fd-4fac-4fc0-85a7-9efd681cb238",
+isDefault:false,
+isMobileReady:false  
 
 #----------------------------------
 
