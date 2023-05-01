@@ -186,9 +186,7 @@ class BpmExposedProcessManager:
         
         if response.status_code == 200:
             data = response.json()["data"]
-
             # print(json.dumps(data, indent=2))
-
             exposedItemsList = data["exposedItemsList"]
             for expItem in exposedItemsList:
                 appName = expItem["processAppName"] 
@@ -204,7 +202,7 @@ class BpmExposedProcessManager:
                 
                 if appName == processInfo.getAppName() and acrName == processInfo.getAppAcronym() and procName == processInfo.getAppProcessName() and snapName == processInfo.getSnapshotName():
                     forMe = True
-                    #print(json.dumps(expItem,indent=2))
+                    break
 
         else:
             print(response.status_code, response.text)

@@ -94,45 +94,41 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         if interaction == "available":
             isClaiming = True
 
+        epm = self.user.getExposedProcessManager()
+        snapName = epm.getSnapshotName()    
+        appAcronym = epm.getAppAcronym()
+
+        configuredSnapName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
+        strTip = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_USE_TIP)
+        useTip = False
+        if strTip.lower() == "true":
+            useTip = True
+        if configuredSnapName == None or configuredSnapName == "":
+            configuredSnapName = snapName
+            useTip = True
+
         bpmTaksItems = []
         while len(tasksList) > 0:            
             bpmTask : bawSys.BpmTask = bawSys.BpmTask( tasksList.pop() )
             
-            epm = self.user.getExposedProcessManager()
-            snapName = epm.getSnapshotName()    
-            appAcronym = epm.getAppAcronym()
-            if appAcronym == self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM):
-                configuredSnapName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
-                strTip = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_USE_TIP)
-                useTip = False
-                if strTip.lower() == "true":
-                    useTip = True
-                if configuredSnapName == None or configuredSnapName == "":
-                    configuredSnapName = snapName
-                    useTip = True
-                
-                if snapName == configuredSnapName:
-
-                    # print(snapName, configuredSnapName, bpmTask.getSnapshotName(), useTip)
-                    selectTask = False
-                    # se Tip
-                    if snapName == configuredSnapName and useTip == True:
+            if snapName == configuredSnapName:
+                selectTask = False
+                if useTip == True:
+                    selectTask = True
+                else:
+                    if bpmTask.getSnapshotName() == None and useTip == True:
                         selectTask = True
                     else:
-                        if bpmTask.getSnapshotName() == None and useTip == True:
+                        if bpmTask.getSnapshotName() != None and bpmTask.getSnapshotName() == configuredSnapName:
                             selectTask = True
-                        else:
-                            # se snapname
-                            if bpmTask.getSnapshotName() != None and bpmTask.getSnapshotName() == configuredSnapName:
-                                selectTask = True
 
-                    if selectTask == True:
-                        listOfProcessNames = epm.getAppProcessNames()                                        
-                        for procName in listOfProcessNames:
-                            if procName == bpmTask.getProcessName():
-                                if self.user.isSubjectForUser(bpmTask.getSubject()) == True:
-                                    if (bpmTask.getRole() != None and isClaiming == True) or (bpmTask.getRole() == None and isClaiming == False):             
-                                        bpmTaksItems.append(bpmTask)
+                if selectTask == True:
+                    listOfProcessNames = epm.getAppProcessNames()                                        
+                    for procName in listOfProcessNames:
+                        if procName == bpmTask.getProcessName():
+                            if self.user.isSubjectForUser(bpmTask.getSubject()) == True:
+                                if (bpmTask.getRole() != None and isClaiming == True) or (bpmTask.getRole() == None and isClaiming == False):             
+                                    bpmTaksItems.append(bpmTask)
 
         return bawSys.BpmTaskList(len(bpmTaksItems), bpmTaksItems)
 
@@ -333,6 +329,18 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     else:
                         logging.error("User[%s] - bawLogin - failed login", userName)
 
+    def bawRefreshListTask(self):
+        if self.user.loggedIn == True:
+            if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_REFRESH_TASK_LIST ):
+                taskList : bawSys.BpmTaskList = self._listTasks("claimed_and_available", 25)
+                if taskList != None:
+                    if logging.getLogger().isEnabledFor(logging.DEBUG):
+                        logging.debug("User[%s] - bawRefreshListTask num TASKS [%d]", self.user.userCreds.getName(),taskList.getCount())
+                else:
+                    self.nothingToDo("bawRefreshListTask task in list")
+        else:
+            self.forceLogin()
+
     def bawClaimTask(self):
         if self.user.loggedIn == True:
             if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_CLAIM ):
@@ -484,5 +492,5 @@ class SequenceOfBpmTasks(SequentialTaskSet):
     #==========================================================
     # List of enabled tasks
     #==========================================================
-    tasks = [bawLogin, bawCreateInstance, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask]
+    tasks = [bawLogin, bawCreateInstance, bawRefreshListTask, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask]
 
