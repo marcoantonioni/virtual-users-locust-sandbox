@@ -94,7 +94,8 @@ class BpmExposedProcessInfo:
         self.appBpdId : str = appBpdId
         self.startUrl : str = startUrl
 
-        # print(appName, appAcronym, snapshotName, tip, processName, appId, appBpdId)
+        print("BpmExposedProcessInfo",appName, appAcronym, snapshotName, tip, processName, appId, appBpdId)
+
     def getKey(self):
         return self.getAppProcessName()+"/"+self.getAppName()+"/"+self.getAppAcronym()+"/"+self.getSnapshotName()
 
@@ -374,6 +375,15 @@ def _csrfToken(baseHost, userName, userPassword):
         logging.error("_csrfToken error, status code: %d, messge: %s", response.status_code, response.text)
     return csrfToken
 
+def preparePropertyItem(item, key):
+    try:
+        t = item[key]
+        if t != None:
+            return t.strip()
+    except KeyError:
+        pass
+    return None
+
 def getUserNumber( userId : str ):
     # se primo carattere numero errore
     if (userId[0] >= '0' and userId[0] <= '9') == True:
@@ -392,7 +402,7 @@ def getUserNumber( userId : str ):
 
 def usersRange( userId: str ):
     rangeOfUsers = None
-    if userId.find("..") != -1:
+    if userId != None and userId.find("..") != -1:
         uSegs = userId.split("..")
         if len(uSegs) == 2:
             rangeOfUsers = { 'min': -1, 'max': -1}

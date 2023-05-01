@@ -12,8 +12,8 @@ def setupTaskSubjects( fullPathNameTaskSubjects ):
     ts = dict()
     with open(fullPathNameTaskSubjects,'r') as data:
         for item in csv.DictReader(data, skipinitialspace=True, delimiter=','):
-            taskSubjectId = item['TASK_SUBJECTS'].strip()
-            taskSubjectText = item['SUBJECT_TEXT'].strip()
+            taskSubjectId = bawSys.preparePropertyItem(item, 'TASK_SUBJECTS')
+            taskSubjectText = bawSys.preparePropertyItem(item, 'SUBJECT_TEXT')
             item = {'taskSubjectId': taskSubjectId, 'taskSubjectText': taskSubjectText}
             ts[taskSubjectId] = item
             # print("taskSubjectId ["+taskSubjectId+"] taskSubjectText ["+taskSubjectText+"]")    
@@ -26,8 +26,8 @@ def setupUserTaskSubjects( fullPathNameUserTaskSubjects ):
         dictReader = csv.DictReader(data, skipinitialspace=True, delimiter=',')
         fieldNamesCount = len(dictReader.fieldnames)
         for item in dictReader:
-            userId = item['USER'].strip()
-            if userId != "":
+            userId = bawSys.preparePropertyItem(item, 'USER')
+            if userId != None and userId != "":
                 usersList = []
                 rangeOfUsers = bawSys.usersRange( userId )
                 if rangeOfUsers != None:
@@ -47,8 +47,9 @@ def setupUserTaskSubjects( fullPathNameUserTaskSubjects ):
                 for idx in range(fieldNamesCount-1):
                     try:
                         tsnKey = "TSN"+str(idx+1)
-                        taskSubjectText = item[tsnKey].strip()
-                        taskSubjects.append(taskSubjectText)
+                        taskSubjectText = bawSys.preparePropertyItem(item, tsnKey)
+                        if taskSubjectText != None:
+                            taskSubjects.append(taskSubjectText)
                     except:
                         pass
 

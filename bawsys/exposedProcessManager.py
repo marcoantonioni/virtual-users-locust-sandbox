@@ -115,12 +115,20 @@ class BpmExposedProcessManager:
                 if appSnapshotName == None or appSnapshotName == "":
                     appSnapshotName = ""
                     useTip = True
+                self.snapshotName = appSnapshotName
+                self.tip = useTip
 
                 listOfProcessInfos = []
                 for expIt in exposedItemsList:
                     try:
                         snapOk = False
+
+                        # print(expIt["processAppName"], expIt["processAppAcronym"], expIt["tip"], useTip)
+
                         if self.appName == expIt["processAppName"] and self.appAcronym == expIt["processAppAcronym"]: 
+
+                            # print(json.dumps(expIt, indent=2))
+
                             if appSnapshotName == "" and useTip == True and expIt["tip"] == True:                                
                                 snapOk = True
                             else:
@@ -129,20 +137,18 @@ class BpmExposedProcessManager:
                             if snapOk == True:
                                 if self.appId == None:
                                     self.appId = expIt["processAppID"] 
-                                    self.bpdId = expIt["itemID"]
-                                    self.snapshotName = expIt["snapshotName"]
-                                    if self.snapshotName == None:
-                                        self.snapshotName = ""
-                                    self.tip = expIt["tip"]
-                                processName = expIt["display"]                        
+                                processName = expIt["display"]                   
+                                bpdId = expIt["itemID"]     
+                                startUrl = expIt["startURL"]
                                 for pn in self.appProcessNames:
-                                    if pn == processName:                        
-                                        listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(self.appName, self.appAcronym, self.snapshotName, self.tip, processName, expIt["processAppID"], expIt["itemID"], expIt["startURL"]) )
+                                    if pn == processName:                                                                                                        
+                                        # print(self.appName, self.appAcronym, self.snapshotName, self.tip, processName, self.appId, expIt["itemID"])
+                                        listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(self.appName, self.appAcronym, self.snapshotName, self.tip, processName, self.appId, bpdId, startUrl) )
                     except KeyError:
                         pass
 
                 if len(listOfProcessInfos) == 0:
-                    logging.error("Error looking for application [%s] [%s], configured snapshot '%s' not present or not activated or not available as tip. Use empty value in BAW_PROCESS_APPLICATION_SNAPSHOT_NAME to run against the Tip", self.appName, self.appAcronym, appSnapshotName)
+                    logging.error("Error looking for application [%s] [%s], configured snapshot '%s' not present or not activated or not available as tip. Use empty value in BAW_PROCESS_APPLICATION_SNAPSHOT_NAME to run against the Tip. Or BAW_POWER_USER_NAME has not sufficient grants to eccess exposed processes", self.appName, self.appAcronym, appSnapshotName)
                     sys.exit()
 
                 for appProcInfo in listOfProcessInfos:
@@ -189,9 +195,11 @@ class BpmExposedProcessManager:
             # print(json.dumps(data, indent=2))
             exposedItemsList = data["exposedItemsList"]
             for expItem in exposedItemsList:
+                snapName = ""
                 appName = expItem["processAppName"] 
                 acrName = expItem["processAppAcronym"]
                 procName = expItem["display"]
+                tipItem = expItem["tip"]
                 snapName = ""
                 try:
                     snapName = expItem["snapshotName"]
@@ -199,7 +207,16 @@ class BpmExposedProcessManager:
                         snapName = ""
                 except:
                     pass
-                
+
+                #if appName == "VirtualUsersSandbox":
+                #    print(json.dumps(expItem, indent=2))
+                #    print("item ", appName,acrName,procName,snapName,tipItem)
+                #    print("pinfo", processInfo.getAppName(),processInfo.getAppAcronym(),processInfo.getAppProcessName(),processInfo.getSnapshotName(),processInfo.isTip())
+                #    print()
+
+                # forza snapshot se configurata tip
+                if processInfo.isTip() and tipItem:
+                    snapName = processInfo.getSnapshotName()
                 if appName == processInfo.getAppName() and acrName == processInfo.getAppAcronym() and procName == processInfo.getAppProcessName() and snapName == processInfo.getSnapshotName():
                     forMe = True
                     break

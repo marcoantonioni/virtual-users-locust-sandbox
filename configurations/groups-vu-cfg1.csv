@@ -1,6 +1,7 @@
 GROUP,USER
-VUSGroup1,vuxuser1..vuxuser20
-VUSGroup1,vuxuser49
-VUSGroup2,vuxuser80..vuxuser100
+VUSGroup1,vuxuser1..vuxuser50
+VUSGroup2,vuxuser51..vuxuser100
 VUSGroupStarter,vuxuser1..vuxuser50
 VUSGroupStarter,cp4admin
+VUSGroupStarter,user1
+

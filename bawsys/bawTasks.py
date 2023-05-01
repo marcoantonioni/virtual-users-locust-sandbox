@@ -123,6 +123,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                             selectTask = True
 
                 if selectTask == True:
+                    # inserisce in lista se task di processo configurato
                     listOfProcessNames = epm.getAppProcessNames()                                        
                     for procName in listOfProcessNames:
                         if procName == bpmTask.getProcessName():
@@ -131,6 +132,64 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                     bpmTaksItems.append(bpmTask)
 
         return bawSys.BpmTaskList(len(bpmTaksItems), bpmTaksItems)
+
+    def _listTasks(self, interaction, size):
+        if self.user.loggedIn == True:
+            uriBaseTaskList = ""
+            taskListFederated = False
+            hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+            processAppName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
+            processAppAcronym = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
+            
+            # query task list
+            offset = "0"
+            constParams : str = "interaction=claimed_and_available&calcStats=false&includeAllBusinessData=false"
+
+            my_headers = self._prepareHeaders()
+            nameType = None
+            if self.user.runningTraditional == False:
+                taskListFederated = True
+                uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
+                nameType = processAppAcronym
+            else:
+                baseUri = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+                if baseUri == None:
+                    baseUri = ""
+                uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
+                nameType = processAppName
+            fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&size=25&processAppName="+nameType
+
+            with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
+                restResponseManager: responseMgr.RestResponseManager = responseMgr.RestResponseManager("_listTasks", response, self.user.userCreds.getName(), None, [401, 409])
+                if restResponseManager.getStatusCode() == 200:
+
+                    # print(json.dumps(response.json(),indent=2))
+
+                    _taskList = None
+                    size = 0
+                    items = None
+                    if self.user.runningTraditional == False:
+                        size = restResponseManager.getObject("size")
+                        items = restResponseManager.getObject("items")
+                    else:
+                        data = restResponseManager.getObject("data")
+                        size = data["size"]
+                        try:
+                            items = data["items"]
+                        except KeyError:
+                            pass
+
+                    if items != None:
+                        if logging.getLogger().isEnabledFor(logging.DEBUG):
+                            logging.debug("_listTasks [%s] user %s, size %d, numtasks %d, response %s", interaction, self.user.userCreds.getName(), size, len(items), json.dumps(restResponseManager.getJson(), indent = 2))
+                        _taskList : bawSys.BpmTaskList = self._buildTaskList(size, items, interaction)
+                        if taskListFederated == True:
+                            _taskList.setFederationInfos(restResponseManager.getObject("federationResult"))                        
+                    return _taskList
+                else:
+                    if restResponseManager.getStatusCode() == 401:
+                        self.forceLogin()
+            return None
 
     #==========================================================
     # Task supporting functions
@@ -243,63 +302,6 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         self.forceLogin()
         return False
 
-    def _listTasks(self, interaction, size):
-        if self.user.loggedIn == True:
-            uriBaseTaskList = ""
-            taskListFederated = False
-            hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-            processAppName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
-            processAppAcronym = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
-            
-            # query task list
-            offset = "0"
-            constParams : str = "interaction=claimed_and_available&calcStats=false&includeAllBusinessData=false"
-
-            my_headers = self._prepareHeaders()
-            nameType = None
-            if self.user.runningTraditional == False:
-                taskListFederated = True
-                uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
-                nameType = processAppAcronym
-            else:
-                baseUri = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
-                if baseUri == None:
-                    baseUri = ""
-                uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
-                nameType = processAppName
-            fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&size=25&processAppName="+nameType
-
-            with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
-                restResponseManager: responseMgr.RestResponseManager = responseMgr.RestResponseManager("_listTasks", response, self.user.userCreds.getName(), None, [401, 409])
-                if restResponseManager.getStatusCode() == 200:
-
-                    # print(json.dumps(response.json(),indent=2))
-
-                    _taskList = None
-                    size = 0
-                    items = None
-                    if self.user.runningTraditional == False:
-                        size = restResponseManager.getObject("size")
-                        items = restResponseManager.getObject("items")
-                    else:
-                        data = restResponseManager.getObject("data")
-                        size = data["size"]
-                        try:
-                            items = data["items"]
-                        except KeyError:
-                            pass
-
-                    if items != None:
-                        if logging.getLogger().isEnabledFor(logging.DEBUG):
-                            logging.debug("_listTasks [%s] user %s, size %d, numtasks %d, response %s", interaction, self.user.userCreds.getName(), size, len(items), json.dumps(restResponseManager.getJson(), indent = 2))
-                        _taskList : bawSys.BpmTaskList = self._buildTaskList(size, items, interaction)
-                        if taskListFederated == True:
-                            _taskList.setFederationInfos(restResponseManager.getObject("federationResult"))                        
-                    return _taskList
-                else:
-                    if restResponseManager.getStatusCode() == 401:
-                        self.forceLogin()
-            return None
 
     #==========================================================
     # Task functions

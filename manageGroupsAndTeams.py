@@ -75,8 +75,8 @@ class GroupsTeamsManager:
         # legge file e crea oggetto lista gruppi
         with open(fullPathName,'r') as data:
             for item in csv.DictReader(data):
-                groupName = item['GROUP'].strip()
-                userName = item['USER'].strip()
+                groupName = bawSys.preparePropertyItem(item, 'GROUP')
+                userName = bawSys.preparePropertyItem(item, 'USER')
 
                 usersList = []
                 rangeOfUsers = bawSys.usersRange( userName )
@@ -109,8 +109,8 @@ class GroupsTeamsManager:
                             
                     self.filteredListOfGroupsInfo.append(bpmGrpInfo)
                 except:
-                    logging.error("_readGroupsArchive error, group '%s' not present on server", groupName)
-                    return False
+                    logging.warning("_readGroupsArchive error, group '%s' not present on server, skipped", groupName)
+
         return True
     
     def _queryGroupList(self):
@@ -191,12 +191,10 @@ class GroupsTeamsManager:
         # legge file e crea oggetto lista gruppi
         with open(fullPathName,'r') as data:
             for item in csv.DictReader(data):
-                teamName = item["TEAM"].strip()
-                groupName = item['GROUP'].strip()
-                userName = item['USER'].strip()
-                managerGroup = item["MANAGER"]
-                if managerGroup != None:
-                    managerGroup = managerGroup.strip()
+                teamName = bawSys.preparePropertyItem(item, 'TEAM')
+                groupName = bawSys.preparePropertyItem(item, 'GROUP')
+                userName = bawSys.preparePropertyItem(item, 'USER')
+                managerGroup = bawSys.preparePropertyItem(item, 'MANAGER')
                 
                 usersList = []
                 rangeOfUsers = bawSys.usersRange( userName )
@@ -235,8 +233,8 @@ class GroupsTeamsManager:
                     
                     self.filteredListOfTeamInfo.append(bpmTeamInfo)
                 except:
-                    logging.error("_readTeamsArchive error, Team '%s' not present on server", teamName)
-                    return False
+                    logging.warning("_readTeamsArchive error, Team '%s' not present on server, skipped", teamName)
+
         return True
     
     def _queryTeamList(self):
