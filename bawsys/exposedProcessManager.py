@@ -208,12 +208,6 @@ class BpmExposedProcessManager:
                 except:
                     pass
 
-                #if appName == "VirtualUsersSandbox":
-                #    print(json.dumps(expItem, indent=2))
-                #    print("item ", appName,acrName,procName,snapName,tipItem)
-                #    print("pinfo", processInfo.getAppName(),processInfo.getAppAcronym(),processInfo.getAppProcessName(),processInfo.getSnapshotName(),processInfo.isTip())
-                #    print()
-
                 # forza snapshot se configurata tip
                 if processInfo.isTip() and tipItem:
                     snapName = processInfo.getSnapshotName()

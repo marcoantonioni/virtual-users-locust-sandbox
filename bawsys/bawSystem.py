@@ -94,7 +94,7 @@ class BpmExposedProcessInfo:
         self.appBpdId : str = appBpdId
         self.startUrl : str = startUrl
 
-        print("BpmExposedProcessInfo",appName, appAcronym, snapshotName, tip, processName, appId, appBpdId)
+        # print("BpmExposedProcessInfo",appName, appAcronym, snapshotName, tip, processName, appId, appBpdId)
 
     def getKey(self):
         return self.getAppProcessName()+"/"+self.getAppName()+"/"+self.getAppAcronym()+"/"+self.getSnapshotName()
