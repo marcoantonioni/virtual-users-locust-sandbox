@@ -1,10 +1,6 @@
 
 - gestire utenze se non presenti in creds-cfg
 
-- verifica utenza presente in team autorizzati ad avvio istanza
-  /bas/rest/bpm/wle/v1/exposed/process?excludeProcessStartUrl=false&forUser=vuxuser1
-
-- aggiungere team starter per processi
 
 ID:"2015.305",
 type:"process",
