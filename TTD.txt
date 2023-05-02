@@ -1,6 +1,4 @@
 
-- gestire utenze se non presenti in creds-cfg
--- creare CredentialsManager
 
 
 - Unit TEST
