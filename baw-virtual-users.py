@@ -8,13 +8,13 @@ from datetime import datetime
 import bawsys.bawTasks as bpmTask
 import bawsys.processInstanceManager as bpmPIM
 
-import bawsys.loadEnvironment as bpmEnv
+import bawsys.loadEnvironment as bawEnv
 import bawsys.loadUserTaskSubjects as bpmUTS
 import bawsys.loadCredentials as bpmCreds
 import bawsys.exposedProcessManager as bpmExpProcs
 from bawsys import bawSystem as bawSys 
 
-bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
+bpmEnvironment : bawEnv.BpmEnvironment = bawEnv.BpmEnvironment()
 bpmUserSubjects : bpmUTS.BpmUserSubjects =bpmUTS.BpmUserSubjects()
 bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
 bpmProcessInstanceManager : bpmPIM.BpmProcessInstanceManager = bpmPIM.BpmProcessInstanceManager()
@@ -52,6 +52,13 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
 
     def __init__(self, environment):
         super().__init__(environment)
+
+        self.tasks = []
+        strRunMode = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_RUN_MODE)
+        if strRunMode == None or strRunMode == "" or strRunMode.lower() == "LOAD_TEST":
+            self.tasks = [ bpmTask.SequenceOfBpmTasks ]
+        else:
+            self.tasks = [ bpmTask.UnitTestScenario ]
 
         self.userCreds = credsMgr.getNextUserCredentials()
         if self.userCreds == None:
@@ -104,17 +111,17 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     def configureVirtualUserActions(self):
         if self.selectedUserActions == None:
             self.selectedUserActions = dict()
-            self.selectedUserActions[bpmEnv.BpmEnvironment.keyBAW_ACTION_LOGIN] = bpmEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
-            setOfActions = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_ACTIONS)
+            self.selectedUserActions[bawEnv.BpmEnvironment.keyBAW_ACTION_LOGIN] = bawEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
+            setOfActions = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_ACTIONS)
             actions = setOfActions.split(",")
             for act in actions:
                 action = act.strip().upper()
-                if (action == bpmEnv.BpmEnvironment.keyBAW_ACTION_REFRESH_TASK_LIST or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_CLAIM) or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_COMPLETE or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_RELEASE or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_GETDATA or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_SETDATA or action == bpmEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS:
-                    self.selectedUserActions[action] = bpmEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
+                if (action == bawEnv.BpmEnvironment.keyBAW_ACTION_REFRESH_TASK_LIST or action == bawEnv.BpmEnvironment.keyBAW_ACTION_CLAIM) or action == bawEnv.BpmEnvironment.keyBAW_ACTION_COMPLETE or action == bawEnv.BpmEnvironment.keyBAW_ACTION_RELEASE or action == bawEnv.BpmEnvironment.keyBAW_ACTION_GETDATA or action == bawEnv.BpmEnvironment.keyBAW_ACTION_SETDATA or action == bawEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS:
+                    self.selectedUserActions[action] = bawEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
 
     def setIdleMode(self):
-        strNotify : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_IDLE_NOTIFY)
-        strMaxInterctions : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_IDLE_NOTIFY_AFTER_NUM_INTERACTIONS)
+        strNotify : str = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_IDLE_NOTIFY)
+        strMaxInterctions : str = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_IDLE_NOTIFY_AFTER_NUM_INTERACTIONS)
         if strNotify != None:
             if strNotify.lower() == "true":
                 self.idleNotify = True
@@ -130,14 +137,14 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     # for each virtual user
 
     def on_start(self):
-        self.host = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        self.min_think_time = int(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MIN))
-        self.max_think_time = int(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MAX))
+        self.host = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        self.min_think_time = int(bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MIN))
+        self.max_think_time = int(bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MAX))
         self.setIdleMode()
         self.configureVirtualUserActions()
         self.runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
 
-        strVerbose : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_VU_VERBOSE)
+        strVerbose : str = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_VERBOSE)
         if strVerbose != None:
             self.verbose = strVerbose.lower() == "true"
 
@@ -152,7 +159,11 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
 
     #----------------------------------------
     # tasks definition    
-    tasks = [ bpmTask.SequenceOfBpmTasks ]
+    #strRunMode = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_RUN_MODE)
+    #if strRunMode == None or strRunMode == "" or strRunMode.lower() == "LOAD_TEST":
+    #    tasks = [ bpmTask.SequenceOfBpmTasks ]
+    #else:
+    #    tasks = [ bpmTask.UnitTestScenario ]
 
 #----------------------------------------
 def import_module(name, package=None):
@@ -208,6 +219,7 @@ def on_test_stop(environment, **kwargs):
 
 @events.init.add_listener
 def on_locust_init(environment, **kwargs):
+
     if isinstance(environment.runner, MasterRunner):
         logging.debug("Running on master node")
     else:
@@ -256,3 +268,16 @@ def on_locust_init(environment, **kwargs):
         bpmDynamicModule = import_module(dynamicPLM)
         
         bpmProcessInstanceManager.setupMaxInstances(bpmEnvironment)
+
+@events.quitting.add_listener
+def on_locust_quitting(environment, **kwargs):
+    print("Quitting...")
+    pass
+
+@events.quit.add_listener
+def on_locust_quit(environment, **kwargs):
+    print("Quit...")
+    pass
+
+
+

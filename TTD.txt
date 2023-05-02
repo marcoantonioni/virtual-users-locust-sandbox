@@ -1,9 +1,7 @@
 
-
-
 - Unit TEST
 
--- stop di un utente dopo sequnza
+-- stop di un utente dopo sequenza
     def done(self):
         raise StopLocust()
         # oppure
@@ -16,8 +14,12 @@
         def stop(self):
             self.interrupt()
 
+
+- controllare apici su nomi files 
+
 - cercare TTD nel codice
 
+- versione containerizzata
 
 #----------------------------------
 https://snyk.io/advisor/search?source=python&q=locust

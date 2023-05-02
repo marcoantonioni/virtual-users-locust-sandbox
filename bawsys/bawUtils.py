@@ -1,5 +1,6 @@
-import time, random
+import time, random, json
 from base64 import b64encode
+from contextlib import redirect_stdout
 
 def _getAttributeNamesFromDictionary(varDict):
     listOfVarNames = []
@@ -35,3 +36,25 @@ def _basicAuthHeader(username, password):
     username = username.encode(chSet)
     password = password.encode(chSet)
     return "Basic " + b64encode(b":".join((username, password))).strip().decode("ascii")
+
+def _writeOutInstances(listOfInstances, _fullPathNameOutput):
+    instances = []
+    if listOfInstances != None:
+        numProcesses = len(listOfInstances)
+        idx = 0
+        while idx < numProcesses:
+            instance = {}
+            instance["processName"] = listOfInstances[idx].bpdName
+            instance["processId"] = listOfInstances[idx].piid 
+            instance["state"] = listOfInstances[idx].executionState
+            instance["variables"] = listOfInstances[idx].variables
+            instances.append(instance)                    
+            idx += 1
+    if _fullPathNameOutput != None and _fullPathNameOutput != "":
+        with open(_fullPathNameOutput, 'w') as f:
+            with redirect_stdout(f):
+                print(json.dumps(instances, indent=2))
+            f.close()
+    else:
+        print()
+        print(json.dumps(instances, indent=2))

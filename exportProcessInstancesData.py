@@ -1,10 +1,11 @@
 import bawsys.commandLineManager as clpm
 import bawsys.processInstanceManager as bawPIM
 from bawsys import loadEnvironment as bawEnv
+from bawsys import bawUtils as bawUtilities
 import sys, logging, json
-from contextlib import redirect_stdout
 
 #----------------------------------
+
 
 def listProcessInstances(argv):
     ok = False
@@ -27,27 +28,7 @@ def listProcessInstances(argv):
 
             pim = bawPIM.BpmProcessInstanceManager()
             listOfInstances = pim.exportProcessInstancesData(bpmEnvironment, _bpdName, _status, _dateFrom, _dateTo)
-
-            instances = []
-            if listOfInstances != None:
-                numProcesses = len(listOfInstances)
-                idx = 0
-                while idx < numProcesses:
-                    instance = {}
-                    instance["processName"] = listOfInstances[idx].bpdName
-                    instance["processId"] = listOfInstances[idx].piid 
-                    instance["state"] = listOfInstances[idx].executionState
-                    instance["variables"] = listOfInstances[idx].variables
-                    instances.append(instance)                    
-                    idx += 1
-            if _fullPathNameOutput != None and _fullPathNameOutput != "":
-                with open(_fullPathNameOutput, 'w') as f:
-                    with redirect_stdout(f):
-                        print(json.dumps(instances, indent=2))
-                    f.close()
-            else:
-                print()
-                print(json.dumps(instances, indent=2))
+            bawUtilities._writeOutInstances(listOfInstances, _fullPathNameOutput)
             
     if ok == False:
         print("Wrong arguments, use -e 'filename' param to specify environment file, use -s for status Completed,Terminated,Failed, dateFrom and dateTo using format AAAA-MM-DDThh:mm:ssZ, -o to save rusults to file")

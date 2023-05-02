@@ -1,18 +1,25 @@
 # tasks
 
-import logging, json
+import logging, json, sys
 from datetime import datetime
 from locust import task, tag, SequentialTaskSet
-from bawsys.processInstanceManager import BpmProcessInstanceManager as bpmPIM
+import bawsys.processInstanceManager as bawPIM
 from bawsys.processInstanceManager import BpmProcessInstance as bpmPI
 from bawsys import loadEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys 
 from bawsys import bawRestResponseManager as responseMgr 
 from bawsys import bawUtils as bawUtils 
-
+from bawsys import testScenarioManager as bawTSM
 from requests.cookies import cookiejar_from_dict
 
 class SequenceOfBpmTasks(SequentialTaskSet):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # unit test scenario
+        self.isUnitTest = False
+        self.tsMgr : bawTSM.TestScenarioManager = None
 
     #==========================================================
     # Supporting functions
@@ -481,6 +488,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                             processInstanceInfo : bpmPI = pim.createInstance(self.user.getEnvironment(), self.user.runningTraditional, self.user.userCreds.getName(), processInfo, strPayload, my_headers, self.user.cookieTraditional)
                             if processInstanceInfo != None:
                                 logging.info("User[%s] - bawCreateInstance - process name[%s] - process id[%s], state[%s]", self.user.userCreds.getName(), processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
+                                if self.isUnitTest:
+                                    self.tsMgr.addInstance(processInstanceInfo)
                     else:
                         logging.error("User[%s] - bawCreateInstance no process info available", self.user.userCreds.getName())
                         # da rivedere gestione errore creazione istanza
@@ -494,5 +503,55 @@ class SequenceOfBpmTasks(SequentialTaskSet):
     #==========================================================
     # List of enabled tasks
     #==========================================================
-    tasks = [bawLogin, bawCreateInstance, bawRefreshListTask, bawClaimTask, bawCompleteTask, bawGetTaskData, bawSetTaskData, bawReleaseTask]
+    tasks = [bawLogin, 
+                bawCreateInstance, 
+                bawRefreshListTask, 
+                bawClaimTask, 
+                bawCompleteTask, 
+                bawGetTaskData, 
+                bawSetTaskData, 
+                bawReleaseTask]
 
+class UnitTestScenario(SequenceOfBpmTasks):
+    tsMgr = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.isUnitTest = True
+        self.isUserPoller = False
+
+        if UnitTestScenario.tsMgr == None:
+            UnitTestScenario.tsMgr : bawTSM.TestScenarioManager = bawTSM.TestScenarioManager(self.user.getEnvironment())
+            # only one user acts as poller
+            self.isUserPoller = True
+
+        self.tsMgr = UnitTestScenario.tsMgr
+
+    def bawProcessInstancePoller(self):
+        if self.isUserPoller:
+            finished = UnitTestScenario.tsMgr.pollInstances()
+            if finished:
+                # termina esecuzione
+                logging.info("Terminating unit test scenario")
+                #self.interrupt()
+                #self.user.environment.runner.stop()
+                #logging.info("Quitting unit test scenario")
+                #self.user.environment.runner.quit()
+                logging.info("Exporting data of test scenario")
+                pim : bawPIM.BpmProcessInstanceManager = bawPIM.BpmProcessInstanceManager()
+                listOfInstances = pim.exportProcessInstancesData( bpmEnvironment=self.user.getEnvironment(), 
+                                                                    bpdName=None, 
+                                                                    status="Terminated,Completed,Failed",
+                                                                    dateFrom="2000-01-01T00:00:00Z",
+                                                                    dateTo="3000-01-01T00:00:00Z" )
+                ouputName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_UNIT_TEST_SCENARIO_OUT_FILE_NAME)
+                bawUtils._writeOutInstances(listOfInstances, ouputName)
+                logging.info("Unit test scenario terminated")
+                sys.exit()
+                
+
+    #==========================================================
+    # List of enabled tasks
+    #==========================================================
+    tasks = SequenceOfBpmTasks.tasks + [bawProcessInstancePoller]
