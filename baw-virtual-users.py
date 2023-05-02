@@ -47,6 +47,19 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     maxIdleLoops = 0
     verbose = False
 
+    spawnedUsers = 0
+
+    def __init__(self, environment):
+        super().__init__(environment)
+
+        self.userCreds = bpmCreds.getNextUserCredentials()
+        if self.userCreds == None:
+            logging.warning("Warning, credentials limit set to [%d], no more credentials available, next virtual users will not start.", IBMBusinessAutomationWorkflowUser.spawnedUsers)
+            environment.reached_end = True
+            environment.runner.quit()        
+        else:
+            IBMBusinessAutomationWorkflowUser.spawnedUsers += 1
+
     #----------------------------------------
     # user functions
 
@@ -127,13 +140,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         if strVerbose != None:
             self.verbose = strVerbose.lower() == "true"
 
-        self.userCreds = bpmCreds.getNextUserCredentials()
-        if self.userCreds != None:
-            logging.debug("User %s is starting... ", self.userCreds.getName())
-        else:
-            # abort run
-            logging.error("Error user %s not logged in... ", self.userCreds.getName())
-            self.environment.runner.quit()
+        logging.debug("User %s is starting... ", self.userCreds.getName())
 
         return super().on_start()
     

@@ -83,7 +83,6 @@ def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment ):
         if userOrderMode == bpmEnvironment.valBAW_USER_ORDER_MODE_SORTED_RANDOM:
             orderMode = 2
 
-
     hasItems = True
     while hasItems:
         numUsers = len(temp_user_credentials)
@@ -104,15 +103,11 @@ def setupCredentials( fullPathName, bpmEnvironment : bpmEnv.BpmEnvironment ):
     
 
 def getNextUserCredentials():
+    userCreds = None
     if len(user_credentials) > 0:
-        user = user_credentials.pop()
+        userCreds = user_credentials.pop()
         if userStrategyTwins == True:
-            user_credentials.insert(0, user)
-        return user
+            user_credentials.insert(0, userCreds)
     else:
-        logging.error("********************************")
-        logging.error("!!! Error no more users")
-        logging.error("********************************")
-        return None
-
-    pass
+        logging.debug("Warning, no more user credential available")
+    return userCreds
