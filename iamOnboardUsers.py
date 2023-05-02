@@ -124,8 +124,9 @@ def main(argv):
         domainName = cmdLineMgr.getParam("d", "domain")
         bpmEnvironment.loadEnvironment(_fullPathBawEnv)
         bpmEnvironment.dumpValues()
-        creds.setupCredentials(_fullPathUsers, bpmEnvironment)    
-        _userOnboard(bpmEnvironment, creds.user_credentials, domainName)
+        credMgr = creds.CredentialsManager()
+        credMgr.setupCredentials(_fullPathUsers, bpmEnvironment)    
+        _userOnboard(bpmEnvironment, credMgr.user_credentials, domainName)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

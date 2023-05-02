@@ -18,6 +18,7 @@ bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
 bpmUserSubjects : bpmUTS.BpmUserSubjects =bpmUTS.BpmUserSubjects()
 bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
 bpmProcessInstanceManager : bpmPIM.BpmProcessInstanceManager = bpmPIM.BpmProcessInstanceManager()
+credsMgr : bpmCreds.CredentialsManager = bpmCreds.CredentialsManager()
 
 class IBMBusinessAutomationWorkflowUser(FastHttpUser):
 
@@ -52,7 +53,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     def __init__(self, environment):
         super().__init__(environment)
 
-        self.userCreds = bpmCreds.getNextUserCredentials()
+        self.userCreds = credsMgr.getNextUserCredentials()
         if self.userCreds == None:
             logging.warning("Warning, credentials limit set to [%d], no more credentials available, next virtual users will not start.", IBMBusinessAutomationWorkflowUser.spawnedUsers)
             environment.reached_end = True
@@ -229,7 +230,7 @@ def on_locust_init(environment, **kwargs):
         bpmEnvironment.dumpValues()
 
         # read credentials
-        bpmCreds.setupCredentials(_fullPathBawUsers, bpmEnvironment)
+        credsMgr.setupCredentials(_fullPathBawUsers, bpmEnvironment)
 
         # read user tasks dictionary
         taskSubjects = bpmUTS.setupTaskSubjects(_fullPathBawTaskSubjects)
