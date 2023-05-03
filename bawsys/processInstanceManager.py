@@ -1,7 +1,8 @@
-import requests, json, logging
+import requests, json, logging, random
 import bawsys.loadEnvironment as bpmEnv
 import bawsys.bawSystem as bawSys
 import bawsys.bawUtils as bawUtils
+import bawsys.exposedProcessManager as bpmExpProcs
 import urllib
 
 requests.packages.urllib3.disable_warnings() 
@@ -93,6 +94,12 @@ class BpmProcessInstanceManager:
             strMax = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_INSTANCES_MAX)
             if strMax != None:
                 self.maxInstancesPerRun = int(strMax)
+    
+    def getmMaxInstancesPerRun(self):
+      return self.maxInstancesPerRun
+
+    def consumeAllInstances(self):
+       self.createdInstancesPerRun = self.maxInstancesPerRun
        
     def consumeInstance(self):
         ok = False
@@ -255,7 +262,7 @@ class BpmProcessInstanceManager:
                 execProc = BpmExecProcessInstance(p["executionState"], p["piid"], name, bpdName, p["snapshotID"], 
                                                   None, p["dueDate"], p["creationTime"], p["lastModificationTime"], closedDate)
                 if variables:
-                  execProc.variables = self._getProcessDetails(hostUrl, baseUri, pid)    
+                    execProc.variables = self._getProcessDetails(hostUrl, baseUri, pid)    
                 return execProc
             else:
                 if response.status_code >= 300 and response.status_code != 401:
@@ -274,3 +281,42 @@ class BpmProcessInstanceManager:
             else:
                 logging.error("Process id [%s] not found", pid)          
         return listOfInstances
+
+    @staticmethod
+    def _createProcessInstancesBatch(bpmEnvironment : bpmEnv.BpmEnvironment, 
+                                      bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager,
+                                      bpmProcessInstanceManager, 
+                                      bpmDynamicModule,
+                                      maxInstances : int, isLog=True):
+      listOfInstances = []
+      authorizationBearerToken = bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
+
+      userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
+      userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
+      runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
+
+      _headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+      if runningTraditional == False:
+          _headers['Authorization'] = 'Bearer '+authorizationBearerToken
+      else:
+          _headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
+
+      processInfoKeys = bpmExposedProcessManager.getKeys()
+      totalKeys = len(processInfoKeys)
+
+      count = 0
+      while count < maxInstances:
+          rndIdx : int = random.randint(0, (totalKeys-1))
+          key = processInfoKeys[rndIdx]
+          processName = key.split("/")[0]
+          processInfo = bpmExposedProcessManager.getProcessInfos(key)  
+          jsonPayloadInfos = bpmDynamicModule.buildPayloadForSubject("Start-"+processName)
+          jsonPayload = jsonPayloadInfos["jsonObject"]
+          strPayload = json.dumps(jsonPayload)
+          processInstanceInfo = bpmProcessInstanceManager.createInstance(bpmEnvironment, runningTraditional, userName, processInfo, strPayload, _headers)
+          if processInstanceInfo != None:
+              listOfInstances.append(processInstanceInfo)
+              if isLog:
+                print("Created process "+processName+" instance id["+processInstanceInfo.getPiid()+"], state["+processInstanceInfo.getState()+"]")
+          count += 1
+      return listOfInstances

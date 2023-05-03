@@ -79,6 +79,9 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     #----------------------------------------
     # user functions
 
+    def getDynamicModule(self):
+        return bpmDynamicModule
+
     def _payload(self, subject, preExistPayload = None):
         return bpmDynamicModule.buildPayloadForSubject(subject, preExistPayload)
 
@@ -329,8 +332,8 @@ def unitTestInstancesExporter(environment):
                         environment.stats.clear_all()
                         environment.runner.quit()
 
-                    return
-                time.sleep(15)
+                        return
+                time.sleep(5)
         else:
             logging.debug("Not unit testing")
     except:

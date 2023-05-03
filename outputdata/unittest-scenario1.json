@@ -1,17 +1,12 @@
 [
   {
-    "processName": "VUSClaimCompleteAuthorize",
-    "processId": "949",
+    "processName": "ClaimCompleteTwoRoles",
+    "processId": "1003",
     "state": "Completed",
     "variables": {
-      "authorizationData": {
-        "authorized": false,
-        "review": false,
-        "comments": ""
-      },
       "inputData": {
-        "requestId": "req53",
-        "newCounter": 53
+        "requestId": "reqCompiled",
+        "newCounter": 87
       }
     }
   }

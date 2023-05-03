@@ -36,6 +36,7 @@ def import_module(name, package=None):
         setattr(parent_module, child_name, module)
     return module
 
+
 def createProcessInstances(argv):
     ok = False
     terminate = False
@@ -57,6 +58,9 @@ def createProcessInstances(argv):
             global bpmDynamicModule 
             bpmDynamicModule = import_module(dynamicPLM)
 
+            bpmPIM.BpmProcessInstanceManager._createProcessInstancesBatch(bpmEnvironment, bpmExposedProcessManager, bpmProcessInstanceManager, bpmDynamicModule, maxInstances, isLog=True)
+            #-----------------------
+            """
             authorizationBearerToken = bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
 
             userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
@@ -73,7 +77,6 @@ def createProcessInstances(argv):
             totalKeys = len(processInfoKeys)
 
             count = 0
-            maxInstances
             while count < maxInstances:
                 rndIdx : int = random.randint(0, (totalKeys-1))
                 key = processInfoKeys[rndIdx]
@@ -86,6 +89,8 @@ def createProcessInstances(argv):
                 if processInstanceInfo != None:
                     print("Created process "+processName+" instance id["+processInstanceInfo.getPiid()+"], state["+processInstanceInfo.getState()+"]")
                 count += 1
+            """
+            #-------------------------------
 
     if ok == False:
         print("Wrong arguments, use -e 'filename' param to specify environment file")
