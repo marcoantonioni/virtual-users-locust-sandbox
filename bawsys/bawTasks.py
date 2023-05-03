@@ -519,16 +519,18 @@ class UnitTestScenario(SequenceOfBpmTasks):
         super().__init__(*args, **kwargs)
 
         self.isUnitTest = True
-        self.isUserPoller = False
+        #self.isUserPoller = False
 
         if UnitTestScenario.tsMgr == None:
             UnitTestScenario.tsMgr : bawTSM.TestScenarioManager = bawTSM.TestScenarioManager(self.user.getEnvironment())
             # only one user acts as poller
-            self.isUserPoller = True
+            # self.isUserPoller = True
 
         self.tsMgr = UnitTestScenario.tsMgr
 
     def bawProcessInstancePoller(self):
+        print("Poller disabled")
+        return
         if self.isUserPoller:
             finished = UnitTestScenario.tsMgr.pollInstances()
             if finished:
@@ -554,4 +556,4 @@ class UnitTestScenario(SequenceOfBpmTasks):
     #==========================================================
     # List of enabled tasks
     #==========================================================
-    tasks = SequenceOfBpmTasks.tasks + [bawProcessInstancePoller]
+    tasks = SequenceOfBpmTasks.tasks # + [bawProcessInstancePoller]

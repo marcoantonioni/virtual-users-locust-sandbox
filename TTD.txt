@@ -1,19 +1,10 @@
 
 - Unit TEST
 
--- stop di un utente dopo sequenza
-    def done(self):
-        raise StopLocust()
-        # oppure
-        self.user.environment.reached_end = True
-        self.user.environment.runner.quit()        
+- testScenarioManager
+-- pollInstances
 
-- stop TaskSet
-    class SelfInterruptingTaskSet(TaskSet):
-        @task(1)
-        def stop(self):
-            self.interrupt()
-
+- rivedere nomi processi app test
 
 - controllare apici su nomi files 
 

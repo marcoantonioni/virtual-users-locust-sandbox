@@ -119,7 +119,7 @@ class BpmProcessInstanceManager:
             return processInstance
         else:
             if response.status_code >= 300 and response.status_code != 401:
-              logging.error("createInstance error, user %s, status code [%d], message [%s]", userName, response.status_code, response.text)
+                logging.error("createInstance error, user %s, status code [%d], message [%s]", userName, response.status_code, response.text)
         return None
 
     def searchProcessInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment, bpdName: str, status: str, dateFrom: str, dateTo: str):
@@ -183,6 +183,9 @@ class BpmProcessInstanceManager:
                                                         p["projectID"], p["dueDate"], p["creationDate"], p["lastModificationTime"], closedDate)
                       listOfInstances.append(execProc)
                     idx += 1
+            else:
+                if response.status_code >= 300 and response.status_code != 401:
+                    logging.error("searchProcessInstances error, user %s, status code [%d], message [%s]", userName, response.status_code, response.text)
 
         return listOfInstances
 
@@ -210,4 +213,64 @@ class BpmProcessInstanceManager:
                     # print("export process ", listOfInstances[idx].piid, listOfInstances[idx].bpdName, listOfInstances[idx].executionState)
                     listOfInstances[idx].variables = self._getProcessDetails(hostUrl, baseUri, listOfInstances[idx].piid)                      
                 idx += 1
+        return listOfInstances
+
+    def getProcessInstanceByPid(self, bpmEnvironment, pid, variables=True):
+        self.loggedIn = False
+        authorizationBearerToken = None
+        userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
+        userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
+        runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
+        if runningTraditional == True:
+            cookieTraditional = bawSys._loginTraditional(bpmEnvironment, userName, userPassword)
+            if cookieTraditional != None:
+                self.loggedIn = True
+        else:
+            authorizationBearerToken = bawSys._loginZen(bpmEnvironment, userName, userPassword)
+            if authorizationBearerToken != None:
+                self.loggedIn = True
+
+        if self.loggedIn == True:
+            if runningTraditional == False:
+                self._headers['Authorization'] = 'Bearer '+authorizationBearerToken
+            else:
+                self._headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
+
+            hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+            baseUri : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+
+            fullUrl = hostUrl+baseUri+"/rest/bpm/wle/v1/process/"+pid+"?parts=header|data"
+            response = requests.get(url=fullUrl, headers=self._headers, verify=False)
+            if response.status_code == 200:
+                jsObj = response.json()
+                p = jsObj["data"]
+                closedDate = ""
+                try:
+                  closedDate = p["closedDate"]
+                except KeyError:
+                  pass
+                name = p["name"]
+                bpdName = name.split(":")[0]
+
+                execProc = BpmExecProcessInstance(p["executionState"], p["piid"], name, bpdName, p["snapshotID"], 
+                                                  None, p["dueDate"], p["creationTime"], p["lastModificationTime"], closedDate)
+                if variables:
+                  execProc.variables = self._getProcessDetails(hostUrl, baseUri, pid)    
+                return execProc
+            else:
+                if response.status_code >= 300 and response.status_code != 401:
+                    logging.error("getProcessInstanceByPid error, user %s, status code [%d], message [%s]", userName, response.status_code, response.text)
+        return None
+
+    def exportProcessInstancesDataByPid(self, bpmEnvironment : bpmEnv.BpmEnvironment, listOfPids):
+        hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        baseUri : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        listOfInstances = []
+        idx = 0
+        for pid in listOfPids:      
+            procId = self.getProcessInstanceByPid(bpmEnvironment, pid)
+            if procId != None:      
+                listOfInstances.append( procId )
+            else:
+                logging.error("Process id [%s] not found", pid)          
         return listOfInstances

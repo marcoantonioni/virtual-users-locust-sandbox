@@ -12,7 +12,15 @@ import bawsys.loadEnvironment as bawEnv
 import bawsys.loadUserTaskSubjects as bpmUTS
 import bawsys.loadCredentials as bpmCreds
 import bawsys.exposedProcessManager as bpmExpProcs
-from bawsys import bawSystem as bawSys 
+import bawsys.processInstanceManager as bawPIM
+import bawsys.bawUtils as bawUtils
+from bawsys import bawSystem as bawSys
+from bawsys import testScenarioManager as bawUnitTests 
+
+import gevent
+import time
+from locust import events
+from locust.runners import STATE_STOPPING, STATE_STOPPED, STATE_CLEANUP, WorkerRunner
 
 bpmEnvironment : bawEnv.BpmEnvironment = bawEnv.BpmEnvironment()
 bpmUserSubjects : bpmUTS.BpmUserSubjects =bpmUTS.BpmUserSubjects()
@@ -148,6 +156,8 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         if strVerbose != None:
             self.verbose = strVerbose.lower() == "true"
 
+        # TSM
+
         logging.debug("User %s is starting... ", self.userCreds.getName())
 
         return super().on_start()
@@ -220,64 +230,110 @@ def on_test_stop(environment, **kwargs):
 @events.init.add_listener
 def on_locust_init(environment, **kwargs):
 
-    if isinstance(environment.runner, MasterRunner):
-        logging.debug("Running on master node")
-    else:
-        logging.debug("Running on a worker or standalone node")
+    try:
+        if isinstance(environment.runner, MasterRunner):
+            logging.debug("Running on master node")
+        else:
+            logging.debug("Running on a worker or standalone node")
 
-    #----------------------------------------
-    # setup environment and users
-    _fullPathBawEnv = environment.parsed_options.BAW_ENV
-    _fullPathBawUsers = environment.parsed_options.BAW_USERS
-    _fullPathBawTaskSubjects = environment.parsed_options.BAW_TASK_SUBJECTS
-    _fullPathBawUserTaskSubjects = environment.parsed_options.BAW_USER_TASK_SUBJECTS
-    if _fullPathBawEnv == None or _fullPathBawUsers == None or _fullPathBawTaskSubjects == None or _fullPathBawUserTaskSubjects == None:
-        logging.error("ERROR missed one or both mandatory environment variables, BAW_ENV[%s] BAW_USERS[%s]", _fullPathBawEnv, _fullPathBawUsers)
-        environment.runner.quit()
-    else:
-        logging.debug("Setup BAW environment with BAW_ENV[%s] BAW_USERS[%s] BAW_TASK_SUBJECTS[%s] BAW_USER_TASK_SUBJECTS[%s]", _fullPathBawEnv, _fullPathBawUsers, _fullPathBawTaskSubjects, _fullPathBawUserTaskSubjects)
+        #----------------------------------------
+        # setup environment and users
+        _fullPathBawEnv = environment.parsed_options.BAW_ENV
+        _fullPathBawUsers = environment.parsed_options.BAW_USERS
+        _fullPathBawTaskSubjects = environment.parsed_options.BAW_TASK_SUBJECTS
+        _fullPathBawUserTaskSubjects = environment.parsed_options.BAW_USER_TASK_SUBJECTS
+        if _fullPathBawEnv == None or _fullPathBawUsers == None or _fullPathBawTaskSubjects == None or _fullPathBawUserTaskSubjects == None:
+            logging.error("ERROR missed one or both mandatory environment variables, BAW_ENV[%s] BAW_USERS[%s]", _fullPathBawEnv, _fullPathBawUsers)
+            environment.runner.quit()
+        else:
+            logging.debug("Setup BAW environment with BAW_ENV[%s] BAW_USERS[%s] BAW_TASK_SUBJECTS[%s] BAW_USER_TASK_SUBJECTS[%s]", _fullPathBawEnv, _fullPathBawUsers, _fullPathBawTaskSubjects, _fullPathBawUserTaskSubjects)
 
-        # read properties
-        bpmEnvironment.loadEnvironment(_fullPathBawEnv)
-        bpmEnvironment.dumpValues()
+            # read properties
+            bpmEnvironment.loadEnvironment(_fullPathBawEnv)
+            bpmEnvironment.dumpValues()
 
-        # read credentials
-        credsMgr.setupCredentials(_fullPathBawUsers, bpmEnvironment)
+            # read credentials
+            credsMgr.setupCredentials(_fullPathBawUsers, bpmEnvironment)
 
-        # read user tasks dictionary
-        taskSubjects = bpmUTS.setupTaskSubjects(_fullPathBawTaskSubjects)
-        userTaskSubjects = bpmUTS.setupUserTaskSubjects(_fullPathBawUserTaskSubjects)
-        userSubjectsDictionary = bpmUTS.createUserSubjectsDictionary(userTaskSubjects, taskSubjects)
-        bpmUserSubjects.setDictionary(userSubjectsDictionary)
-        bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
+            # read user tasks dictionary
+            taskSubjects = bpmUTS.setupTaskSubjects(_fullPathBawTaskSubjects)
+            userTaskSubjects = bpmUTS.setupUserTaskSubjects(_fullPathBawUserTaskSubjects)
+            userSubjectsDictionary = bpmUTS.createUserSubjectsDictionary(userTaskSubjects, taskSubjects)
+            bpmUserSubjects.setDictionary(userSubjectsDictionary)
+            bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
 
-        logging.debug("User Subjects Dictionary ", userSubjectsDictionary)
-        logging.info("*** BAW EXPOSED PROCESSES in Application [%s] Acronym [%s] Snapshot [%s] Tip [%s]", bpmExposedProcessManager.getAppName(), bpmExposedProcessManager.getAppAcronym(), bpmExposedProcessManager.getSnapshotName(), bpmExposedProcessManager.isTip())
-        
-        for key in bpmExposedProcessManager.getKeys():
-            processInfo : bpmExpProcs.BpmExposedProcessInfo = bpmExposedProcessManager.getProcessInfos(key)
-            if processInfo != None:
-                logging.info("Process [%s]", processInfo.getAppProcessName())
-            else:
-                logging.info("!!! object with key[%s] not found", key)
+            logging.debug("User Subjects Dictionary ", userSubjectsDictionary)
+            logging.info("*** BAW EXPOSED PROCESSES in Application [%s] Acronym [%s] Snapshot [%s] Tip [%s]", bpmExposedProcessManager.getAppName(), bpmExposedProcessManager.getAppAcronym(), bpmExposedProcessManager.getSnapshotName(), bpmExposedProcessManager.isTip())
             
-        logging.info("***********************")
+            for key in bpmExposedProcessManager.getKeys():
+                processInfo : bpmExpProcs.BpmExposedProcessInfo = bpmExposedProcessManager.getProcessInfos(key)
+                if processInfo != None:
+                    logging.info("Process [%s]", processInfo.getAppProcessName())
+                else:
+                    logging.info("!!! object with key[%s] not found", key)
+                
+            logging.info("***********************")
 
-        dynamicPLM : str = bpmEnvironment.getDynamicModuleFormatName()
-        global bpmDynamicModule 
-        bpmDynamicModule = import_module(dynamicPLM)
-        
-        bpmProcessInstanceManager.setupMaxInstances(bpmEnvironment)
+            dynamicPLM : str = bpmEnvironment.getDynamicModuleFormatName()
+            global bpmDynamicModule 
+            bpmDynamicModule = import_module(dynamicPLM)
+            
+            bpmProcessInstanceManager.setupMaxInstances(bpmEnvironment)
+
+            # only run this on master & standalone
+            if not isinstance(environment.runner, WorkerRunner):
+                gevent.spawn(unitTestInstancesExporter, environment)
+    except TypeError:
+        logging.error("Catched ;)")
+
 
 @events.quitting.add_listener
 def on_locust_quitting(environment, **kwargs):
-    print("Quitting...")
-    pass
+    logging.debug("Quitting now...")
+    return
 
 @events.quit.add_listener
-def on_locust_quit(environment, **kwargs):
-    print("Quit...")
-    pass
+def on_locust_quit(**kwargs):
+    logging.debug("Quit.")
+    return
 
+def unitTestInstancesExporter(environment):
+    try:
+        time.sleep(15)
+        # if running unit test
+        if bawUnitTests.TestScenarioManager.getInstance() != None:
+            while not environment.runner.state in [STATE_STOPPING, STATE_STOPPED, STATE_CLEANUP]:
+                if bpmProcessInstanceManager != None:
+                    # export & save instances
 
+                    finished = bawUnitTests.TestScenarioManager.getInstance().pollInstances(bpmProcessInstanceManager)
+                    if finished:
+                        logging.info("Terminating unit test scenario, stopping alla virtual users")
+
+                        # termina esecuzione virtual users
+                        environment.runner.stop()
+
+                        logging.info("Exporting data of test scenario, wait...")
+
+                        listOfPids = bawUnitTests.TestScenarioManager.getInstance().listOfPids
+                        # pim : bawPIM.BpmProcessInstanceManager = bawPIM.BpmProcessInstanceManager()
+                        listOfInstances = bpmProcessInstanceManager.exportProcessInstancesDataByPid( bpmEnvironment=bpmEnvironment, listOfPids=listOfPids)
+                        ouputName = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_SCENARIO_OUT_FILE_NAME)
+                        try:
+                            bawUtils._writeOutInstances(listOfInstances, ouputName)
+                            logging.info("Unit test data of [%d] process instances written to file '%s'", len(listOfInstances), ouputName)
+                        except:
+                            logging.error("Error writing unit test process instance data")
+                        logging.info("Unit test scenario terminated")
+                        # elimina statistiche e termina esecuzione
+                        environment.stats.clear_all()
+                        environment.runner.quit()
+
+                    return
+                time.sleep(15)
+        else:
+            logging.debug("Not unit testing")
+    except:
+        logging.error("Error running unitTestInstancesExporter")
+    return
 

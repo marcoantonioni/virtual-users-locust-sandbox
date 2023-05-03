@@ -1,6 +1,12 @@
 import time, random, json
 from base64 import b64encode
 from contextlib import redirect_stdout
+from datetime import datetime
+
+def _getDateTimeISO8601(dateTime = None):
+    if dateTime == None:
+        dateTime = datetime.now()
+    return dateTime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 def _getAttributeNamesFromDictionary(varDict):
     listOfVarNames = []

@@ -1,0 +1,18 @@
+[
+  {
+    "processName": "VUSClaimCompleteAuthorize",
+    "processId": "949",
+    "state": "Completed",
+    "variables": {
+      "authorizationData": {
+        "authorized": false,
+        "review": false,
+        "comments": ""
+      },
+      "inputData": {
+        "requestId": "req53",
+        "newCounter": 53
+      }
+    }
+  }
+]
