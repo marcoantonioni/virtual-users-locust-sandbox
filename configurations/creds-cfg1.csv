@@ -1,8 +1,8 @@
 NAME,PASSWORD,EMAIL
 #vuxuser1..vuxuser10,vuxPassw0rd,none@nowhere.net
 #vuxuser50..vuxuser59,vuxPassw0rd,none@nowhere.net
-#vuxuser1..vuxuser100,vuxPassw0rd,none@nowhere.net
-vuxuser1,vuxPassw0rd,none@nowhere.net
+vuxuser1..vuxuser100,vuxPassw0rd,none@nowhere.net
+#vuxuser1,vuxPassw0rd,none@nowhere.net
 #vuxuser2,vuxPassw0rd,none@nowhere.net
 #vuxuser15,vuxPassw0rd,none@nowhere.net
-vuxuser51,vuxPassw0rd,none@nowhere.net
+#vuxuser51,vuxPassw0rd,none@nowhere.net

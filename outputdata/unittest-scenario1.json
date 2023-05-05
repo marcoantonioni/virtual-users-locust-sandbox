@@ -1,12 +1,66 @@
 [
   {
     "processName": "ClaimCompleteTwoRoles",
-    "processId": "1003",
+    "processId": "2258",
     "state": "Completed",
     "variables": {
       "inputData": {
         "requestId": "reqCompiled",
-        "newCounter": 87
+        "newCounter": 88
+      }
+    }
+  },
+  {
+    "processName": "VUSClaimCompleteAuthorize",
+    "processId": "2259",
+    "state": "Completed",
+    "variables": {
+      "authorizationData": {
+        "authorized": false,
+        "review": false,
+        "comments": ""
+      },
+      "inputData": {
+        "requestId": "req70",
+        "newCounter": 70
+      }
+    }
+  },
+  {
+    "processName": "VUSClaimCompleteAuthorize",
+    "processId": "2260",
+    "state": "Completed",
+    "variables": {
+      "authorizationData": {
+        "authorized": false,
+        "review": false,
+        "comments": ""
+      },
+      "inputData": {
+        "requestId": "req95",
+        "newCounter": 95
+      }
+    }
+  },
+  {
+    "processName": "ClaimCompleteTwoRoles",
+    "processId": "2261",
+    "state": "Completed",
+    "variables": {
+      "inputData": {
+        "requestId": "reqCompiled",
+        "newCounter": 61
+      }
+    }
+  },
+  {
+    "processName": "ClaimCompleteTwoRoles",
+    "processId": "2262",
+    "state": "Completed",
+    "variables": {
+      "inputData": {
+        "requestId": "reqCompiled",
+        "newCounter": 53
       }
     }
   }

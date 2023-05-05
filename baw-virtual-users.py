@@ -16,9 +16,9 @@ import bawsys.processInstanceManager as bawPIM
 import bawsys.bawUtils as bawUtils
 from bawsys import bawSystem as bawSys
 from bawsys import testScenarioManager as bawUnitTests 
+from bawsys import testScenarioSqliteExport as sqliteExporter
 
-import gevent
-import time
+import gevent, signal, time
 from locust import events
 from locust.runners import STATE_STOPPING, STATE_STOPPED, STATE_CLEANUP, WorkerRunner
 
@@ -55,15 +55,15 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     idleCounter = 0
     maxIdleLoops = 0
     verbose = False
-
     spawnedUsers = 0
+
 
     def __init__(self, environment):
         super().__init__(environment)
 
         self.tasks = []
         strRunMode = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_RUN_MODE)
-        if strRunMode == None or strRunMode == "" or strRunMode.lower() == "LOAD_TEST":
+        if strRunMode == None or strRunMode == "" or strRunMode.lower() == "load_test":
             self.tasks = [ bpmTask.SequenceOfBpmTasks ]
         else:
             self.tasks = [ bpmTask.UnitTestScenario ]
@@ -169,14 +169,6 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         if self.userCreds != None:
             logging.debug("MyUser %s is stopping... ", self.userCreds.getName())
         return super().on_stop()
-
-    #----------------------------------------
-    # tasks definition    
-    #strRunMode = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_RUN_MODE)
-    #if strRunMode == None or strRunMode == "" or strRunMode.lower() == "LOAD_TEST":
-    #    tasks = [ bpmTask.SequenceOfBpmTasks ]
-    #else:
-    #    tasks = [ bpmTask.UnitTestScenario ]
 
 #----------------------------------------
 def import_module(name, package=None):
@@ -286,6 +278,7 @@ def on_locust_init(environment, **kwargs):
             # only run this on master & standalone
             if not isinstance(environment.runner, WorkerRunner):
                 gevent.spawn(unitTestInstancesExporter, environment)
+
     except TypeError:
         logging.error("Catched ;)")
 
@@ -325,14 +318,24 @@ def unitTestInstancesExporter(environment):
                         try:
                             bawUtils._writeOutInstances(listOfInstances, ouputName)
                             logging.info("Unit test data of [%d] process instances written to file '%s'", len(listOfInstances), ouputName)
-                        except:
+
+                            useSqlite = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_SCENARIO_OUT_USEDB)
+                            if useSqlite != None:
+                                if useSqlite.lower() == "true":
+                                    dbName = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_SCENARIO_OUT_SQLITEDB_NAME)
+                                    sqLiteExporter : sqliteExporter.TestScenarioSqliteExporter = sqliteExporter.TestScenarioSqliteExporter(dbName)
+                                    sqLiteExporter.createDbAndSchema()
+                                    sqLiteExporter.addScenario(listOfInstances)
+                        except BaseException as exception:
+                            logging.warning(f"Exception Name: {type(exception).__name__}")
+                            logging.warning(f"Exception Desc: {exception}")
                             logging.error("Error writing unit test process instance data")
                         logging.info("Unit test scenario terminated")
                         # elimina statistiche e termina esecuzione
                         environment.stats.clear_all()
                         environment.runner.quit()
-
                         return
+                    
                 time.sleep(5)
         else:
             logging.debug("Not unit testing")

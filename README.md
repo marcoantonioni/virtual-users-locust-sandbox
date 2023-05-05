@@ -8,6 +8,7 @@ Sandbox per struttura progetto finale
 pip install locust
 pip install jproperties
 
+
 locust --config=./configurations/baw-vu-cfg-1.conf
 
 locust --config=./configurations/baw-vu-cfg-1-traditional.conf
