@@ -14,12 +14,7 @@ class TestScenarioSqliteExporter:
     """
     
     stmtQueryAllObjects = """
-        SELECT PID, 
-                JSON_EXTRACT(DATA, '$.processName'), 
-                JSON_EXTRACT(DATA, '$.processId') 
-                JSON_EXTRACT(DATA, '$.state') 
-                JSON_EXTRACT(DATA, '$.variables') 
-            FROM BAW_PROCESS_INSTANCES;
+        SELECT PID, JSON_EXTRACT(DATA, '$') FROM BAW_PROCESS_INSTANCES;
     """
 
     stmtDeleteAll = """
@@ -69,3 +64,25 @@ class TestScenarioSqliteExporter:
             instance["state"] = item.executionState
             instance["variables"] = item.variables
             self.addRecord(instance)
+
+    def queryAll(self, asDict=False):
+        instances = []
+        try:
+            conn = sqlite3.connect(self.dbName)
+            cursor = conn.cursor()
+            cursor.execute(self.stmtQueryAllObjects)
+            records = cursor.fetchall()
+            row : tuple = None
+            for row in records:
+                instances.append(json.loads(row[1]))
+            conn.close()
+            if asDict:
+                dictInstances = dict()
+                for item in instances:
+                    dictInstances[ item['processId'] ] = item
+                instances = dictInstances
+        except BaseException as exception:
+            logging.warning(f"Exception Name: {type(exception).__name__}")
+            logging.warning(f"Exception Desc: {exception}")
+            logging.error("ERROR TestScenarioSqliteExporter, queryAll")
+        return instances

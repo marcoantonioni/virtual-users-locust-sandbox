@@ -326,6 +326,7 @@ def unitTestInstancesExporter(environment):
                                     sqLiteExporter : sqliteExporter.TestScenarioSqliteExporter = sqliteExporter.TestScenarioSqliteExporter(dbName)
                                     sqLiteExporter.createDbAndSchema()
                                     sqLiteExporter.addScenario(listOfInstances)
+                                    logging.info("Unit test data of [%d] process instances written to db '%s'", len(listOfInstances), dbName)
                         except BaseException as exception:
                             logging.warning(f"Exception Name: {type(exception).__name__}")
                             logging.warning(f"Exception Desc: {exception}")

@@ -1,7 +1,7 @@
 [
   {
     "processName": "ClaimCompleteTwoRoles",
-    "processId": "2258",
+    "processId": "2263",
     "state": "Completed",
     "variables": {
       "inputData": {
@@ -11,8 +11,41 @@
     }
   },
   {
+    "processName": "ClaimCompleteTwoRoles",
+    "processId": "2264",
+    "state": "Completed",
+    "variables": {
+      "inputData": {
+        "requestId": "reqCompiled",
+        "newCounter": 66
+      }
+    }
+  },
+  {
+    "processName": "ClaimCompleteTwoRoles",
+    "processId": "2265",
+    "state": "Completed",
+    "variables": {
+      "inputData": {
+        "requestId": "reqCompiled",
+        "newCounter": 74
+      }
+    }
+  },
+  {
+    "processName": "ClaimCompleteTwoRoles",
+    "processId": "2266",
+    "state": "Completed",
+    "variables": {
+      "inputData": {
+        "requestId": "reqCompiled",
+        "newCounter": 93
+      }
+    }
+  },
+  {
     "processName": "VUSClaimCompleteAuthorize",
-    "processId": "2259",
+    "processId": "2267",
     "state": "Completed",
     "variables": {
       "authorizationData": {
@@ -21,46 +54,8 @@
         "comments": ""
       },
       "inputData": {
-        "requestId": "req70",
-        "newCounter": 70
-      }
-    }
-  },
-  {
-    "processName": "VUSClaimCompleteAuthorize",
-    "processId": "2260",
-    "state": "Completed",
-    "variables": {
-      "authorizationData": {
-        "authorized": false,
-        "review": false,
-        "comments": ""
-      },
-      "inputData": {
-        "requestId": "req95",
-        "newCounter": 95
-      }
-    }
-  },
-  {
-    "processName": "ClaimCompleteTwoRoles",
-    "processId": "2261",
-    "state": "Completed",
-    "variables": {
-      "inputData": {
-        "requestId": "reqCompiled",
-        "newCounter": 61
-      }
-    }
-  },
-  {
-    "processName": "ClaimCompleteTwoRoles",
-    "processId": "2262",
-    "state": "Completed",
-    "variables": {
-      "inputData": {
-        "requestId": "reqCompiled",
-        "newCounter": 53
+        "requestId": "req23",
+        "newCounter": 23
       }
     }
   }
