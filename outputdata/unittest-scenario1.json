@@ -1,62 +1,84 @@
-[
-  {
-    "processName": "ClaimCompleteTwoRoles",
-    "processId": "2263",
-    "state": "Completed",
-    "variables": {
-      "inputData": {
-        "requestId": "reqCompiled",
-        "newCounter": 88
+{
+  "startedAt": "2023-05-07T10:59:15Z",
+  "endedAt": "2023-05-07T10:59:46Z",
+  "numOfInstances": 5,
+  "timeExceeded": false,
+  "assertsManager": "./configurations/assertsManager-type1.py",
+  "instances": [
+    {
+      "processName": "VUSClaimCompleteAuthorize",
+      "processId": "2458",
+      "state": "Completed",
+      "variables": {
+        "authorizationData": {
+          "authorized": false,
+          "review": false,
+          "comments": ""
+        },
+        "inputData": {
+          "requestId": "req45",
+          "newCounter": 45
+        }
+      }
+    },
+    {
+      "processName": "VUSClaimCompleteAuthorize",
+      "processId": "2459",
+      "state": "Completed",
+      "variables": {
+        "authorizationData": {
+          "authorized": false,
+          "review": false,
+          "comments": ""
+        },
+        "inputData": {
+          "requestId": "req60",
+          "newCounter": 60
+        }
+      }
+    },
+    {
+      "processName": "ClaimCompleteTwoRoles",
+      "processId": "2460",
+      "state": "Completed",
+      "variables": {
+        "inputData": {
+          "requestId": "reqCompiled",
+          "newCounter": 131
+        }
+      }
+    },
+    {
+      "processName": "VUSClaimCompleteAuthorize",
+      "processId": "2461",
+      "state": "Completed",
+      "variables": {
+        "authorizationData": {
+          "authorized": false,
+          "review": false,
+          "comments": ""
+        },
+        "inputData": {
+          "requestId": "req66",
+          "newCounter": 66
+        }
+      }
+    },
+    {
+      "processName": "VUSClaimCompleteAuthorize",
+      "processId": "2462",
+      "state": "Completed",
+      "variables": {
+        "authorizationData": {
+          "authorized": false,
+          "review": false,
+          "comments": ""
+        },
+        "inputData": {
+          "requestId": "req53",
+          "newCounter": 53
+        }
       }
     }
-  },
-  {
-    "processName": "ClaimCompleteTwoRoles",
-    "processId": "2264",
-    "state": "Completed",
-    "variables": {
-      "inputData": {
-        "requestId": "reqCompiled",
-        "newCounter": 66
-      }
-    }
-  },
-  {
-    "processName": "ClaimCompleteTwoRoles",
-    "processId": "2265",
-    "state": "Completed",
-    "variables": {
-      "inputData": {
-        "requestId": "reqCompiled",
-        "newCounter": 74
-      }
-    }
-  },
-  {
-    "processName": "ClaimCompleteTwoRoles",
-    "processId": "2266",
-    "state": "Completed",
-    "variables": {
-      "inputData": {
-        "requestId": "reqCompiled",
-        "newCounter": 93
-      }
-    }
-  },
-  {
-    "processName": "VUSClaimCompleteAuthorize",
-    "processId": "2267",
-    "state": "Completed",
-    "variables": {
-      "authorizationData": {
-        "authorized": false,
-        "review": false,
-        "comments": ""
-      },
-      "inputData": {
-        "requestId": "req23",
-        "newCounter": 23
-      }
-    }
-  }
-]
+  ]
+}

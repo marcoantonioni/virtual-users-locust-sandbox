@@ -296,15 +296,20 @@ def on_locust_quit(**kwargs):
 def unitTestInstancesExporter(environment):
     try:
         time.sleep(15)
+        scenarioMgr : bawUnitTests.TestScenarioManager = bawUnitTests.TestScenarioManager.getInstance()
         # if running unit test
-        if bawUnitTests.TestScenarioManager.getInstance() != None:
+        if scenarioMgr != None:
             while not environment.runner.state in [STATE_STOPPING, STATE_STOPPED, STATE_CLEANUP]:
                 if bpmProcessInstanceManager != None:
                     # export & save instances
 
-                    finished = bawUnitTests.TestScenarioManager.getInstance().pollInstances(bpmProcessInstanceManager)
+                    finished = scenarioMgr.pollInstances(bpmProcessInstanceManager)
                     if finished:
-                        logging.info("Terminating unit test scenario, stopping alla virtual users")
+                        completionCause = "all instances completed"
+                        if scenarioMgr.timeLimitExceeded:
+                            completionCause = "time limit exceeded and some instances may be in active state"
+                        logging.info("Terminating unit test scenario, %s, stopping alla virtual users.", completionCause)
+                        logging.info("Unit test scenario started at %s, ended at %s.", scenarioMgr.startedAtISO, scenarioMgr.endedAtISO)
 
                         # termina esecuzione virtual users
                         environment.runner.stop()
@@ -314,17 +319,24 @@ def unitTestInstancesExporter(environment):
                         listOfPids = bawUnitTests.TestScenarioManager.getInstance().listOfPids
                         # pim : bawPIM.BpmProcessInstanceManager = bawPIM.BpmProcessInstanceManager()
                         listOfInstances = bpmProcessInstanceManager.exportProcessInstancesDataByPid( bpmEnvironment=bpmEnvironment, listOfPids=listOfPids)
-                        ouputName = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_SCENARIO_OUT_FILE_NAME)
+                        ouputName = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_OUT_FILE_NAME)
+                        intTimeExceeded = 0
+                        if scenarioMgr.timeLimitExceeded:
+                            intTimeExceeded = 1 
+                        assertsMgrName = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_ASSERTS_MANAGER)
+                        if assertsMgrName == None:
+                            assertsMgrName = ""
                         try:
-                            bawUtils._writeOutInstances(listOfInstances, ouputName)
+                            bawUtils._writeOutScenarioInstances(listOfInstances, ouputName, scenarioMgr.startedAtISO, scenarioMgr.endedAtISO, len(listOfInstances), intTimeExceeded, assertsMgrName)
                             logging.info("Unit test data of [%d] process instances written to file '%s'", len(listOfInstances), ouputName)
 
-                            useSqlite = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_SCENARIO_OUT_USEDB)
+                            useSqlite = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_OUT_USE_DB)
                             if useSqlite != None:
                                 if useSqlite.lower() == "true":
-                                    dbName = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_SCENARIO_OUT_SQLITEDB_NAME)
+                                    dbName = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_OUT_SQLITEDB_NAME)
                                     sqLiteExporter : sqliteExporter.TestScenarioSqliteExporter = sqliteExporter.TestScenarioSqliteExporter(dbName)
                                     sqLiteExporter.createDbAndSchema()
+                                    sqLiteExporter.setScenarioInfos(scenarioMgr.startedAtISO, scenarioMgr.endedAtISO, len(listOfInstances), intTimeExceeded, assertsMgrName)
                                     sqLiteExporter.addScenario(listOfInstances)
                                     logging.info("Unit test data of [%d] process instances written to db '%s'", len(listOfInstances), dbName)
                         except BaseException as exception:

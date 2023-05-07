@@ -43,23 +43,32 @@ def _basicAuthHeader(username, password):
     password = password.encode(chSet)
     return "Basic " + b64encode(b":".join((username, password))).strip().decode("ascii")
 
-def _writeOutInstances(listOfInstances, _fullPathNameOutput):
-    instances = []
-    if listOfInstances != None:
-        numProcesses = len(listOfInstances)
-        idx = 0
-        while idx < numProcesses:
-            instance = {}
-            instance["processName"] = listOfInstances[idx].bpdName
-            instance["processId"] = listOfInstances[idx].piid 
-            instance["state"] = listOfInstances[idx].executionState
-            instance["variables"] = listOfInstances[idx].variables
-            instances.append(instance)                    
-            idx += 1
+def _writeOutScenarioInstances(listOfInstances, _fullPathNameOutput, startedAtISO, endedAtISO, numOfInstances, timeExceeded, assertsMgrName):
     if _fullPathNameOutput != None and _fullPathNameOutput != "":
+        instances = []
+        if listOfInstances != None:
+            numProcesses = len(listOfInstances)
+            idx = 0
+            while idx < numProcesses:
+                instance = {}
+                instance["processName"] = listOfInstances[idx].bpdName
+                instance["processId"] = listOfInstances[idx].piid 
+                instance["state"] = listOfInstances[idx].executionState
+                instance["variables"] = listOfInstances[idx].variables
+                instances.append(instance)                    
+                idx += 1
+        infos = {}
+        infos["startedAt"] = startedAtISO
+        infos["endedAt"] = endedAtISO
+        infos["numOfInstances"] = numOfInstances
+        infos["timeExceeded"] = False
+        if timeExceeded == 1:
+            infos["timeExceeded"] = True
+        infos["assertsManager"] = assertsMgrName
+        infos["instances"] = instances
         with open(_fullPathNameOutput, 'w') as f:
             with redirect_stdout(f):
-                print(json.dumps(instances, indent=2))
+                print(json.dumps(infos, indent=2))
             f.close()
     else:
         print()

@@ -28,7 +28,7 @@ def listProcessInstances(argv):
 
             pim = bawPIM.BpmProcessInstanceManager()
             listOfInstances = pim.exportProcessInstancesData(bpmEnvironment, _bpdName, _status, _dateFrom, _dateTo)
-            bawUtilities._writeOutInstances(listOfInstances, _fullPathNameOutput)
+            bawUtilities._writeOutScenarioInstances(listOfInstances, _fullPathNameOutput, "", "", len(listOfInstances), 0 , "")
             
     if ok == False:
         print("Wrong arguments, use -e 'filename' param to specify environment file, use -s for status Completed,Terminated,Failed, dateFrom and dateTo using format AAAA-MM-DDThh:mm:ssZ, -o to save rusults to file")

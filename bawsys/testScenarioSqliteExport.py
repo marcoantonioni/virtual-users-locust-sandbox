@@ -2,10 +2,20 @@ import logging, os, json, sqlite3
 
 class TestScenarioSqliteExporter:
 
-    stmtCreateTable = """
+    stmtCreateTableProcessInstances = """
         CREATE TABLE BAW_PROCESS_INSTANCES (
             PID     TEXT    PRIMARY KEY UNIQUE NOT NULL,
             DATA    JSON    NOT NULL
+        );
+    """
+
+    stmtCreateTableUnitTestScenario = """
+        CREATE TABLE BAW_UNIT_TEST_SCENARIO (
+            STARTED_AT          TEXT    NOT NULL,
+            ENDED_AT            TEXT    NOT NULL,
+            NUM_INSTANCES       INTEGER NOT NULL,
+            TIME_LIMIT_EXCEEDED INTEGER NOT NULL,
+            ASSERTS_MGR         TEXT    NOT NULL
         );
     """
 
@@ -13,6 +23,10 @@ class TestScenarioSqliteExporter:
         INSERT INTO BAW_PROCESS_INSTANCES (PID, DATA) VALUES (?, ?);
     """
     
+    stmtInsertInfos = """
+        INSERT INTO BAW_UNIT_TEST_SCENARIO (STARTED_AT, ENDED_AT, NUM_INSTANCES, TIME_LIMIT_EXCEEDED, ASSERTS_MGR) VALUES (?, ?, ?, ?, ?);
+    """
+
     stmtQueryAllObjects = """
         SELECT PID, JSON_EXTRACT(DATA, '$') FROM BAW_PROCESS_INSTANCES;
     """
@@ -31,13 +45,27 @@ class TestScenarioSqliteExporter:
                 os.remove(self.dbName)
             conn = sqlite3.connect(self.dbName)
             cursor = conn.cursor()
-            cursor.execute(self.stmtCreateTable)
+            cursor.execute(self.stmtCreateTableProcessInstances)
+            cursor.execute(self.stmtCreateTableUnitTestScenario)
             conn.commit()
             conn.close()
         except BaseException as exception:
             logging.warning(f"Exception Name: {type(exception).__name__}")
             logging.warning(f"Exception Desc: {exception}")
             logging.error("ERROR TestScenarioSqliteExporter, createDbAndSchema")
+
+    def setScenarioInfos(self, startedAt: str, endedAt: str, numInstances: int, timeLimitExceeded: int, assertManager: str):
+        try:
+            conn = sqlite3.connect(self.dbName)
+            cursor = conn.cursor()
+            count = cursor.execute(self.stmtInsertInfos, (startedAt, endedAt, numInstances, timeLimitExceeded, assertManager))
+            conn.commit()
+            conn.close()
+        except BaseException as exception:
+            logging.warning(f"Exception Name: {type(exception).__name__}")
+            logging.warning(f"Exception Desc: {exception}")
+            logging.error("ERROR TestScenarioSqliteExporter, setScenarioInfos")
+
 
     def addRecord(self, jsObj):
         if type(jsObj) == dict:

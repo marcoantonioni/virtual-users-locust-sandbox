@@ -7,7 +7,11 @@ Sandbox per struttura progetto finale
 # moduli installati
 pip install locust
 pip install jproperties
+pip install warlock
+pip install jsonpath-ng
 
+# optional
+pip install sqlite-utils
 
 locust --config=./configurations/baw-vu-cfg-1.conf
 
@@ -69,6 +73,9 @@ python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./config
 
 python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -t ./configurations/teams-vu-cfg1.csv -o add
 
+
+sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_UNIT_TEST_SCENARIO" | jq .
+sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_PROCESS_INSTANCES" | jq .
 
 # https://github.com/locustio/locust/blob/master/examples/test_data_management.py
 # https://github.com/locustio/locust/blob/master/examples/dynamic_user_credentials.py
