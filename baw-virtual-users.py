@@ -277,7 +277,7 @@ def unitTestInstancesExporter(environment):
                         completionCause = "all instances completed"
                         if scenarioMgr.timeLimitExceeded:
                             completionCause = "time limit exceeded and some instances may be in active state"
-                        logging.info("Terminating unit test scenario, %s, stopping alla virtual users.", completionCause)
+                        logging.info("Terminating unit test scenario, %s, stopping all virtual users.", completionCause)
                         logging.info("Unit test scenario started at %s, ended at %s.", scenarioMgr.startedAtISO, scenarioMgr.endedAtISO)
 
                         # termina esecuzione virtual users
@@ -317,7 +317,7 @@ def unitTestInstancesExporter(environment):
                                                 moduleName = bawUtils.getDynamicModuleFormatName(dynamicAM)
                                                 bpmDynamicModuleAsserts = bawUtils.import_module(moduleName)
                                                 assertsMgr : scenarioAsserts.ScenarioAssertsManager = scenarioAsserts.ScenarioAssertsManager(bpmEnvironment, bpmDynamicModuleAsserts)
-                                                assertsMgr.executeAsserts(listOfInstances)
+                                                assertsMgr.executeAsserts()
 
                         except BaseException as exception:
                             logging.warning(f"Exception Name: {type(exception).__name__}")

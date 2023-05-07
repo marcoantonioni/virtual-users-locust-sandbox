@@ -6,6 +6,7 @@ from jsonpath_ng.ext import parse
 
 #---------------------------------------------------------
 # https://scrapfly.io/blog/parse-json-jsonpath-python/
+# https://blogboard.io/blog/knowledge/jsonpath-python/
 
 """
 operator	                        function
@@ -37,39 +38,62 @@ $	                        $	                            Selects the root object
 """
 #---------------------------------------------------------
 
+log = False
+
 def exampleGetVariablesFromAllCompleted(listOfInstances):
     strQuery = "$[?(@.state=='Completed')].variables"
-    print(strQuery)
+    if log:
+        print(strQuery)
     jpQuery = parse(strQuery)
     matches = [match.value for match in jpQuery.find(listOfInstances)]
-    for match in matches:
-        print("exampleGetVariablesFromAllCompleted", match)
+    print("exampleGetVariablesFromAllCompleted", len(matches))
+    if log:
+        for match in matches:
+            print("exampleGetVariablesFromAllCompleted", match)
+
+def exampleGetVariablesFromAllActive(listOfInstances):
+    strQuery = "$[?(@.state=='Active')].variables"
+    if log:
+        print(strQuery)
+    jpQuery = parse(strQuery)
+    matches = [match.value for match in jpQuery.find(listOfInstances)]
+    print("exampleGetVariablesFromAllActive", len(matches))
+    if log:
+        for match in matches:
+            print("exampleGetVariablesFromAllCompleted", match)
 
 def exampleGetVariablesFromAllCounterLessThan(listOfInstances, threshold: int):
     # simplified without (@.
     strQuery = "$[?variables.inputData.newCounter <= " + str(threshold) + "].variables"
     #strQuery = "$[?(@.variables.inputData.newCounter <= " + str(threshold) + ")].variables"
-    print(strQuery)
+    if log:
+        print(strQuery)
     jpQuery = parse(strQuery)
     matches = [match.value for match in jpQuery.find(listOfInstances)]
-    for match in matches:
-        print("exampleGetVariablesFromAllCounterLessThan", match)
+    print("exampleGetVariablesFromAllCounterLessThan", len(matches), threshold)
+    if log:
+        for match in matches:
+            print("exampleGetVariablesFromAllCounterLessThan", match)
 
 def exampleGetVariablesFromAllCompletedAndCounterLessThan(listOfInstances, threshold: int):
     strQuery = "$[?(@.state=='Completed' & @.variables.inputData.newCounter <= " + str(threshold) + " )].variables"
-    print(strQuery)
+    if log:
+        print(strQuery)
     jpQuery = parse(strQuery)
     matches = [match.value for match in jpQuery.find(listOfInstances)]
-    for match in matches:
-        print("exampleGetVariablesFromAllCompletedAndCounterLessThan", match)
+    print("exampleGetVariablesFromAllCompletedAndCounterLessThan", len(matches), threshold)
+    if log:
+        for match in matches:
+            print("exampleGetVariablesFromAllCompletedAndCounterLessThan", match)
 
 def executeAsserts(listOfInstances):
-    print("======> executeAsserts")
-    print(json.dumps(listOfInstances, indent=2))
+    print("======> executeAsserts, tot instances:", len(listOfInstances))
+    # print(json.dumps(listOfInstances, indent=2))
 
     exampleGetVariablesFromAllCompleted(listOfInstances)
+    exampleGetVariablesFromAllActive(listOfInstances)
     exampleGetVariablesFromAllCounterLessThan(listOfInstances, 50)
-    exampleGetVariablesFromAllCompletedAndCounterLessThan(listOfInstances, 200)
+    exampleGetVariablesFromAllCompletedAndCounterLessThan(listOfInstances, 100)
 
 """
 with open('./outputdata/unittest-scenario1-bis.json') as f:

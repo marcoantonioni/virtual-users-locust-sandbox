@@ -8,7 +8,7 @@ class ScenarioAssertsManager:
         self.dynamicAM = bpmDynamicModuleAsserts
 
 
-    def executeAsserts(self, listOfInstances):
+    def executeAsserts(self):
         if self.dynamicAM != None:
             dbName = self.bpmEnvironment.getValue(self.bpmEnvironment.keyBAW_UNIT_TEST_OUT_SQLITEDB_NAME)
             dbMgr : sqlite.TestScenarioSqliteExporter = sqlite.TestScenarioSqliteExporter(dbName)
