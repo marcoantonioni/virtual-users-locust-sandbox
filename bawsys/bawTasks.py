@@ -30,13 +30,6 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         self.user.authorizationBearerToken = None
         self.bawLogin()
 
-        #================
-        # DEBUG ONLY
-        #if logging.getLogger().isEnabledFor(logging.CRITICAL):
-        #    now = datetime.now() # current date and time
-        #    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-        #    logging.critical("FORCED LOGIN ["+self.user.userCreds.getName()+"] ",date_time)
-
     def isActionEnabled(self, key):
         actionEnabled = False
         try:

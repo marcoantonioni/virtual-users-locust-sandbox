@@ -3,7 +3,7 @@
 from locust import FastHttpUser, task, between, tag, events
 from locust.runners import MasterRunner
 from json import JSONDecodeError
-import logging, sys, importlib
+import logging, sys
 from datetime import datetime
 import bawsys.bawTasks as bpmTask
 import bawsys.processInstanceManager as bpmPIM
@@ -17,6 +17,7 @@ import bawsys.bawUtils as bawUtils
 from bawsys import bawSystem as bawSys
 from bawsys import testScenarioManager as bawUnitTests 
 from bawsys import testScenarioSqliteExport as sqliteExporter
+from bawsys import testScenarioAssertManager as scenarioAsserts
 
 import gevent, signal, time
 from locust import events
@@ -171,33 +172,6 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         return super().on_stop()
 
 #----------------------------------------
-def import_module(name, package=None):
-    absolute_name = importlib.util.resolve_name(name, package)
-    try:
-        return sys.modules[absolute_name]
-    except KeyError:
-        pass
-
-    path = None
-    if '.' in absolute_name:
-        parent_name, _, child_name = absolute_name.rpartition('.')
-        parent_module = import_module(parent_name)
-        path = parent_module.__spec__.submodule_search_locations
-    for finder in sys.meta_path:
-        spec = finder.find_spec(absolute_name, path)
-        if spec is not None:
-            break
-    else:
-        msg = f'No module named {absolute_name!r}'
-        raise ModuleNotFoundError(msg, name=absolute_name)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[absolute_name] = module
-    spec.loader.exec_module(module)
-    if path is not None:
-        setattr(parent_module, child_name, module)
-    return module
-
-#----------------------------------------
 # global events managers
 
 @events.init_command_line_parser.add_listener
@@ -210,13 +184,6 @@ def _(parser):
 @events.test_start.add_listener
 def on_test_start(environment, **kwargs):
     logging.info("A BPM test is starting, BAW_ENV[%s] BAW_USERS[%s]", environment.parsed_options.BAW_ENV, environment.parsed_options.BAW_USERS)
-
-    #===================
-    # DEBUG ONLY
-    #if logging.getLogger().isEnabledFor(logging.CRITICAL):
-    #    now = datetime.now() # current date and time
-    #    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-    #    logging.critical("RUN STARTED AT ",date_time)
 
 @events.test_stop.add_listener
 def on_test_stop(environment, **kwargs):
@@ -269,9 +236,9 @@ def on_locust_init(environment, **kwargs):
                 
             logging.info("***********************")
 
-            dynamicPLM : str = bpmEnvironment.getDynamicModuleFormatName()
+            dynamicPLM : str = bawUtils.getDynamicModuleFormatName(bpmEnvironment.getValue(bpmEnvironment.keyBAW_PAYLOAD_MANAGER))
             global bpmDynamicModule 
-            bpmDynamicModule = import_module(dynamicPLM)
+            bpmDynamicModule = bawUtils.import_module(dynamicPLM)
             
             bpmProcessInstanceManager.setupMaxInstances(bpmEnvironment)
 
@@ -279,8 +246,10 @@ def on_locust_init(environment, **kwargs):
             if not isinstance(environment.runner, WorkerRunner):
                 gevent.spawn(unitTestInstancesExporter, environment)
 
-    except TypeError:
-        logging.error("Catched ;)")
+    except BaseException as exception:
+        logging.warning(f"Exception Name: {type(exception).__name__}")
+        logging.warning(f"Exception Desc: {exception}")
+        logging.error("Error in on_locust_init.")
 
 
 @events.quitting.add_listener
@@ -339,6 +308,17 @@ def unitTestInstancesExporter(environment):
                                     sqLiteExporter.setScenarioInfos(scenarioMgr.startedAtISO, scenarioMgr.endedAtISO, len(listOfInstances), intTimeExceeded, assertsMgrName)
                                     sqLiteExporter.addScenario(listOfInstances)
                                     logging.info("Unit test data of [%d] process instances written to db '%s'", len(listOfInstances), dbName)
+
+                                    strRunAssertsMagr = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_RUN_ASSERTS_MANAGER)
+                                    if strRunAssertsMagr != None:
+                                        if strRunAssertsMagr.lower() == "true":
+                                            dynamicAM = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_ASSERTS_MANAGER)
+                                            if dynamicAM != None and dynamicAM != "":
+                                                moduleName = bawUtils.getDynamicModuleFormatName(dynamicAM)
+                                                bpmDynamicModuleAsserts = bawUtils.import_module(moduleName)
+                                                assertsMgr : scenarioAsserts.ScenarioAssertsManager = scenarioAsserts.ScenarioAssertsManager(bpmEnvironment, bpmDynamicModuleAsserts)
+                                                assertsMgr.executeAsserts(listOfInstances)
+
                         except BaseException as exception:
                             logging.warning(f"Exception Name: {type(exception).__name__}")
                             logging.warning(f"Exception Desc: {exception}")

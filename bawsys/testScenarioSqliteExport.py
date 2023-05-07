@@ -93,7 +93,7 @@ class TestScenarioSqliteExporter:
             instance["variables"] = item.variables
             self.addRecord(instance)
 
-    def queryAll(self, asDict=False):
+    def queryAll(self):
         instances = []
         try:
             conn = sqlite3.connect(self.dbName)
@@ -104,11 +104,6 @@ class TestScenarioSqliteExporter:
             for row in records:
                 instances.append(json.loads(row[1]))
             conn.close()
-            if asDict:
-                dictInstances = dict()
-                for item in instances:
-                    dictInstances[ item['processId'] ] = item
-                instances = dictInstances
         except BaseException as exception:
             logging.warning(f"Exception Name: {type(exception).__name__}")
             logging.warning(f"Exception Desc: {exception}")

@@ -1,6 +1,3 @@
-- test scenario
--- aggiungere file json con riepilogo configurazione scenario e tempo durata
--- aggiungere tabella db con riepilogo... TestScenarioSqliteExporter
 
 - assert manager
 -- definire template

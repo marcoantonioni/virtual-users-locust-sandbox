@@ -62,6 +62,7 @@ class BpmEnvironment:
     keyBAW_UNIT_TEST_OUT_SQLITEDB_NAME : str = "BAW_UNIT_TEST_OUT_SQLITEDB_NAME"
     keyBAW_UNIT_TEST_OUT_USE_DB : str = "BAW_UNIT_TEST_OUT_USE_DB"
     keyBAW_UNIT_TEST_ASSERTS_MANAGER : str = "BAW_UNIT_TEST_ASSERTS_MANAGER"
+    keyBAW_UNIT_TEST_RUN_ASSERTS_MANAGER : str = "BAW_UNIT_TEST_RUN_ASSERTS_MANAGER"
 
     keyBAW_ACTION_LOGIN="LOGIN"
     keyBAW_ACTION_CLAIM="CLAIM"
@@ -95,11 +96,3 @@ class BpmEnvironment:
                 logging.info("%s=%s", k, cfgVal.data)
         logging.info("***********************")
 
-    def getDynamicModuleFormatName(self):
-        pathName : str = self.getValue(self.keyBAW_PAYLOAD_MANAGER)
-        pathName = pathName.replace(".py", "")
-        pathName = pathName.replace("./", "")
-        pathName = pathName.replace("/", ".")
-        return pathName
-        # 'configurations.notImportedPayloadManager'
-        # "./configurations/notImportedPayloadManager.py"

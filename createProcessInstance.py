@@ -1,4 +1,4 @@
-import logging, sys, json, importlib, random, time
+import logging, sys, json, random, time
 from bawsys import loadEnvironment as bpmEnv
 import bawsys.commandLineManager as clpm
 import bawsys.exposedProcessManager as bpmExpProcs
@@ -9,32 +9,6 @@ from bawsys import bawUtils as bawUtils
 
 bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
 bpmProcessInstanceManager : bpmPIM.BpmProcessInstanceManager = bpmPIM.BpmProcessInstanceManager()
-
-def import_module(name, package=None):
-    absolute_name = importlib.util.resolve_name(name, package)
-    try:
-        return sys.modules[absolute_name]
-    except KeyError:
-        pass
-
-    path = None
-    if '.' in absolute_name:
-        parent_name, _, child_name = absolute_name.rpartition('.')
-        parent_module = import_module(parent_name)
-        path = parent_module.__spec__.submodule_search_locations
-    for finder in sys.meta_path:
-        spec = finder.find_spec(absolute_name, path)
-        if spec is not None:
-            break
-    else:
-        msg = f'No module named {absolute_name!r}'
-        raise ModuleNotFoundError(msg, name=absolute_name)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[absolute_name] = module
-    spec.loader.exec_module(module)
-    if path is not None:
-        setattr(parent_module, child_name, module)
-    return module
 
 
 def createProcessInstances(argv):
@@ -56,7 +30,7 @@ def createProcessInstances(argv):
 
             dynamicPLM : str = bpmEnvironment.getDynamicModuleFormatName()
             global bpmDynamicModule 
-            bpmDynamicModule = import_module(dynamicPLM)
+            bpmDynamicModule = bawUtils.import_module(dynamicPLM)
 
             bpmPIM.BpmProcessInstanceManager._createProcessInstancesBatch(bpmEnvironment, bpmExposedProcessManager, bpmProcessInstanceManager, bpmDynamicModule, maxInstances, isLog=True)
             #-----------------------
