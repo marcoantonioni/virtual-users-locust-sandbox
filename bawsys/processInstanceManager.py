@@ -310,7 +310,7 @@ class BpmProcessInstanceManager:
           key = processInfoKeys[rndIdx]
           processName = key.split("/")[0]
           processInfo = bpmExposedProcessManager.getProcessInfos(key)  
-          jsonPayloadInfos = bpmDynamicModule.buildPayloadForSubject("Start-"+processName)
+          jsonPayloadInfos = bpmDynamicModule.buildPayloadForSubject("Start-"+processName, None, count)
           jsonPayload = jsonPayloadInfos["jsonObject"]
           strPayload = json.dumps(jsonPayload)
           processInstanceInfo = bpmProcessInstanceManager.createInstance(bpmEnvironment, runningTraditional, userName, processInfo, strPayload, _headers)

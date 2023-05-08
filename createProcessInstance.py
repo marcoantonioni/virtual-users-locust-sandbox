@@ -33,38 +33,6 @@ def createProcessInstances(argv):
             bpmDynamicModule = bawUtils.import_module(dynamicPLM)
 
             bpmPIM.BpmProcessInstanceManager._createProcessInstancesBatch(bpmEnvironment, bpmExposedProcessManager, bpmProcessInstanceManager, bpmDynamicModule, maxInstances, isLog=True)
-            #-----------------------
-            """
-            authorizationBearerToken = bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
-
-            userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
-            userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
-            runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
-
-            _headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-            if runningTraditional == False:
-                _headers['Authorization'] = 'Bearer '+authorizationBearerToken
-            else:
-                _headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
-
-            processInfoKeys = bpmExposedProcessManager.getKeys()
-            totalKeys = len(processInfoKeys)
-
-            count = 0
-            while count < maxInstances:
-                rndIdx : int = random.randint(0, (totalKeys-1))
-                key = processInfoKeys[rndIdx]
-                processName = key.split("/")[0]
-                processInfo = bpmExposedProcessManager.getProcessInfos(key)  
-                jsonPayloadInfos = bpmDynamicModule.buildPayloadForSubject("Start-"+processName)
-                jsonPayload = jsonPayloadInfos["jsonObject"]
-                strPayload = json.dumps(jsonPayload)
-                processInstanceInfo : bpmPIM.BpmProcessInstance = bpmProcessInstanceManager.createInstance(bpmEnvironment, runningTraditional, userName, processInfo, strPayload, _headers)
-                if processInstanceInfo != None:
-                    print("Created process "+processName+" instance id["+processInstanceInfo.getPiid()+"], state["+processInstanceInfo.getState()+"]")
-                count += 1
-            """
-            #-------------------------------
 
     if ok == False:
         print("Wrong arguments, use -e 'filename' param to specify environment file")

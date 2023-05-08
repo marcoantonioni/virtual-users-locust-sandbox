@@ -29,13 +29,26 @@ def newExampleOfTypes():
     return {"attrBool": False, "attrDate": None, "attrDecimal": 0.0, "attrInt": 0, "attrListBool": [], "attrListDate": [], "attrListDecimal": [], "attrListInt": [], "attrListText": [], "attrListTime": [], "attrText": "", "attrTime": None}
 
 
+#==========================
+# Create UTExample1Data json object
+# 'data' of type UTExample1StartData
+def newUTExample1Data():
+    return {"data": {}, "vote": 0}
+
+
+#==========================
+# Create UTExample1StartData json object
+def newUTExample1StartData():
+    return {"counter": 0, "name": ""}
+
+
 #=============================
 # import section, add what you need
 #=============================
 import random
 
 #=============================
-# the funcion 'buildPayloadForSubject' must be present in any payload manager
+# the function 'buildPayloadForSubject' must be present in any payload manager
 # it must return a Boolean, True when taskSubjectText match the subjext in a dictionary
 # the default logic is: search as substring
 # reimplement it as from your needs
@@ -45,7 +58,7 @@ def isMatchingTaskSubject(taskSubjectText, subjectFromUserDictionary):
     return taskSubjectText.find(subjectFromUserDictionary) != -1
 
 #=============================
-# the funcion 'buildPayloadForSubject' must be present in any payload manager
+# the function 'buildPayloadForSubject' must be present in any payload manager
 # it must return a dict() object with keys
 # jsonObject = your payload in json format
 # thinkTime = your particular think thime for the subject in input; if the returned value is -1 the global think thime will be used

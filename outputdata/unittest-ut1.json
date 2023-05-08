@@ -1,0 +1,30 @@
+{
+  "startedAt": "2023-05-08T16:51:37Z",
+  "endedAt": "2023-05-08T16:51:53Z",
+  "numOfInstances": 1,
+  "timeExceeded": false,
+  "assertsManager": "./configurations/assertsManager-type-ut1.py",
+  "instances": [
+    {
+      "processName": "VUSUnitTestExample1",
+      "processId": "2975",
+      "state": "Completed",
+      "variables": {
+        "inputData": {
+          "name": "John",
+          "counter": 1
+        },
+        "reviewForm": false,
+        "promoteLevel": 2,
+        "promoteRequest": true,
+        "evaluationForm": {
+          "vote": 10,
+          "data": {
+            "name": "John",
+            "counter": 1
+          }
+        }
+      }
+    }
+  ]
+}

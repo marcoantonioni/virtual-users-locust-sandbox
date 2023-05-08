@@ -1,4 +1,21 @@
 
+
+- aggiungere buildPayloadForSubject indice creazione istanza per Unit Test Scenario (unitTestCreateIndex)
+
+- generazione del payload manager e modello dati su due file differenti (con data ora per evitare sovrascritture ?)
+
+- unit test scenario
+  VUSUnitTestExample1
+
+  -- payload manager
+  --- creazione istanza processo (0/1 payload)
+  ---- se payload input definire attributo chiave che identifica il test
+  --- completamento task (0/N payload)
+  ---- se creazione istanza processo senza payload input e task è il primo o uno dei primi paralleli della catena
+  ----- completare task con attributo chiave che identifica il test
+  ---- se task ripetibile utilizzare gruppi di attributi per identificare prossimo payload di completamento
+
+
 - assert manager
 -- definire template
 -- definire esempio
@@ -11,6 +28,20 @@
 - cercare TTD nel codice
 
 - versione containerizzata
+
+
+#----------------------------------
+Configurazione ambiente run
+
+UNIT TEST 1
+ baw-vu-cfg-ut1.conf
+ creds-cfg-ut1.csv
+ env-ut1.properties
+ teams-vu-cfg-ut1.csv
+ groups-vu-cfg-ut1.csv
+ TS-UT1.csv
+ US-TS-UT1.csv
+
 
 #----------------------------------
 https://snyk.io/advisor/search?source=python&q=locust

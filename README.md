@@ -17,6 +17,8 @@ locust --config=./configurations/baw-vu-cfg-1.conf
 
 locust --config=./configurations/baw-vu-cfg-1-traditional.conf
 
+#unit test
+locust --config=./configurations/baw-vu-cfg-ut1.conf
 
 # 1 utente
 locust -f ./baw-virtual-users.py --headless --only-summary --run-time 60s --users 1 --spawn-rate 1 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
@@ -55,8 +57,11 @@ python ./deleteProcessBulk.py -e ./configurations/env1.properties -t true
 python ./deleteProcessBulk.py  -e ./configurations/env1-traditional.properties -t true
 
 # generazione template modello dati
-python ./generatePayloadTemplates.py -e ./configurations/env1.properties -o ./configurations/test.py
-python ./generatePayloadTemplates.py -e ./configurations/env1-traditional.properties -o ./configurations/test.py
+python ./generatePayloadTemplates.py -e ./configurations/env1.properties -o ./configurations
+python ./generatePayloadTemplates.py -e ./configurations/env1-traditional.properties -o ./configurations
+
+python ./generatePayloadTemplates.py -e ./configurations/env-ut1.properties -o ./configurations
+
 
 # creazione utenze e gruppi ldap
 python generateLDIFForVirtualUsers.py -c ./configurations/ldif4vu-cfg1.properties -l ./configurations/vux-cfg1.ldif -u ./configurations/creds-cfg1.csv
@@ -73,6 +78,8 @@ python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./config
 
 python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -t ./configurations/teams-vu-cfg1.csv -o add
 
+# unit test
+python ./manageGroupsAndTeams.py -e ./configurations/env-ut1.properties -g ./configurations/groups-vu-cfg-ut1.csv -t ./configurations/teams-vu-cfg-ut1.csv -o add
 
 sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_UNIT_TEST_SCENARIO" | jq .
 sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_PROCESS_INSTANCES" | jq .
