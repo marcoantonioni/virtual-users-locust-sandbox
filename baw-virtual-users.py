@@ -238,8 +238,7 @@ def on_locust_init(environment, **kwargs):
 
             dynamicPLM : str = bawUtils.getDynamicModuleFormatName(bpmEnvironment.getValue(bpmEnvironment.keyBAW_PAYLOAD_MANAGER))
             global bpmDynamicModule 
-            bpmDynamicModule = bawUtils.import_module(dynamicPLM)
-            
+            bpmDynamicModule = bawUtils.import_module(dynamicPLM)            
             bpmProcessInstanceManager.setupMaxInstances(bpmEnvironment)
 
             # only run this on master & standalone
@@ -286,7 +285,6 @@ def unitTestInstancesExporter(environment):
                         logging.info("Exporting data of test scenario, wait...")
 
                         listOfPids = bawUnitTests.TestScenarioManager.getInstance().listOfPids
-                        # pim : bawPIM.BpmProcessInstanceManager = bawPIM.BpmProcessInstanceManager()
                         listOfInstances = bpmProcessInstanceManager.exportProcessInstancesDataByPid( bpmEnvironment=bpmEnvironment, listOfPids=listOfPids)
                         ouputName = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_OUT_FILE_NAME)
                         intTimeExceeded = 0
@@ -308,16 +306,9 @@ def unitTestInstancesExporter(environment):
                                     sqLiteExporter.setScenarioInfos(scenarioMgr.startedAtISO, scenarioMgr.endedAtISO, len(listOfInstances), intTimeExceeded, assertsMgrName)
                                     sqLiteExporter.addScenario(listOfInstances)
                                     logging.info("Unit test data of [%d] process instances written to db '%s'", len(listOfInstances), dbName)
-
-                                    strRunAssertsMagr = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_RUN_ASSERTS_MANAGER)
-                                    if strRunAssertsMagr != None:
-                                        if strRunAssertsMagr.lower() == "true":
-                                            dynamicAM = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_ASSERTS_MANAGER)
-                                            if dynamicAM != None and dynamicAM != "":
-                                                moduleName = bawUtils.getDynamicModuleFormatName(dynamicAM)
-                                                bpmDynamicModuleAsserts = bawUtils.import_module(moduleName)
-                                                assertsMgr : scenarioAsserts.ScenarioAssertsManager = scenarioAsserts.ScenarioAssertsManager(bpmEnvironment, bpmDynamicModuleAsserts)
-                                                assertsMgr.executeAsserts()
+                                    bpmDynamicModuleAsserts = bawUtils.setupAssertsManagerModule(bpmEnvironment)                                                
+                                    assertsMgr : scenarioAsserts.ScenarioAssertsManager = scenarioAsserts.ScenarioAssertsManager(bpmEnvironment, bpmDynamicModuleAsserts)
+                                    assertsMgr.executeAsserts()
 
                         except BaseException as exception:
                             logging.warning(f"Exception Name: {type(exception).__name__}")

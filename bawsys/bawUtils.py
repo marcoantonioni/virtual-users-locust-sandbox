@@ -105,3 +105,14 @@ def import_module(name, package=None):
     if path is not None:
         setattr(parent_module, child_name, module)
     return module
+
+def setupAssertsManagerModule(bpmEnvironment):
+    bpmDynamicModuleAsserts = None
+    strRunAssertsMagr = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_RUN_ASSERTS_MANAGER)
+    if strRunAssertsMagr != None:
+        if strRunAssertsMagr.lower() == "true":
+            dynamicAM = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_ASSERTS_MANAGER)
+            if dynamicAM != None and dynamicAM != "":
+                moduleName = getDynamicModuleFormatName(dynamicAM)
+                bpmDynamicModuleAsserts = import_module(moduleName)
+    return bpmDynamicModuleAsserts
