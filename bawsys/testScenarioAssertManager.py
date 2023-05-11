@@ -9,10 +9,14 @@ class ScenarioAssertsManager:
 
 
     def executeAsserts(self):
+        executed = False
         if self.dynamicAM != None:
             dbName = self.bpmEnvironment.getValue(self.bpmEnvironment.keyBAW_UNIT_TEST_OUT_SQLITEDB_NAME)
             dbMgr : sqlite.TestScenarioSqliteExporter = sqlite.TestScenarioSqliteExporter(dbName)
             listOfInstances = dbMgr.queryAll()
-            self.dynamicAM.executeAsserts(listOfInstances)
+            if listOfInstances != None and len(listOfInstances) > 0:
+                self.dynamicAM.executeAsserts(listOfInstances)
+                executed = True
+        return executed
 
 

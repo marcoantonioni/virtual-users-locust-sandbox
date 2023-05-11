@@ -38,67 +38,96 @@ $	                        $	                            Selects the root object
 """
 #---------------------------------------------------------
 
-log = False
+__log = True
 
+def _queryGetVariablesFromAllInstancesByState(listOfInstances, state: str):
+    strQuery = "$[?(@.state=='"+state+"')].variables"
+    jpQuery = parse(strQuery)
+    return [match.value for match in jpQuery.find(listOfInstances)]
+
+#---------------------------------
 def exampleGetVariablesFromAllCompleted(listOfInstances):
-    strQuery = "$[?(@.state=='Completed')].variables"
-    if log:
-        print(strQuery)
-    jpQuery = parse(strQuery)
-    matches = [match.value for match in jpQuery.find(listOfInstances)]
-    print("exampleGetVariablesFromAllCompleted", len(matches))
-    if log:
-        for match in matches:
-            print("exampleGetVariablesFromAllCompleted", match)
+    matches = _queryGetVariablesFromAllInstancesByState(listOfInstances, "Completed")
 
+    logging.info("exampleGetVariablesFromAllCompleted %d", len(matches))
+    if __log:
+        for match in matches:
+            logging.info("exampleGetVariablesFromAllCompleted %s", match)
+
+# old mode
 def exampleGetVariablesFromAllActive(listOfInstances):
-    strQuery = "$[?(@.state=='Active')].variables"
-    if log:
-        print(strQuery)
-    jpQuery = parse(strQuery)
-    matches = [match.value for match in jpQuery.find(listOfInstances)]
-    print("exampleGetVariablesFromAllActive", len(matches))
-    if log:
-        for match in matches:
-            print("exampleGetVariablesFromAllCompleted", match)
+    matches = _queryGetVariablesFromAllInstancesByState(listOfInstances, "Active")
 
-def exampleGetVariablesFromAllCounterLessThan(listOfInstances, threshold: int):
-    # simplified without (@.
-    strQuery = "$[?variables.inputData.newCounter <= " + str(threshold) + "].variables"
-    #strQuery = "$[?(@.variables.inputData.newCounter <= " + str(threshold) + ")].variables"
-    if log:
-        print(strQuery)
-    jpQuery = parse(strQuery)
-    matches = [match.value for match in jpQuery.find(listOfInstances)]
-    print("exampleGetVariablesFromAllCounterLessThan", len(matches), threshold)
-    if log:
+    logging.info("exampleGetVariablesFromAllActive %d", len(matches))
+    if __log:
         for match in matches:
-            print("exampleGetVariablesFromAllCounterLessThan", match)
+            logging.info("exampleGetVariablesFromAllActive %s", match)
 
+
+#--------------------------------
+
+def _queryGetVariablesFromAllMatching(listOfInstances, _variable: str, _operator: str, _value: str):
+    strQuery = "$[?variables."+_variable+" "+_operator+" " + _value + "].variables"
+    jpQuery = parse(strQuery)
+    return [match.value for match in jpQuery.find(listOfInstances)]
+
+
+def exampleGetVariablesFromAllCounterLessOrEqualThan(listOfInstances, threshold: int):
+    matches = _queryGetVariablesFromAllMatching(listOfInstances, "inputData.newCounter", "<=", str(threshold))
+
+    logging.info("exampleGetVariablesFromAllCounterLessOrEqualThan %d %d", len(matches), threshold)
+    if __log:
+        for match in matches:
+            logging.info("exampleGetVariablesFromAllCounterLessOrEqualThan %s", match)
+
+
+def exampleGetVariablesFromAllCounterGreaterThan(listOfInstances, threshold: int):
+    matches = _queryGetVariablesFromAllMatching(listOfInstances, "inputData.newCounter", ">", str(threshold))
+
+    logging.info("exampleGetVariablesFromAllCounterGreaterThan %d %d", len(matches), threshold)
+    if __log:
+        for match in matches:
+            logging.info("exampleGetVariablesFromAllCounterGreaterThan %s", match)
+
+
+#-----------------------------------
 def exampleGetVariablesFromAllCompletedAndCounterLessThan(listOfInstances, threshold: int):
     strQuery = "$[?(@.state=='Completed' & @.variables.inputData.newCounter <= " + str(threshold) + " )].variables"
-    if log:
-        print(strQuery)
     jpQuery = parse(strQuery)
     matches = [match.value for match in jpQuery.find(listOfInstances)]
-    print("exampleGetVariablesFromAllCompletedAndCounterLessThan", len(matches), threshold)
-    if log:
-        for match in matches:
-            print("exampleGetVariablesFromAllCompletedAndCounterLessThan", match)
 
+    logging.info("exampleGetVariablesFromAllCompletedAndCounterLessThan %d %d", len(matches), threshold)
+    if __log:
+        for match in matches:
+            logging.info("exampleGetVariablesFromAllCompletedAndCounterLessThan %s", match)
+
+def exampleGetVariablesFromAllActiveAndCounterLessThan(listOfInstances, threshold: int):
+    strQuery = "$[?(@.state=='Active' & @.variables.inputData.newCounter <= " + str(threshold) + " )].variables"
+    jpQuery = parse(strQuery)
+    matches = [match.value for match in jpQuery.find(listOfInstances)]
+
+    logging.info("exampleGetVariablesFromAllActiveAndCounterLessThan %d %d", len(matches), threshold)
+    if __log:
+        for match in matches:
+            logging.info("exampleGetVariablesFromAllActiveAndCounterLessThan %s", match)
+
+#---------------------------
 def executeAsserts(listOfInstances):
-    print("======> executeAsserts, tot instances:", len(listOfInstances))
-    # print(json.dumps(listOfInstances, indent=2))
+    logging.info("======> executeAsserts, tot instances: %d", len(listOfInstances))
+    if __log:
+        logging.info(json.dumps(listOfInstances, indent=2))
 
     exampleGetVariablesFromAllCompleted(listOfInstances)
     exampleGetVariablesFromAllActive(listOfInstances)
-    exampleGetVariablesFromAllCounterLessThan(listOfInstances, 50)
+    exampleGetVariablesFromAllCounterLessOrEqualThan(listOfInstances, 50)
+    exampleGetVariablesFromAllCounterGreaterThan(listOfInstances, 50)
     exampleGetVariablesFromAllCompletedAndCounterLessThan(listOfInstances, 100)
+    exampleGetVariablesFromAllActiveAndCounterLessThan(listOfInstances, 100)
 
 """
 with open('./outputdata/unittest-scenario1-bis.json') as f:
     d = json.load(f)
-    # print(json.dumps(d, indent=2))
+    # logging.info(json.dumps(d, indent=2))
 
     jeState = parse('$[*].DATA.state')
     jeAuthData = parse('$[*].DATA.variables.authorizationData')    
@@ -106,15 +135,15 @@ with open('./outputdata/unittest-scenario1-bis.json') as f:
     jeCounter = parse("$[?(@.DATA.variables.inputData.newCounter < 70)].PID")
     
     for match in jeState.find(d):
-        print(f'state: {match.value}')
+        logging.info(f'state: {match.value}')
 
-    print()
+    logging.info()
     for match in jeAuthData.find(d):
-        print(f'authData: {match.value}')
+        logging.info(f'authData: {match.value}')
 
-    print()
+    logging.info()
     for match in jeCounter.find(d):
-        print(f'counter: {match.value}')
+        logging.info(f'counter: {match.value}')
 """
 
 
@@ -128,7 +157,7 @@ query = "$[?(@.year < 1995)].title"
 jsonpath_expression = parse(query)
 
 for match in jsonpath_expression.find(movies):
-    print(match.value)
+    logging.info(match.value)
 """
 
 
@@ -167,6 +196,6 @@ expression = parse("$.books[?(@.author=='J.D. Salinger' and @.year==1951 or @.ge
 matches = [match.value for match in expression.find(data)]
 
 # Print the results
-print(matches)
+logging.info(matches)
 
 """
