@@ -1,13 +1,13 @@
 {
-  "startedAt": "2023-05-11T11:07:22Z",
-  "endedAt": "2023-05-11T11:07:58Z",
+  "startedAt": "2023-05-11T13:47:40Z",
+  "endedAt": "2023-05-11T13:48:15Z",
   "numOfInstances": 3,
   "timeExceeded": false,
   "assertsManager": "./configurations/assertsManager-type-ut1.py",
   "instances": [
     {
       "processName": "VUSUnitTestExample1",
-      "processId": "3002",
+      "processId": "3010",
       "state": "Completed",
       "variables": {
         "inputData": {
@@ -28,7 +28,7 @@
     },
     {
       "processName": "VUSUnitTestExample1",
-      "processId": "3003",
+      "processId": "3011",
       "state": "Completed",
       "variables": {
         "inputData": {
@@ -36,10 +36,10 @@
           "counter": 1
         },
         "reviewForm": false,
-        "promoteLevel": 0,
+        "promoteLevel": 2,
         "promoteRequest": true,
         "evaluationForm": {
-          "vote": 6,
+          "vote": 9,
           "data": {
             "name": "Mary",
             "counter": 1
@@ -49,7 +49,7 @@
     },
     {
       "processName": "VUSUnitTestExample1",
-      "processId": "3004",
+      "processId": "3012",
       "state": "Completed",
       "variables": {
         "inputData": {
@@ -60,7 +60,7 @@
         "promoteLevel": 0,
         "promoteRequest": false,
         "evaluationForm": {
-          "vote": 1,
+          "vote": 5,
           "data": {
             "name": "Hugo",
             "counter": 2

@@ -34,6 +34,9 @@ def isMatchingTaskSubject(taskSubjectText, subjectFromUserDictionary):
 # reimplement it as from your needs
 #=============================
 
+import logging
+__log = True
+
 def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCreateIndex: int = None):
     retObject = dict()
     retObject["jsonObject"] = {}
@@ -53,7 +56,8 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
     #-------------------------------------------------
     if text.find('Start-VUSUnitTestExample1') != -1:
 
-        # print("unitTestCreateIndex", unitTestCreateIndex)
+        if __log:
+            logging.info("unitTestCreateIndex [%d]", unitTestCreateIndex)
 
         d = newUTExample1StartData()
 
@@ -78,7 +82,8 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
     if text.find('Unit Test Evaluator') != -1:
 
         if preExistPayload != None:
-            print("Unit Test Evaluator", json.dumps(preExistPayload, indent=2))
+            if __log:
+                logging.info("Unit Test Evaluator, input payload %s", json.dumps(preExistPayload, indent=2))
 
             isReview = preExistPayload["reviewForm"]
             evalForm = preExistPayload["evaluationForm"]
@@ -110,7 +115,9 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
 
             retObject["jsonObject"] = {"evaluationForm": evalForm}
 
-            print("Evaluator", json.dumps(retObject, indent=2))
+            if __log:
+                logging.info("Unit Test Evaluator, output payload %s", json.dumps(retObject, indent=2))
+
         else:
             raise Exception("Scenario error")
 
@@ -118,7 +125,8 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
     if text.find('Unit Test Approver') != -1:
 
         if preExistPayload != None:
-            print("Unit Test Approver", json.dumps(preExistPayload, indent=2))
+            if __log:
+                logging.info("Unit Test Approver, input payload %s", json.dumps(preExistPayload, indent=2))
 
             evalForm = preExistPayload["evaluationForm"]
 
@@ -134,7 +142,10 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
                     promoteStudent = True
 
             retObject["jsonObject"] = {"evaluationForm": evalForm, "reviewForm":mustReview, "promoteRequest":promoteStudent} 
-            print("Approver", json.dumps(retObject, indent=2))
+
+            if __log:
+                logging.info("Unit Test Approver, output payload %s", json.dumps(retObject, indent=2))
+
         else:
             raise Exception("Scenario error")
 

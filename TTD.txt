@@ -1,19 +1,18 @@
 
 
-
+??? Riprovare con seconda demo UnitTest
 - verificare come aggiornare utenti in Groups per app appena creata (restart ? api rest ?)
 
-- unit test scenario
+- unit test scenario 1 o più istanze processo
   VUSUnitTestExample1
 
   -- payload manager
   --- creazione istanza processo (0/1 payload)
-  ---- se payload input definire attributo chiave che identifica il test
-  --- completamento task (0/N payload)
-  ---- se creazione istanza processo senza payload input e task è il primo o uno dei primi paralleli della catena
-  ----- completare task con attributo chiave che identifica il test
-  ---- se task ripetibile utilizzare gruppi di attributi per identificare prossimo payload di completamento
-
+  ---- se avvio con payload input definire attributo chiave che identifica univocamente l'istanza di processo (key per assertion puntuale)
+  ---- se avvio senza payload input verificare se/come un attributo può diventare key univoca per assertion puntuale
+  --- completamento task
+  ---- logica e valori di completamento generati da codice custom
+  
 
 - assert manager
 -- definire template
