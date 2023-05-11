@@ -1,13 +1,13 @@
 #=============================
 # import section, add what you need
 #=============================
-import random
+import random, json
 
 #=============================
 # the function 'buildPayloadForSubject' must be present in any payload manager
 # it must return a Boolean, True when taskSubjectText match the subjext in a dictionary
 # the default logic is: search as substring
-# reimplement it as from your needs
+# reimplement isMatchingTaskSubject as from your needs
 #=============================
 
 def isMatchingTaskSubject(taskSubjectText, subjectFromUserDictionary):
@@ -15,13 +15,18 @@ def isMatchingTaskSubject(taskSubjectText, subjectFromUserDictionary):
 
 #=============================
 # the function 'buildPayloadForSubject' must be present in any payload manager
+# input parameters:
+#   text: str (subject text from Task)
+#   preExistPayload: dict = None (optional: data of Task)
+#   unitTestCreateIndex: int = None (used only in unit test scenario for "Start-" subjects: process instance counter, from zero to BAW_PROCESS_INSTANCES_MAX)
 # it must return a dict() object with keys
-# jsonObject = your payload in json format
-# thinkTime = your particular think thime for the subject in input; if the returned value is -1 the global think thime will be used
-# reimplement it as from your needs
+#   jsonObject = your payload in json format
+#   thinkTime = your ad hoc think thime for the subject in input; if the returned value is -1 the global think thime will be used
+#
+# reimplement buildPayloadForSubject as from your needs
 #=============================
 
-def buildPayloadForSubject(text, preExistPayload = None):
+def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCreateIndex: int = None):
     retObject = dict()
     retObject["jsonObject"] = {}
     retObject["thinkTime"] = -1

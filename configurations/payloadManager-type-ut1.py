@@ -45,37 +45,97 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
     task key: 'Unit Test Evaluator'
     task key: 'Unit Test Approver'
     """
+
+    UT_SCENARIO_1 : int = 0
+    UT_SCENARIO_2 : int = 1
+    UT_SCENARIO_3 : int = 2
+
+    #-------------------------------------------------
     if text.find('Start-VUSUnitTestExample1') != -1:
 
-        print("unitTestCreateIndex", unitTestCreateIndex)
+        # print("unitTestCreateIndex", unitTestCreateIndex)
 
         d = newUTExample1StartData()
-        d['name'] = 'John'
-        d['counter'] = 1
+
+        # Scenarios, with up to 3 instances
+        if unitTestCreateIndex == UT_SCENARIO_1:
+            d['name'] = 'John'
+            d['counter'] = UT_SCENARIO_1
+
+        elif unitTestCreateIndex == UT_SCENARIO_2:
+            d['name'] = 'Mary'
+            d['counter'] = UT_SCENARIO_2
+
+        elif unitTestCreateIndex == UT_SCENARIO_3:
+            d['name'] = 'Hugo'
+            d['counter'] = UT_SCENARIO_3
+        else:
+            raise Exception("Scenario error")
+
         retObject["jsonObject"] = {"inputData": d}
 
+    #-------------------------------------------------
     if text.find('Unit Test Evaluator') != -1:
 
         if preExistPayload != None:
-            #print('Unit Test Evaluator')
-            #print(json.dumps(preExistPayload, indent=2))
+            print("Unit Test Evaluator", json.dumps(preExistPayload, indent=2))
 
             isReview = preExistPayload["reviewForm"]
             evalForm = preExistPayload["evaluationForm"]
-            evalForm["vote"] = 10
+            data = evalForm["data"]
 
-            #print(json.dumps(evalForm, indent=2))
+            rndVote: int = 0
+            # Scenarios
+            if data["counter"] == UT_SCENARIO_1:            
+                if isReview:
+                    # assertion expects: Promoted with vote 6
+                    rndVote = 6
+                else:
+                    rndVote = random.randint(0, 10)
+
+            if data["counter"] == UT_SCENARIO_2:            
+                if isReview:
+                    raise Exception("Scenario error, cannot be less tahn 6")
+                else:
+                    rndVote = random.randint(6, 10)
+
+            if data["counter"] == UT_SCENARIO_3:            
+                if isReview:
+                    # assertion expects: Not promoted with vote less than 6
+                    rndVote = random.randint(0, 5)
+                else:
+                    rndVote = random.randint(0, 3)
+            
+            evalForm["vote"] = rndVote
+
             retObject["jsonObject"] = {"evaluationForm": evalForm}
 
+            print("Evaluator", json.dumps(retObject, indent=2))
+        else:
+            raise Exception("Scenario error")
+
+    #-------------------------------------------------
     if text.find('Unit Test Approver') != -1:
 
         if preExistPayload != None:
-            #print('Unit Test Approver')
-            #print(json.dumps(preExistPayload, indent=2))
+            print("Unit Test Approver", json.dumps(preExistPayload, indent=2))
 
             evalForm = preExistPayload["evaluationForm"]
 
-            #print(json.dumps(evalForm, indent=2))
-            retObject["jsonObject"] = {"evaluationForm": evalForm, "reviewForm":False, "promoteRequest":True} 
+            mustReview: bool = False
+            promoteStudent: bool = False
+            if preExistPayload["reviewForm"] == False:
+                if evalForm["vote"] < 6:
+                    mustReview = True
+                else:
+                    promoteStudent = True
+            else:
+                if evalForm["vote"] >= 6:
+                    promoteStudent = True
+
+            retObject["jsonObject"] = {"evaluationForm": evalForm, "reviewForm":mustReview, "promoteRequest":promoteStudent} 
+            print("Approver", json.dumps(retObject, indent=2))
+        else:
+            raise Exception("Scenario error")
 
     return retObject
