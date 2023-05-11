@@ -1,44 +1,22 @@
 # ==================================
-# Python code for data model objects
-# Application [VirtualUsersSandbox] Acronym [VUS] Snapshot [] Tip [True]
+# Python code for payload manager
+# Application [VirtualUsersSandbox] Acronym [VUS] Snapshot [] Tip [true]
+# Application data model generated in file: ./configurations/payloadManager_VirtualUsersSandbox_VUS_tip_DataModel.py
 # ==================================
-
-#==========================
-# Create AuthorizationData json object
-def newAuthorizationData():
-    return {"authorized": False, "comments": "", "review": False}
-
-
-#==========================
-# Create CCTRData json object
-def newCCTRData():
-    return {"newCounter": 0, "requestId": ""}
-
-
-#==========================
-# Create ExampleOfComplexTypesReferences json object
-# 'authorizationData' of type AuthorizationData
-# 'cctrData' of type CCTRData
-def newExampleOfComplexTypesReferences():
-    return {"authorizationData": {}, "cctrData": {}}
-
-
-#==========================
-# Create ExampleOfTypes json object
-def newExampleOfTypes():
-    return {"attrBool": False, "attrDate": None, "attrDecimal": 0.0, "attrInt": 0, "attrListBool": [], "attrListDate": [], "attrListDecimal": [], "attrListInt": [], "attrListText": [], "attrListTime": [], "attrText": "", "attrTime": None}
-
 
 #=============================
 # import section, add what you need
 #=============================
-import random
+import random, json
+
+# !!! import your-data-model, example: 
+# from configurations import payloadManager_VirtualUsersSandbox_VUS_tip_DataModel as myDataModel
 
 #=============================
-# the function 'isMatchingTaskSubject' must be present in any payload manager
+# the function 'buildPayloadForSubject' must be present in any payload manager
 # it must return a Boolean, True when taskSubjectText match the subjext in a dictionary
 # the default logic is: search as substring
-# reimplement it as from your needs
+# reimplement isMatchingTaskSubject as from your needs
 #=============================
 
 def isMatchingTaskSubject(taskSubjectText, subjectFromUserDictionary):
@@ -46,13 +24,18 @@ def isMatchingTaskSubject(taskSubjectText, subjectFromUserDictionary):
 
 #=============================
 # the function 'buildPayloadForSubject' must be present in any payload manager
+# input parameters:
+#   text: str (subject text from Task)
+#   preExistPayload: dict = None (optional: data of Task)
+#   unitTestCreateIndex: int = None (used only in unit test scenario for "Start-" subjects: process instance counter, from zero to BAW_PROCESS_INSTANCES_MAX)
 # it must return a dict() object with keys
-# jsonObject = your payload in json format
-# thinkTime = your particular think thime for the subject in input; if the returned value is -1 the global think thime will be used
-# reimplement it as from your needs
+#   jsonObject = your payload in json format
+#   thinkTime = your ad hoc think thime for the subject in input; if the returned value is -1 the global think thime will be used
+#
+# reimplement buildPayloadForSubject as from your needs
 #=============================
 
-def buildPayloadForSubject(text, preExistPayload = None):
+def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCreateIndex: int = None):
     retObject = dict()
     retObject["jsonObject"] = {}
     retObject["thinkTime"] = -1

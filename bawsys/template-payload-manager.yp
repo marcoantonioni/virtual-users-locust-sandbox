@@ -3,6 +3,9 @@
 #=============================
 import random, json
 
+# !!! import your-data-model, example: 
+# from configurations import payloadManager_VirtualUsersSandbox_VUS_tip_DataModel as myDataModel
+
 #=============================
 # the function 'buildPayloadForSubject' must be present in any payload manager
 # it must return a Boolean, True when taskSubjectText match the subjext in a dictionary
