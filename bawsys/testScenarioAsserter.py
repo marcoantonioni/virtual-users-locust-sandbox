@@ -15,7 +15,7 @@ $	                                object root selector
 [?address.city = "Boston"]          for exact matches
 [?description.text =~ "house"]      for containing values
 
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-------------------------------------------------------------------------------------------------
 
 EXPRESSION	                EXAMPLE	                        RESULT
 $	                        $	                            Selects the root object
@@ -27,6 +27,21 @@ $	                        $	                            Selects the root object
 [start:end]	                $.movies[0].cast[:2]	        Similar to Python list slicing syntax. Return child elements at positions start through end
 @	                        See below	                    Reference to current object in filtering expressions
 [?(filter)]	                $.movies[?(@.year < 1990)]	    Apply a filter to selected element. Here: Returns all movies where year < 1990
+
+
+-------------------------------------------------------------------------------------------------
+? : Question mark, marks the beginning of an expression. Syntax used [? (Expression)]
+@ : At symbol, signifies the current node being processed. Syntax used $.books[?(@.price > 100)]
+
+Operator	Description
+==	        left is equal to right (note that 1 is not equal to '1').
+!=	        left is not equal to right.
+<	        left is less than right.
+<=	        left is less or equal to right.
+>	        left is greater than right.
+>=	        left is greater than or equal to right.
+&&          combine predicates in AND
+||          combine predicates in OR
 
 """
 
