@@ -18,6 +18,9 @@ def executeAsserts(asserter: scenAssert.ScenarioAsserter, listOfInstances):
     asserter.assertGreaterThan(listOfInstances, "variables.evaluationForm.vote", 0)
     asserter.assertGreaterEqualThan(listOfInstances, "variables.evaluationForm.vote", 0)
 
+    asserter.assertNull(listOfInstances, "variables.NONEXISTENTVAR")
+    asserter.assertNotNull(listOfInstances, "variables.promoteRequest")
+
     #asserter.assertItemsCountEquals(listOfInstances, 2)
     #asserter.assertEqual(listOfInstances, "variables.promoteRequest", "false")
 

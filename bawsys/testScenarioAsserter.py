@@ -48,6 +48,14 @@ class ScenarioAsserter:
     #====================================
 
     """
+    Returns a list of items where variable exists
+    """
+    def _queryGetVariable(self, items, _variable: str):
+        strQuery = "$[?"+_variable+"]"
+        jpQuery = parse(strQuery)
+        return [match.value for match in jpQuery.find(items)]
+
+    """
     Returns a list of items where values matches
     """
     def _queryGetMatchingRecords(self, items, _variable: str, _operator: str, _value: str):
@@ -157,4 +165,18 @@ class ScenarioAsserter:
         _asserted = len(matches) == totItems
         if not _asserted:
             self.failures.append([ScenarioAsserter.assertLesserEqualThan.__name__, var, val])
+
+    def assertNull(self, items, var: str):
+        #totItems = len(items)
+        matches = self._queryGetVariable(items, var)
+        _asserted = len(matches) == 0
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertNull.__name__, var])
+
+    def assertNotNull(self, items, var: str):
+        totItems = len(items)
+        matches = self._queryGetVariable(items, var)
+        _asserted = len(matches) == totItems
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertNotNull.__name__, var])
 
