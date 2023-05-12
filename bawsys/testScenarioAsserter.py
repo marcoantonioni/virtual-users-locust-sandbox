@@ -10,12 +10,55 @@ class ScenarioAsserter:
         self.failures = []
 
 
-    def _queryGetMatchingRecords(self, listOfInstances, _variable: str, _operator: str, _value: str):
+    #====================================
+    # Utilities
+    #====================================
+
+    """
+    Returns a list of items where values matches
+    """
+    def _queryGetMatchingRecords(self, items, _variable: str, _operator: str, _value: str):
         strQuery = "$[?"+_variable+" "+_operator+" " + _value + "]"
+        jpQuery = parse(strQuery)
+        return [match.value for match in jpQuery.find(items)]
+
+    """
+    Returns a list of process instances in the state defined by the input variable
+    """
+    def _queryGetAllInstancesByState(self, listOfInstances, state: str):
+        strQuery = "$[?(@.state=='"+state+"')]"
+        jpQuery = parse(strQuery)
+        return [match.value for match in jpQuery.find(listOfInstances)]
+
+    """
+    Returns a list of variables of all processes in the state defined by the input variable
+    """
+    def _queryGetVariablesFromAllInstancesByState(self, listOfInstances, state: str):
+        strQuery = "$[?(@.state=='"+state+"')].variables"
+        jpQuery = parse(strQuery)
+        return [match.value for match in jpQuery.find(listOfInstances)]
+
+    """
+    Returns a list of process instances where values matches
+    """
+    def _queryGetGetAllInstancesByMatchingValue(self, listOfInstances, _variable: str, _operator: str, _value: str):
+        strQuery = "$[?variables."+_variable+" "+_operator+" " + _value + "]"
+        jpQuery = parse(strQuery)
+        return [match.value for match in jpQuery.find(listOfInstances)]
+
+    """
+    Returns a list of variables where values matches
+    """
+    def _queryGetVariablesFromAllMatchingValue(self, listOfInstances, _variable: str, _operator: str, _value: str):
+        strQuery = "$[?variables."+_variable+" "+_operator+" " + _value + "].variables"
         jpQuery = parse(strQuery)
         return [match.value for match in jpQuery.find(listOfInstances)]
 
 
+    #====================================
+    # Assertions
+    #====================================
+    
     def assertItemsCountEquals(self, items, count: int):
         _asserted = len(items) == count
         if not _asserted:
