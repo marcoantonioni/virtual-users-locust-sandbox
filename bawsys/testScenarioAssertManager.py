@@ -25,16 +25,23 @@ class ScenarioAssertsManager:
                 self.dynamicAM.executeAsserts(asserter, listOfInstances)
 
 
-                #--------------------------
-                # chiamata automatica da interno
+                logging.info("Now running unit tests...")
                 
                 if len(asserter.failures) == 0:
-                    print("\nTEST OK")
+                    logging.info("Unit tests completed successfully !")
                 else:
-                    print("\nTEST FAILED\n\nItems", len(listOfInstances), "\n", 
+                    print("\nUnit tests failed !!!\n\n",
+                            "==============================\n",
+                            "Process instances analyzed:", 
+                            len(listOfInstances), "\n", 
+                            "==============================\n",
                             json.dumps(listOfInstances, indent=2), 
-                            "\n\nfailures", len(asserter.failures), "\n", 
-                            json.dumps(asserter.failures, indent=2))
+                            "\n\n",
+                            "==============================\n",
+                            "Failed assertions:", 
+                            len(asserter.failures), "\n", 
+                            "==============================\n",
+                            json.dumps(asserter.failures, indent=2),"\n\n")
 
                 executed = True                
         return executed

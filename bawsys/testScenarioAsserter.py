@@ -1,3 +1,36 @@
+#---------------------------------------------------------
+# https://scrapfly.io/blog/parse-json-jsonpath-python/
+# https://blogboard.io/blog/knowledge/jsonpath-python/
+
+"""
+operator	                        function
+$	                                object root selector
+@ or this	                        current object selector
+..	                                recursive descendant selector
+*	                                wildcard, selects any key of an object or index of an array
+[]	                                subscript operator
+[start:end:step]	                array slice operator
+[?<predicate>] or (?<predicate>)	filter operator where predicate is some evaluation rule like [?price>20], more examples:
+[?price > 20 & price < 10]          multiple
+[?address.city = "Boston"]          for exact matches
+[?description.text =~ "house"]      for containing values
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+EXPRESSION	                EXAMPLE	                        RESULT
+$	                        $	                            Selects the root object
+.property or ['property']	$.movies or $['movies']	        Returns a child element or property by name
+*	                        $.movies[*] or $.movies[0].*	Wildcard. .* returns all fields of an element, [*] selects all members of an array
+..	                        $..year	                        Recursive descent - return all values of the given property in the structure. Here: returns all years from all movies.
+[index]	                    $.movies[0]	                    Returns the child element at index
+[0,1]	                    $.movies[0].cast[0,1]	        Returns the first and second child elements
+[start:end]	                $.movies[0].cast[:2]	        Similar to Python list slicing syntax. Return child elements at positions start through end
+@	                        See below	                    Reference to current object in filtering expressions
+[?(filter)]	                $.movies[?(@.year < 1990)]	    Apply a filter to selected element. Here: Returns all movies where year < 1990
+
+"""
+
+
 import json, logging
 from jsonpath_ng.ext import parse
 from bawsys import loadEnvironment as bpmEnv
@@ -64,10 +97,64 @@ class ScenarioAsserter:
         if not _asserted:
             self.failures.append([ScenarioAsserter.assertItemsCountEquals.__name__, count])
 
+    def assertItemsCountNotEquals(self, items, count: int):
+        _asserted = len(items) != count
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertItemsCountNotEquals.__name__, count])
+
     def assertEqual(self, items, var: str, val: str):
         totItems = len(items)
         matches = self._queryGetMatchingRecords(items, var, "=", val)
         _asserted = len(matches) == totItems
         if not _asserted:
             self.failures.append([ScenarioAsserter.assertEqual.__name__, var, val])
+
+    def assertEqual(self, items, var: str, val: int):
+        totItems = len(items)
+        matches = self._queryGetMatchingRecords(items, var, "=", str(val))
+        _asserted = len(matches) == totItems
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertEqual.__name__, var, val])
+
+    def assertNotEqual(self, items, var: str, val: str):
+        totItems = len(items)
+        matches = self._queryGetMatchingRecords(items, var, "!=", val)
+        _asserted = len(matches) == totItems
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertNotEqual.__name__, var, val])
+
+    def assertNotEqual(self, items, var: str, val: int):
+        totItems = len(items)
+        matches = self._queryGetMatchingRecords(items, var, "!=", str(val))
+        _asserted = len(matches) == totItems
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertNotEqual.__name__, var, val])
+
+    def assertGreaterThan(self, items, var: str, val: int):
+        totItems = len(items)
+        matches = self._queryGetMatchingRecords(items, var, ">", str(val))
+        _asserted = len(matches) == totItems
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertGreaterThan.__name__, var, val])
+
+    def assertGreaterEqualThan(self, items, var: str, val: int):
+        totItems = len(items)
+        matches = self._queryGetMatchingRecords(items, var, ">=", str(val))
+        _asserted = len(matches) == totItems
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertGreaterEqualThan.__name__, var, val])
+
+    def assertLesserThan(self, items, var: str, val: int):
+        totItems = len(items)
+        matches = self._queryGetMatchingRecords(items, var, "<", str(val))
+        _asserted = len(matches) == totItems
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertLesserThan.__name__, var, val])
+
+    def assertLesserEqualThan(self, items, var: str, val: int):
+        totItems = len(items)
+        matches = self._queryGetMatchingRecords(items, var, "<=", str(val))
+        _asserted = len(matches) == totItems
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertLesserEqualThan.__name__, var, val])
 
