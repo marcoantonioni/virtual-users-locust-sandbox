@@ -180,3 +180,16 @@ class ScenarioAsserter:
         if not _asserted:
             self.failures.append([ScenarioAsserter.assertNotNull.__name__, var])
 
+    def assertTrue(self, items, var: str):
+        totItems = len(items)
+        matches = self._queryGetMatchingRecords(items, var, "=", "true")
+        _asserted = len(matches) == totItems
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertTrue.__name__, var, "true"])
+
+    def assertFalse(self, items, var: str):
+        totItems = len(items)
+        matches = self._queryGetMatchingRecords(items, var, "=", "false")
+        _asserted = len(matches) == totItems
+        if not _asserted:
+            self.failures.append([ScenarioAsserter.assertFalse.__name__, var, "false"])

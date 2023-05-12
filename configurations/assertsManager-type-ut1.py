@@ -10,6 +10,8 @@ def executeAsserts(asserter: scenAssert.ScenarioAsserter, listOfInstances):
     asserter.assertItemsCountNotEquals(listOfInstances, 2)
     asserter.assertEqual(listOfInstances, "variables.promoteRequest", "true")
     asserter.assertNotEqual(listOfInstances, "variables.promoteRequest", "false")
+    asserter.assertTrue(listOfInstances, "variables.promoteRequest")
+    asserter.assertFalse(listOfInstances, "variables.reviewForm")
 
     asserter.assertEqual(listOfInstances, "variables.evaluationForm.vote", 6)
     asserter.assertNotEqual(listOfInstances, "variables.evaluationForm.vote", 60)
