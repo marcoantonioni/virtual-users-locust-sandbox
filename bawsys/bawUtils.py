@@ -74,13 +74,16 @@ def _writeOutScenarioInstances(listOfInstances, _fullPathNameOutput, startedAtIS
         print()
         print(json.dumps(instances, indent=2))
 
-def getDynamicModuleFormatName(pathName: str):
-    pathName = pathName.replace(".py", "")
-    pathName = pathName.replace("./", "")
-    pathName = pathName.replace("/", ".")
-    return pathName
+def import_module(fname, package=None):
+    spec = importlib.util.spec_from_file_location("module.name", fname)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["module.name"] = mod
+    spec.loader.exec_module(mod)    
+    return mod
 
+"""
 def import_module(name, package=None):
+    print(name)
     absolute_name = importlib.util.resolve_name(name, package)
     try:
         return sys.modules[absolute_name]
@@ -105,6 +108,8 @@ def import_module(name, package=None):
     if path is not None:
         setattr(parent_module, child_name, module)
     return module
+"""
+
 
 def setupAssertsManagerModule(bpmEnvironment):
     bpmDynamicModuleAsserts = None
@@ -113,6 +118,5 @@ def setupAssertsManagerModule(bpmEnvironment):
         if strRunAssertsMagr.lower() == "true":
             dynamicAM = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_ASSERTS_MANAGER)
             if dynamicAM != None and dynamicAM != "":
-                moduleName = getDynamicModuleFormatName(dynamicAM)
-                bpmDynamicModuleAsserts = import_module(moduleName)
+                bpmDynamicModuleAsserts = import_module(dynamicAM)
     return bpmDynamicModuleAsserts

@@ -28,9 +28,13 @@ def createProcessInstances(argv):
             bpmEnvironment.loadEnvironment(_fullPathBawEnv)
             bpmEnvironment.dumpValues()
 
-            dynamicPLM : str = bpmEnvironment.getDynamicModuleFormatName()
+            dynamicPLM : str = bpmEnvironment.getValue(bpmEnvironment.keyBAW_PAYLOAD_MANAGER)
             global bpmDynamicModule 
-            bpmDynamicModule = bawUtils.import_module(dynamicPLM)
+            try:
+                bpmDynamicModule = bawUtils.import_module(dynamicPLM)
+            except (ImportError, ModuleNotFoundError):
+                print("Error module not found ", dynamicPLM)
+                sys.exit()
 
             bpmPIM.BpmProcessInstanceManager._createProcessInstancesBatch(bpmEnvironment, bpmExposedProcessManager, bpmProcessInstanceManager, bpmDynamicModule, maxInstances, isLog=True)
 

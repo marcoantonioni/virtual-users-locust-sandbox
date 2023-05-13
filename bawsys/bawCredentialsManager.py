@@ -39,7 +39,7 @@ class CredentialsManager:
             self.userStrategyTwins = True
 
         with open(fullPathName,'r') as data:
-            for item in csv.DictReader(data):
+            for item in csv.DictReader(data, skipinitialspace=True):
                 userName = bawSys.preparePropertyItem(item, 'NAME')
                 if userName == None or userName.startswith('#'):
                     continue

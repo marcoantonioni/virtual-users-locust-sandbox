@@ -93,6 +93,21 @@ sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT
 
 
 #=================================================================================
+# Preparazione struttura folder scenario
+
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/code
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/outputdata
+
+# tool folder
+cd /home/marco/locust/studio/virtual-users-locust-sandbox/
+
+python ./generatePayloadTemplates.py -e /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/VirtualUsersSandbox-tip-env.properties -o /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/code
+
+locust --config=/home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/VirtualUsersSandbox-tip.conf
+
+
+#=================================================================================
 PFS Fedeated OpenAPI
 https://cpd-cp4ba.itzroks-120000c7nk-ww08nj-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-gb.containers.appdomain.cloud/pfs/rest/bpm/federated/openapi/index.html
 

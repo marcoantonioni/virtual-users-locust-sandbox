@@ -20,8 +20,12 @@ def testAssertsManager(argv):
             
             dynamicAM = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_ASSERTS_MANAGER)
             if dynamicAM != None and dynamicAM != "":
-                moduleName = bawUtils.getDynamicModuleFormatName(dynamicAM)
-                bpmDynamicModuleAsserts = bawUtils.import_module(moduleName)
+                try:
+                    bpmDynamicModuleAsserts = bawUtils.import_module(dynamicAM)
+                except (ImportError, ModuleNotFoundError):
+                    logging.error("Error module not found [%s]", dynamicAM)
+                    sys.exit()
+
                 assertsMgr : asserts.ScenarioAssertsManager = asserts.ScenarioAssertsManager(bpmEnvironment, bpmDynamicModuleAsserts)
                 assertsMgr.executeAsserts()
 

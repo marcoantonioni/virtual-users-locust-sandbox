@@ -107,7 +107,7 @@ def generatePayloadTemplates(argv):
                     okToWrite = True
                     if _forceOverwrite == None:
                         if filesExists([_outputNameDataModel, _outputPayloadManager, _outputNameSchema]):
-                            print("Files exixts, use -f to force overwrite")
+                            print("ERROR, files already exixts ! Use -f to force overwrite")
                             sys.exit()
 
                     if okToWrite:

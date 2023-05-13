@@ -74,7 +74,7 @@ class GroupsTeamsManager:
     def _readGroupsArchive(self, fullPathName : str):
         # legge file e crea oggetto lista gruppi
         with open(fullPathName,'r') as data:
-            for item in csv.DictReader(data):
+            for item in csv.DictReader(data, skipinitialspace=True):
                 groupName = bawSys.preparePropertyItem(item, 'GROUP')
                 userName = bawSys.preparePropertyItem(item, 'USER')
 
@@ -190,7 +190,7 @@ class GroupsTeamsManager:
     def _readTeamsArchive(self, fullPathName : str):
         # legge file e crea oggetto lista gruppi
         with open(fullPathName,'r') as data:
-            for item in csv.DictReader(data):
+            for item in csv.DictReader(data, skipinitialspace=True):
                 teamName = bawSys.preparePropertyItem(item, 'TEAM')
                 groupName = bawSys.preparePropertyItem(item, 'GROUP')
                 userName = bawSys.preparePropertyItem(item, 'USER')

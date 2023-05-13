@@ -58,11 +58,12 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     verbose = False
     spawnedUsers = 0
 
-
     def __init__(self, environment):
         super().__init__(environment)
 
-        self.tasks = []
+        # to awoid warnings during startup, _dummyTask removed by bawTasks.SequenceOfBpmTasks
+        self.tasks = [self._dummyTask]
+
         strRunMode = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_RUN_MODE)
         if strRunMode == None or strRunMode == "" or strRunMode.lower() == "load_test":
             self.tasks = [ bpmTask.SequenceOfBpmTasks ]
@@ -76,6 +77,10 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
             environment.runner.quit()        
         else:
             IBMBusinessAutomationWorkflowUser.spawnedUsers += 1
+
+    @task
+    def _dummyTask(self):
+        logging.warning("_dummyTask")
 
     #----------------------------------------
     # user functions
@@ -183,11 +188,13 @@ def _(parser):
 
 @events.test_start.add_listener
 def on_test_start(environment, **kwargs):
-    logging.info("A BPM test is starting, BAW_ENV[%s] BAW_USERS[%s]", environment.parsed_options.BAW_ENV, environment.parsed_options.BAW_USERS)
+    logging.info("A 'BAW Virtual User Tool' run is starting, configured with")
+    logging.info("  BAW_ENV [%s]", environment.parsed_options.BAW_ENV)
+    logging.info("  BAW_USERS [%s]", environment.parsed_options.BAW_USERS)
 
 @events.test_stop.add_listener
 def on_test_stop(environment, **kwargs):
-    logging.info("A BPM test is ending")
+    logging.info("A BAW test is ending")
 
 @events.init.add_listener
 def on_locust_init(environment, **kwargs):
@@ -236,9 +243,14 @@ def on_locust_init(environment, **kwargs):
                 
             logging.info("***********************")
 
-            dynamicPLM : str = bawUtils.getDynamicModuleFormatName(bpmEnvironment.getValue(bpmEnvironment.keyBAW_PAYLOAD_MANAGER))
+            dynamicPLM : str = bpmEnvironment.getValue(bpmEnvironment.keyBAW_PAYLOAD_MANAGER)
             global bpmDynamicModule 
-            bpmDynamicModule = bawUtils.import_module(dynamicPLM)            
+            try:
+                bpmDynamicModule = bawUtils.import_module(dynamicPLM)
+            except (ImportError, ModuleNotFoundError, AttributeError):
+                logging.error("ERROR module not found [%s]", dynamicPLM)
+                environment.runner.quit()
+
             bpmProcessInstanceManager.setupMaxInstances(bpmEnvironment)
 
             # only run this on master & standalone
