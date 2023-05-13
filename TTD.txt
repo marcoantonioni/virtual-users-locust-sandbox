@@ -1,5 +1,4 @@
 
-- gestire errore e shutdown se moduli codice non trobvato
 
 ??? Riprovare con seconda demo UnitTest
 - verificare come aggiornare utenti in Groups per app appena creata (restart ? api rest ?)
@@ -9,6 +8,7 @@
 - assert manager
 -- definire template
 -- definire esempio
+-- aggiungere generazione modulo python
 
 - rivedere nomi processi app test
 
