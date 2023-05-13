@@ -1,4 +1,4 @@
-from bawsys import loadEnvironment as bpmEnv
+from bawsys import bawEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys
 import requests
 from base64 import b64encode

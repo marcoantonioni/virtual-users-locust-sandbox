@@ -8,7 +8,6 @@
 - assert manager
 -- definire template
 -- definire esempio
--- definire logica comparazione attributi usando query jsonpath
 
 - rivedere nomi processi app test
 

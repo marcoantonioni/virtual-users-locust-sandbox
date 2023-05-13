@@ -1,6 +1,6 @@
-import bawsys.commandLineManager as clpm
-import bawsys.processInstanceManager as bawPIM
-from bawsys import loadEnvironment as bawEnv
+import bawsys.bawCommandLineManager as clpm
+import bawsys.bawProcessInstanceManager as bawPIM
+from bawsys import bawEnvironment as bawEnv
 import sys, logging
 
 #----------------------------------

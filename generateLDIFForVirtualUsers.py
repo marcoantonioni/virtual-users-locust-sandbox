@@ -1,6 +1,6 @@
 import sys, logging
-import bawsys.commandLineManager as clpm
-from bawsys import loadLdiffConfiguration as bawLdif
+import bawsys.bawCommandLineManager as clpm
+from bawsys import bawLdiffConfiguration as bawLdif
 
 class LdifUser:
     def __init__(self, userName: str, password: str, domainName: str, domainNameSuffix: str, uidNumber: int, gidNumber: int):

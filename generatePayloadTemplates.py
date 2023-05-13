@@ -1,7 +1,7 @@
-import bawsys.commandLineManager as clpm
-from bawsys import loadEnvironment as bpmEnv
+import bawsys.bawCommandLineManager as clpm
+from bawsys import bawEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys
-from bawsys import templateManager as templMgr
+from bawsys import bawTemplateManager as templMgr
 import requests, json, sys, logging, os
 from base64 import b64encode
 from bawsys import bawUtils as bawUtils 

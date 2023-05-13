@@ -1,8 +1,8 @@
 import requests, json, logging, sys
-import bawsys.loadEnvironment as bpmEnv
+import bawsys.bawEnvironment as bpmEnv
 import bawsys.bawSystem as bawSys
 import bawsys.bawUtils as bawUtils
-import bawsys.exposedProcessManager as bpmExpProcs
+import bawsys.bawExposedProcessManager as bpmExpProcs
 
 class DataTypeTemplate:
     def __init__(self, dtName: str, dtId: str, snapId: str, appId: str, properties):

@@ -1,4 +1,4 @@
-import bawsys.testScenarioSqliteExport as exporter
+import bawsys.bawUniTestScenarioSqliteExport as exporter
 import json
 
 exp = exporter.TestScenarioSqliteExporter("/home/marco/locust/studio/virtual-users-locust-sandbox/outputdata/unittest-scenario1-sqlite.db")

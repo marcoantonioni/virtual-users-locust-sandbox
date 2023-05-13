@@ -6,18 +6,18 @@ from json import JSONDecodeError
 import logging, sys
 from datetime import datetime
 import bawsys.bawTasks as bpmTask
-import bawsys.processInstanceManager as bpmPIM
+import bawsys.bawProcessInstanceManager as bpmPIM
 
-import bawsys.loadEnvironment as bawEnv
-import bawsys.loadUserTaskSubjects as bpmUTS
-import bawsys.loadCredentials as bpmCreds
-import bawsys.exposedProcessManager as bpmExpProcs
-import bawsys.processInstanceManager as bawPIM
+import bawsys.bawEnvironment as bawEnv
+import bawsys.bawUserTaskSubjects as bpmUTS
+import bawsys.bawCredentialsManager as bpmCreds
+import bawsys.bawExposedProcessManager as bpmExpProcs
+import bawsys.bawProcessInstanceManager as bawPIM
 import bawsys.bawUtils as bawUtils
 from bawsys import bawSystem as bawSys
-from bawsys import testScenarioManager as bawUnitTests 
-from bawsys import testScenarioSqliteExport as sqliteExporter
-from bawsys import testScenarioAssertManager as scenarioAsserts
+from bawsys import bawUniTestScenarioManager as bawUnitTests 
+from bawsys import bawUniTestScenarioSqliteExport as sqliteExporter
+from bawsys import bawUniTestScenarioAssertManager as scenarioAsserts
 
 import gevent, signal, time
 from locust import events

@@ -1,6 +1,6 @@
-import bawsys.testScenarioAssertManager as asserts
-import bawsys.commandLineManager as clpm
-from bawsys import loadEnvironment as bawEnv
+import bawsys.bawUniTestScenarioAssertManager as asserts
+import bawsys.bawCommandLineManager as clpm
+from bawsys import bawEnvironment as bawEnv
 from bawsys import bawUtils as bawUtils
 import sys, logging
 

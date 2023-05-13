@@ -1,6 +1,6 @@
 
 import logging,sys,csv,random
-import bawsys.loadEnvironment as bpmEnv
+import bawsys.bawEnvironment as bpmEnv
 import bawsys.bawSystem as bawSys
 
 

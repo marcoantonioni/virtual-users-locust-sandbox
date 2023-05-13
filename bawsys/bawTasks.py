@@ -3,13 +3,13 @@
 import logging, json, sys
 from datetime import datetime
 from locust import task, tag, SequentialTaskSet
-import bawsys.processInstanceManager as bawPIM
-from bawsys.processInstanceManager import BpmProcessInstance as bpmPI
-from bawsys import loadEnvironment as bpmEnv
+import bawsys.bawProcessInstanceManager as bawPIM
+from bawsys.bawProcessInstanceManager import BpmProcessInstance as bpmPI
+from bawsys import bawEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys 
 from bawsys import bawRestResponseManager as responseMgr 
 from bawsys import bawUtils as bawUtils 
-from bawsys import testScenarioManager as bawTSM
+from bawsys import bawUniTestScenarioManager as bawTSM
 from requests.cookies import cookiejar_from_dict
 
 class SequenceOfBpmTasks(SequentialTaskSet):

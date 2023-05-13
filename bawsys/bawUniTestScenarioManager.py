@@ -1,9 +1,9 @@
-import bawsys.loadEnvironment as bawEnv
+import bawsys.bawEnvironment as bawEnv
 import bawsys.bawSystem as bawSys
 import bawsys.bawUtils as bawUtils
-from bawsys.processInstanceManager import BpmProcessInstance
-from bawsys.processInstanceManager import BpmProcessInstanceManager
-from bawsys.processInstanceManager import BpmExecProcessInstance
+from bawsys.bawProcessInstanceManager import BpmProcessInstance
+from bawsys.bawProcessInstanceManager import BpmProcessInstanceManager
+from bawsys.bawProcessInstanceManager import BpmExecProcessInstance
 import logging
 from datetime import datetime
 

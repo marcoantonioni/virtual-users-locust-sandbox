@@ -1,6 +1,6 @@
-import bawsys.commandLineManager as clpm
-import bawsys.exposedProcessManager as bpmExpProcs
-from bawsys import loadEnvironment as bpmEnv
+import bawsys.bawCommandLineManager as clpm
+import bawsys.bawExposedProcessManager as bpmExpProcs
+from bawsys import bawEnvironment as bpmEnv
 from bawsys import bawSystem as bawSys
 import requests, json, sys, logging, csv
 from json import JSONDecodeError

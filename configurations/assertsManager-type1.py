@@ -2,7 +2,7 @@ import json, logging
 
 from jsonpath_ng.ext import parse
 
-from bawsys import testScenarioAsserter as scenAssert
+from bawsys import bawUniTestScenarioAsserter as scenAssert
 
 
 

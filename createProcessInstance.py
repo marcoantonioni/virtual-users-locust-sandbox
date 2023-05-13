@@ -1,9 +1,9 @@
 import logging, sys, json, random, time
-from bawsys import loadEnvironment as bpmEnv
-import bawsys.commandLineManager as clpm
-import bawsys.exposedProcessManager as bpmExpProcs
+from bawsys import bawEnvironment as bpmEnv
+import bawsys.bawCommandLineManager as clpm
+import bawsys.bawExposedProcessManager as bpmExpProcs
 from bawsys import bawSystem as bawSys
-import bawsys.processInstanceManager as bpmPIM
+import bawsys.bawProcessInstanceManager as bpmPIM
 from base64 import b64encode
 from bawsys import bawUtils as bawUtils 
 

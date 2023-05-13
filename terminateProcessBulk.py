@@ -1,6 +1,6 @@
-import bawsys.bulkProcessOperations as bulkOps
-import bawsys.commandLineManager as clpm
-from bawsys import loadEnvironment as bawEnv
+import bawsys.bawBulkProcessOperations as bulkOps
+import bawsys.bawCommandLineManager as clpm
+from bawsys import bawEnvironment as bawEnv
 import sys, logging
 
 #----------------------------------

@@ -48,7 +48,7 @@ Operator	Description
 
 import json, logging
 from jsonpath_ng.ext import parse
-from bawsys import loadEnvironment as bpmEnv
+from bawsys import bawEnvironment as bpmEnv
 
 class ScenarioAsserter:
 

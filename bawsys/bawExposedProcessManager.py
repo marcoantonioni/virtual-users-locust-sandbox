@@ -1,5 +1,5 @@
 import requests, json, logging, random, sys
-import bawsys.loadEnvironment as bpmEnv
+import bawsys.bawEnvironment as bpmEnv
 import bawsys.bawSystem as bpmSys
 from json import JSONDecodeError
 

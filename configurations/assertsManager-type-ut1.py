@@ -1,5 +1,5 @@
 import logging, json
-from bawsys import testScenarioAsserter as scenAssert
+from bawsys import bawUniTestScenarioAsserter as scenAssert
 
 #=========================================================================
 def executeAsserts(asserter: scenAssert.ScenarioAsserter, listOfInstances):

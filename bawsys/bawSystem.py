@@ -1,7 +1,7 @@
 
 import requests, random, logging, sys, re, base64, json
 from json import JSONDecodeError
-import bawsys.loadEnvironment as bpmEnv
+import bawsys.bawEnvironment as bpmEnv
 from requests.auth import HTTPBasicAuth
 
 #==========================================================================

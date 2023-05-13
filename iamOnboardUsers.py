@@ -1,6 +1,6 @@
-from bawsys import loadEnvironment as bpmEnv
-import bawsys.commandLineManager as clpm
-import bawsys.loadCredentials as creds
+from bawsys import bawEnvironment as bpmEnv
+import bawsys.bawCommandLineManager as clpm
+import bawsys.bawCredentialsManager as creds
 from bawsys import bawSystem as bawSys
 import sys, logging, json
 from json import JSONDecodeError

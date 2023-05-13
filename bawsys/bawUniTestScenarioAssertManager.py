@@ -1,7 +1,7 @@
-from bawsys import loadEnvironment as bpmEnv
+from bawsys import bawEnvironment as bpmEnv
 from bawsys import bawUtils as bawUtils
-from bawsys import testScenarioAsserter as scenAsserter
-from bawsys import testScenarioSqliteExport as sqlite
+from bawsys import bawUniTestScenarioAsserter as scenAsserter
+from bawsys import bawUniTestScenarioSqliteExport as sqlite
 import json, logging
 
 class ScenarioAssertsManager:

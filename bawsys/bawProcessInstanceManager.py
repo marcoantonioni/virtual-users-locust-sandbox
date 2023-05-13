@@ -1,8 +1,8 @@
 import requests, json, logging, random
-import bawsys.loadEnvironment as bpmEnv
+import bawsys.bawEnvironment as bpmEnv
 import bawsys.bawSystem as bawSys
 import bawsys.bawUtils as bawUtils
-import bawsys.exposedProcessManager as bpmExpProcs
+import bawsys.bawExposedProcessManager as bpmExpProcs
 import urllib
 
 requests.packages.urllib3.disable_warnings() 

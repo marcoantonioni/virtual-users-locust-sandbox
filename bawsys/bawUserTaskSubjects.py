@@ -2,7 +2,7 @@
 # test: python ./mytasks/loadUserTaskSubjects.py  | sed "s/'/\"/g" | jq .
 
 import logging, csv, sys, re
-import bawsys.loadEnvironment as bpmEnv
+import bawsys.bawEnvironment as bpmEnv
 import bawsys.bawSystem as bawSys
 
 #--------------------------------------------
