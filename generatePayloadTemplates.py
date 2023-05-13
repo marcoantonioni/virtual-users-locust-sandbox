@@ -34,7 +34,7 @@ def generateOutputFileNames(payloadTemplateMgr: templMgr.PayloadTemplateManager,
     return outNames
 
 def writePayloadManagerTemplate(payloadTemplateMgr, _outputPayloadManager, _outputNameDataModel):
-    templateName = "./bawsys/template-payload-manager.yp"
+    templateName = "./bawsys/TEMPLATE_PAYLOAD_MANAGER.yp"
 
     f1 = open(_outputPayloadManager, 'w')
     f2 = open(templateName, 'r')
