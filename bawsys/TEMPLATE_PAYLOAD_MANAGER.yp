@@ -34,14 +34,14 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
     retObject["jsonObject"] = {}
     retObject["thinkTime"] = -1
 
-    # !!! The following code is an example, remove it if not needed
+    # The following code is an example from demo apps, remove it if not needed
 
     """
     Process: VUSClaimCompleteTwoRoles 
     key: [CCTR]
     task key: 'Compile Request [CCTR]'
     task key: 'Authorize Request [CCTR]'
-    """
+
     if text.find('Start-VUSClaimCompleteTwoRoles') != -1:
         rndVal : int = random.randint(0, 100) + 1
         retObject["jsonObject"] = {'inputData': {'requestId': 'req'+str(rndVal), 'newCounter': rndVal}}
@@ -63,13 +63,14 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
             retObject["jsonObject"] =  {'inputData': {'requestId': 'reqValidated', 'newCounter': rndVal}}
 
         retObject["thinkTime"] = random.randint(0, 5)
+    """
 
     """
     Process: VUSClaimCompleteAuthorize
     key: [CCA]
     task key: 'Compile Request [CCA]'
     task key: 'Authorize Request [CCA]'
-    """
+
     if text.find('Start-VUSClaimCompleteAuthorize') != -1:
         rndVal : int = random.randint(0, 100) + 1
         retObject["jsonObject"] = {'inputData': {'requestId': 'req'+str(rndVal), 'newCounter': rndVal}}
@@ -105,5 +106,6 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
                                         'authorizationData': {'authorized': authorize, 'comments': '', 'review': review}}
 
         retObject["thinkTime"] = random.randint(0, 5)
+    """
 
     return retObject

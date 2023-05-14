@@ -18,8 +18,11 @@ def generateOutputFileNames(payloadTemplateMgr: templMgr.PayloadTemplateManager,
         tip = "_tip"
     if payloadTemplateMgr.appSnapName == None or payloadTemplateMgr.appSnapName == "":
         tip = "tip"
-    fName = "payloadManager_"+payloadTemplateMgr.appName+"_"+payloadTemplateMgr.appAcronym+"_"+payloadTemplateMgr.appSnapName+tip
+    cmnNameSegment = payloadTemplateMgr.appName+"_"+payloadTemplateMgr.appAcronym+"_"+payloadTemplateMgr.appSnapName+tip
+    fName = "payloadManager_"+cmnNameSegment
+    fAssertName = "assertManager_"+cmnNameSegment
     fName = fName.replace(".","_")
+    fAssertName = fAssertName.replace(".","_")
     fNameDataModel = fName+"_DataModel"
     fNameSchema = fName+"_JsonSchema"
     if outPath[-1] == "/":
@@ -30,6 +33,7 @@ def generateOutputFileNames(payloadTemplateMgr: templMgr.PayloadTemplateManager,
     outNames["_outputNameSchema"] = outPath+"/"+fNameSchema+".py"
     outNames["_outputNameDataModel"] = outPath+"/"+fNameDataModel+".py"
     outNames["_outputPayloadManager"] = outPath+"/"+fName+".py"   
+    outNames["_outputAssertManager"] = outPath+"/"+fAssertName+".py"   
 
     return outNames
 
@@ -49,13 +53,28 @@ def writePayloadManagerTemplate(payloadTemplateMgr, _outputPayloadManager, _outp
     f1.close()
     f2.close()
 
+def writeAssertManagerTemplate(payloadTemplateMgr, _outputAssertManager):
+    templateName = "./bawsys/TEMPLATE_ASSERT_MANAGER.yp"
+
+    f1 = open(_outputAssertManager, 'w')
+    f2 = open(templateName, 'r')
+ 
+    f1.write("# ==================================\n")
+    f1.write("# Python code for assert manager\n# Application ["+payloadTemplateMgr.appName+"] Acronym ["+payloadTemplateMgr.appAcronym+"] Snapshot ["+payloadTemplateMgr.appSnapName+"] Tip ["+payloadTemplateMgr.appSnapTip+"]\n")
+    f1.write("# ==================================\n\n")
+
+    # appending the contents of the second file to the first file
+    f1.write(f2.read())
+    f1.close()
+    f2.close()
+
 def filesExists(fileNames):
     for f in fileNames:
         if os.path.exists(f):
             return True
     return False
 
-def generatePayloadTemplates(argv):
+def generateCodeFromTemplates(argv):
 
     ok = False
     if argv != None:
@@ -100,13 +119,15 @@ def generatePayloadTemplates(argv):
                         _outputPayloadManager = outNames["_outputPayloadManager"] 
                         _outputNameSchema = outNames["_outputNameSchema"]
                         _outputNameDataModel = outNames["_outputNameDataModel"]
+                        _outputAssertManager = outNames["_outputAssertManager"]
 
                     outName = _outputPayloadManager
-                print("Generating Python code for payload manager to "+outName+"\n# Application ["+payloadTemplateMgr.appName+"] Acronym ["+payloadTemplateMgr.appAcronym+"] Snapshot ["+payloadTemplateMgr.appSnapName+"] Tip ["+payloadTemplateMgr.appSnapTip+"]")
+                    outAssertName = _outputAssertManager
+                print("Generating Python code for payload manager to "+outName+" and "+outAssertName+"\n# Application ["+payloadTemplateMgr.appName+"] Acronym ["+payloadTemplateMgr.appAcronym+"] Snapshot ["+payloadTemplateMgr.appSnapName+"] Tip ["+payloadTemplateMgr.appSnapTip+"]")
                 if redirectOutput:
                     okToWrite = True
                     if _forceOverwrite == None:
-                        if filesExists([_outputNameDataModel, _outputPayloadManager, _outputNameSchema]):
+                        if filesExists([_outputNameDataModel, _outputPayloadManager, _outputAssertManager, _outputNameSchema]):
                             print("ERROR, files already exixts ! Use -f to force overwrite")
                             sys.exit()
 
@@ -119,6 +140,9 @@ def generatePayloadTemplates(argv):
 
                         print("Ouput PayloadManager to file ", _outputPayloadManager)
                         writePayloadManagerTemplate(payloadTemplateMgr, _outputPayloadManager, _outputNameDataModel)
+
+                        print("Ouput AssertManager to file ", _outputAssertManager)
+                        writeAssertManagerTemplate(payloadTemplateMgr, _outputAssertManager)
 
                         print("Ouput JSON Schema to file ", _outputNameSchema)
                         with open(_outputNameSchema, 'w') as fs:
@@ -134,7 +158,7 @@ def generatePayloadTemplates(argv):
 def main(argv):
     logger = logging.getLogger('root')
     logger.setLevel(logging.INFO)    
-    generatePayloadTemplates(argv)
+    generateCodeFromTemplates(argv)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

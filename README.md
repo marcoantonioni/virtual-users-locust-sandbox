@@ -57,10 +57,10 @@ python ./deleteProcessBulk.py -e ./configurations/env1.properties -t true
 python ./deleteProcessBulk.py  -e ./configurations/env1-traditional.properties -t true
 
 # generazione template modello dati
-python ./generatePayloadTemplates.py -e ./configurations/env1.properties -o ./configurations
-python ./generatePayloadTemplates.py -e ./configurations/env1-traditional.properties -o ./configurations
+python ./generateCodeFromTemplates.py -e ./configurations/env1.properties -o ./configurations
+python ./generateCodeFromTemplates.py -e ./configurations/env1-traditional.properties -o ./configurations
 
-python ./generatePayloadTemplates.py -e ./configurations/env-ut1.properties -o ./configurations
+python ./generateCodeFromTemplates.py -e ./configurations/env-ut1.properties -o ./configurations
 
 
 # creazione utenze e gruppi ldap
@@ -99,10 +99,16 @@ mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip
 mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/code
 mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/outputdata
 
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/code
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/outputdata
+
 # tool folder
 cd /home/marco/locust/studio/virtual-users-locust-sandbox/
 
-python ./generatePayloadTemplates.py -e /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/VirtualUsersSandbox-tip-env.properties -o /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/code
+python ./generateCodeFromTemplates.py -e /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/VirtualUsersSandbox-tip-env.properties -o /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/code
+
+python ./generateCodeFromTemplates.py -e /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/VirtualUsersSandbox-tip-env.properties -o /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/code
 
 locust --config=/home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/VirtualUsersSandbox-tip.conf
 

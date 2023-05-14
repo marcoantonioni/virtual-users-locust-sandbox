@@ -1,8 +1,3 @@
-# ==================================
-# Python code for assert manager
-# Application [VirtualUsersSandbox] Acronym [VUS] Snapshot [] Tip [true]
-# ==================================
-
 
 import logging, json
 
@@ -16,6 +11,8 @@ from bawsys import bawUniTestScenarioAsserter as scenAssert
 #   listOfInstances, is a list of object representing process instances included into the U.T. scenario 
 def executeAsserts(asserter: scenAssert.ScenarioAsserter, listOfInstances):
 
+    """
+    # Usage sample
     logging.info("======> executeAsserts, tot instances: %d %s", len(listOfInstances), json.dumps(listOfInstances, indent=2))
 
     asserter.assertItemsCountEquals(listOfInstances, 1)
@@ -30,7 +27,7 @@ def executeAsserts(asserter: scenAssert.ScenarioAsserter, listOfInstances):
     asserter.assertEqual(listOfInstances, "variables.evaluationForm.vote", 6)
     asserter.assertNotEqual(listOfInstances, "variables.evaluationForm.vote", 60)
 
-    asserter.assertLesserThan(listOfInstances, "variables.evaluationForm.vote", 11)
+    asserter.assertLesserThan(listOfInstances, "variables.evaluationForm.vote", 10)
     asserter.assertLesserEqualThan(listOfInstances, "variables.evaluationForm.vote", 10)
     
     asserter.assertGreaterThan(listOfInstances, "variables.evaluationForm.vote", 0)
@@ -38,5 +35,6 @@ def executeAsserts(asserter: scenAssert.ScenarioAsserter, listOfInstances):
 
     asserter.assertNull(listOfInstances, "variables.NONEXISTENTVAR")
     asserter.assertNotNull(listOfInstances, "variables.promoteRequest")
-
-
+    """
+    
+    return

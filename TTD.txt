@@ -6,9 +6,7 @@
   
 
 - assert manager
--- definire template
--- definire esempio
--- aggiungere generazione modulo python
+-- in executeAsserts prevedere output risultati su file
 
 - rivedere nomi processi app test
 
