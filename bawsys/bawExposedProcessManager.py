@@ -208,18 +208,35 @@ class BpmExposedProcessManager:
             # print(json.dumps(data, indent=2))
             exposedItemsList = data["exposedItemsList"]
             for expItem in exposedItemsList:
+
+                # type: process, ???
+
+                # print("expItem", json.dumps(expItem,indent=2))
+
                 snapName = ""
-                appName = expItem["processAppName"] 
-                acrName = expItem["processAppAcronym"]
-                procName = expItem["display"]
-                tipItem = expItem["tip"]
+                appName = ""
                 snapName = ""
+                acrName = ""
+                try:
+                    acrName = expItem["processAppAcronym"]
+                    if acrName == None:
+                        acrName = ""
+                except:
+                    pass
+                try:
+                    appName = expItem["processAppName"]
+                    if appName == None:
+                        appName = ""
+                except:
+                    pass
                 try:
                     snapName = expItem["snapshotName"]
                     if snapName == None:
                         snapName = ""
                 except:
                     pass
+                procName = expItem["display"]
+                tipItem = expItem["tip"]
 
                 # forza snapshot se configurata tip
                 if processInfo.isTip() and tipItem:

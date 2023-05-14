@@ -40,7 +40,10 @@ class ScenarioAssertsManager:
             try:
                 self.dynamicAM.executeAsserts(asserter, listOfInstances)
                 if len(asserter.failures) == 0:
-                    os.remove(failuresName)
+                    try:
+                        os.remove(failuresName)
+                    except:
+                        pass
                     logging.info("Unit tests completed successfully !")                    
                 else:
                     # predisporre out su file                    
