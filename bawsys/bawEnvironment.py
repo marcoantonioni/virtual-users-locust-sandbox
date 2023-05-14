@@ -82,10 +82,15 @@ class BpmEnvironment:
             self.configValues.load(rRrops)
 
     def getValue(self, key):
-        data = None
+        data : str = None
         cfgVal = self.configValues.get(key)
         if cfgVal != None:
             data = cfgVal.data
+            if data.find('"') != -1:
+                data = data.replace('"', '')
+            if data.find("'") != -1:
+                data = data.replace("'", '')
+                
         return data
 
     def dumpValues(self):

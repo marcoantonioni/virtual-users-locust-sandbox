@@ -16,7 +16,7 @@ from bawsys import bawUniTestScenarioAsserter as scenAssert
 #   listOfInstances, is a list of object representing process instances included into the U.T. scenario 
 def executeAsserts(asserter: scenAssert.ScenarioAsserter, listOfInstances):
 
-    logging.info("======> executeAsserts, tot instances: %d %s", len(listOfInstances), json.dumps(listOfInstances, indent=2))
+    # logging.info("======> executeAsserts, tot instances: %d %s", len(listOfInstances), json.dumps(listOfInstances, indent=2))
 
     asserter.assertItemsCountEquals(listOfInstances, 1)
     asserter.assertItemsCountNotEquals(listOfInstances, 2)

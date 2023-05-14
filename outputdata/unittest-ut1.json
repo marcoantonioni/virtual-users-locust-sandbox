@@ -1,13 +1,13 @@
 {
-  "startedAt": "2023-05-14T09:27:00Z",
-  "endedAt": "2023-05-14T09:27:28Z",
+  "startedAt": "2023-05-14T09:47:18Z",
+  "endedAt": "2023-05-14T09:47:46Z",
   "numOfInstances": 1,
   "timeExceeded": false,
   "assertsManager": "./configurations/assertsManager-type-ut1.py",
   "instances": [
     {
       "processName": "VUSUnitTestExample1",
-      "processId": "3084",
+      "processId": "3094",
       "state": "Completed",
       "variables": {
         "inputData": {

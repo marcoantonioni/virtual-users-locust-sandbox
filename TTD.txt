@@ -3,16 +3,13 @@
 ??? Riprovare con seconda demo UnitTest
 - verificare come aggiornare utenti in Groups per app appena creata (restart ? api rest ?)
 
-  
-
-- assert manager
--- in executeAsserts prevedere output risultati su file
+- rivedere UT con scenari determinati payload/assert managers 
+-- test 1: voti predefiniti per nome
+-- test 2: promozione predefinita per nome ma voti variabili
 
 - rivedere nomi processi app test
 
 - controllare apici su nomi files 
-
-- cercare TTD nel codice
 
 - versione containerizzata
 

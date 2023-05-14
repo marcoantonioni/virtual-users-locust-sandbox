@@ -299,6 +299,7 @@ def unitTestInstancesExporter(environment):
                         listOfPids = bawUnitTests.TestScenarioManager.getInstance().listOfPids
                         listOfInstances = bpmProcessInstanceManager.exportProcessInstancesDataByPid( bpmEnvironment=bpmEnvironment, listOfPids=listOfPids)
                         ouputName = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_OUT_FILE_NAME)
+
                         intTimeExceeded = 0
                         if scenarioMgr.timeLimitExceeded:
                             intTimeExceeded = 1 
@@ -307,7 +308,7 @@ def unitTestInstancesExporter(environment):
                             assertsMgrName = ""
                         try:
                             bawUtils._writeOutScenarioInstances(listOfInstances, ouputName, scenarioMgr.startedAtISO, scenarioMgr.endedAtISO, len(listOfInstances), intTimeExceeded, assertsMgrName)
-                            logging.info("Unit test data of [%d] process instances written to file '%s'", len(listOfInstances), ouputName)
+                            logging.info("Unit test data of [%d] process instances written to file [%s]", len(listOfInstances), ouputName)
 
                             useSqlite = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_OUT_USE_DB)
                             if useSqlite != None:
@@ -317,7 +318,7 @@ def unitTestInstancesExporter(environment):
                                     sqLiteExporter.createDbAndSchema()
                                     sqLiteExporter.setScenarioInfos(scenarioMgr.startedAtISO, scenarioMgr.endedAtISO, len(listOfInstances), intTimeExceeded, assertsMgrName)
                                     sqLiteExporter.addScenario(listOfInstances)
-                                    logging.info("Unit test data of [%d] process instances written to db '%s'", len(listOfInstances), dbName)
+                                    logging.info("Unit test data of [%d] process instances written to db [%s]", len(listOfInstances), dbName)
                                     bpmDynamicModuleAsserts = bawUtils.setupAssertsManagerModule(bpmEnvironment)                                                
                                     assertsMgr : scenarioAsserts.ScenarioAssertsManager = scenarioAsserts.ScenarioAssertsManager(bpmEnvironment, bpmDynamicModuleAsserts)
                                     assertsMgr.executeAsserts()

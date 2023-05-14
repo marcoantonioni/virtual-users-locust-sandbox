@@ -35,7 +35,7 @@ def isMatchingTaskSubject(taskSubjectText, subjectFromUserDictionary):
 #=============================
 
 import logging
-__log = True
+__log = False
 
 def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCreateIndex: int = None):
     retObject = dict()
