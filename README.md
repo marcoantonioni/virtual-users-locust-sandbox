@@ -12,7 +12,61 @@ pip install jsonpath-ng
 
 # optional
 pip install sqlite-utils
+```
 
+Comandi vari
+```
+
+#---------------------------------
+# Load test
+
+cd /home/marco/locust/studio/virtual-users-locust-sandbox
+
+locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1.conf
+
+locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1-traditional.conf
+
+
+#---------------------------------
+# Unit Test
+
+cd /home/marco/locust/studio/virtual-users-locust-sandbox
+
+locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-ut1.conf
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Vecchi
+```
 locust --config=./configurations/baw-vu-cfg-1.conf
 
 locust --config=./configurations/baw-vu-cfg-1-traditional.conf

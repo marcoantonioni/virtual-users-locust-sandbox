@@ -49,7 +49,9 @@ class ScenarioAssertsManager:
 
                     logging.info("Unit tests failed ! For details see file %s", failuresName)
                     executed = True                
-            except:
+            except BaseException as exception:
+                logging.warning(f"Exception Name: {type(exception).__name__}")
+                logging.warning(f"Exception Desc: {exception}")
                 logging.error("ERROR, exception catched during assertions !!!")
         return executed
 

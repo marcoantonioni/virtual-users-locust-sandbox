@@ -1,5 +1,0 @@
-TASK_SUBJECTS,  SUBJECT_TEXT
-TS1,            "Compile Data [CCTR]"
-TS2,            "Validate Data [CCTR]"
-TS3,            "Compile Request [CCA]"
-TS4,            "Authorize Request [CCA]"

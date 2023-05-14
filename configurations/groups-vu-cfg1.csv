@@ -1,7 +1,0 @@
-GROUP,USER
-VUSGroup1,vuxuser1..vuxuser50
-VUSGroup2,vuxuser51..vuxuser100
-VUSGroupStarter,vuxuser1..vuxuser50
-VUSGroupStarter,cp4admin
-VUSGroupStarter,user1
-
