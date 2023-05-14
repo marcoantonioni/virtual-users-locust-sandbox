@@ -1,8 +1,10 @@
+import sys, logging
+sys.path.append('.')
+
 import bawsys.bawUniTestScenarioAssertManager as asserts
 import bawsys.bawCommandLineManager as clpm
-from bawsys import bawEnvironment as bawEnv
-from bawsys import bawUtils as bawUtils
-import sys, logging
+import bawsys.bawEnvironment as bawEnv
+import bawsys.bawUtils as bawUtils
 
 #----------------------------------
 
