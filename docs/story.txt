@@ -1,4 +1,4 @@
-Storytelling about automating today's BAW manual activities:
+Storytelling about automating today's BAW manual test activities:
 
 1. Introduction
 - Start with a brief overview of the current state of manual activities in various industries and why automation is necessary.
@@ -12,6 +12,10 @@ Storytelling about automating today's BAW manual activities:
 - Identify the limitations of manual activities, such as human error, fatigue, and limitations in capacity.
 - Explain how automation can help overcome these limitations and improve the quality of work.
 
+    ???
+    One of the most significant innovations in testing is the use of automation tools to test business processes. 
+    Automation tools can help accelerate testing, reduce errors, and provide more accurate results.
+
 4. The Solution
 - Introduce the automation technology that will replace the manual activity, such as robotic process automation (RPA), artificial intelligence (AI), or machine learning (ML).
 - Explain how the technology works and the benefits it offers, such as faster processing times, higher accuracy, and reduced costs.
@@ -19,6 +23,7 @@ Storytelling about automating today's BAW manual activities:
 5. The Implementation
 - Describe the steps taken to implement the automation technology, such as assessing the current process, identifying opportunities for automation, designing the system, and testing it.
 - Explain any challenges faced during the implementation and how they were overcome.
+- Describe the limits
 
 6. The Results
 - Describe the impact of automation on the business, including improvements in efficiency, productivity, quality, and cost savings.
@@ -28,4 +33,27 @@ Storytelling about automating today's BAW manual activities:
 - Summarize the benefits of automating manual activities and how it can transform businesses and industries.
 - Highlight the need for continued investment in automation technology to stay competitive in the market.
 
+    ???
+    Overall, innovation in testing business processes can help organizations improve their processes, reduce costs, and increase efficiency. 
+    By embracing new technologies and methodologies, businesses can stay ahead of the curve and ensure that their processes are always improving.
+
+
 Remember, your storytelling should be engaging and compelling, so use descriptive language and concrete examples to bring your message to life. Good luck!
+
+# --------------------------------------------------
+Unit testing stateful processes that make use of storage persistence can be challenging due to several main complexities:
+
+1. Non-deterministic behavior: When a process has a state that is persisted to storage, its behavior can become non-deterministic. For example, if a test modifies the state of the process, it can affect the behavior of subsequent tests. This can make it difficult to isolate and reproduce test failures.
+
+2. Dependencies: Stateful processes that use storage persistence often have dependencies on external resources, such as a database or file system. These dependencies can introduce additional complexity into unit testing, as they may need to be mocked or otherwise simulated in order to create a controlled testing environment.
+
+3. Data integrity: Storage persistence can introduce issues related to data integrity, such as concurrent access to shared resources or race conditions. Testing these scenarios can be difficult, as they require careful setup and coordination.
+
+4. Test data management: Managing test data for stateful processes can be challenging, especially if the data needs to be persisted across multiple tests. Tests may need to clean up after themselves to avoid interfering with subsequent tests, or they may need to rely on external tools to manage test data.
+
+5. Performance: When dealing with storage persistence, unit tests can be slower and more resource-intensive than tests that operate entirely in memory. This can lead to longer test run times and increased complexity in managing test suites.
+
+To address these complexities, it's important to design tests that are robust, well-organized, and repeatable. This may involve using mocking frameworks to simulate external dependencies, carefully managing test data, and using tools like test fixtures to ensure a consistent testing environment. Additionally, it may be necessary to invest in automated testing infrastructure that can manage the complexities of stateful, persistent processes.
+# --------------------------------------------------
+
+

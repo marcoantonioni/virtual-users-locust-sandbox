@@ -1,0 +1,80 @@
+GENERICI
+- soluzioni di business con frequente evoluzione dei requisiti e modifica delle interfacce utente
+- frequenza differente tra variazione interfacce utente(+) e processo di business(-)
+- il prodotto di una elaborazione di un TASK interfaccia web consiste di uno o più oggetti JSON
+- riprogettare i test che interagiscono al livello del browser web è oneroso, si usano prodotti generici
+- riprogettare i test che interagiscono a livello di TASK è relativamente semplice e veloce con l'ausilio di strumenti ad hoc per il BAW
+
+OPERAZIONI MANUALI NECESSARIE PER SETUP DI UNIT TEST
+- definizione della snapshot sulla quale eseguire il test
+- pulizia dei processi/task presenti su ambiente di test (altre versioni di snapshot, precedenti run, etc...)
+- configurazione utenze e loro profilazione nello specifico ambiente di run time
+- definizione delle procedure e dei dataset che l'utente dovrà seguire/usare per ogni caso di uso (intero percorso di una istanza di processo)
+-- chi definisce il manuale di solito non è lo sviluppatore, è una seconda figura con conoscenza della applicazione che poi dovrà in qualche modo supportare il tester
+- operazioni per il setup dell'ambiente (tra quelle ricorrenti per ogni test e one-shot iniziali)
+
+ESECUZIONE MANUALE DI UNIT TEST
+- può essere lo sviluppatore se ha visibilità e2e del processo, altrimenti altra figura opportunamente istruita
+- verifica manuale dei risultati e comparazione con dati attesi
+- storicizzazione dell'esito del test
+- difficoltà di utilizzo contemporaneo dell'ambiente di sviluppo tra sviluppatori e tester causato da tempi lunghi per esecuzione manuale dei test
+- tempi dilatati tra sviluppo versione, test manuali ed eventuali feedback al programmatore per correzione dei bugs con successiva reiterazione dei test
+
+LIMITAZIONI E COSTI DI ATTIVITA' MANUALI
+- comunicazione tra i ruoli, obbligo di produzione di documentazione aggiornata per ogni evoluzione
+- utilizzo di risorse in comune, ambiente di runtime se non disponibile apposito di TEST
+- continuo versionamento e deploy nuova versione in caso di ambiente di test dedicato
+-- crescita esponenziale di numero di snapshot e aumento frequenza attività di svecchiamanto ambienti
+- tempi di esecuzione e verifica
+
+AUTOMAZIONE DEI TEST
+- con uno strumento ad hoc per il BAW si potrebbe:
+-- automatizzare la quasi totalità delle operazioni manuali di predisposizione ambiente di test
+-- eseguire in automatico i test per le interazioni umane
+-- eseguire in automatico la verifica dei risultati attesi
+
+LA POSSIBILE SOLUZIONE E' BAW Virtual Users Tool (BAWVUT)
+- Con questo tool è possibile:
+-- simulare la interazione verso i task di processo presenti nella task list del portale (list, claim, release, get data, update data, complete) 
+-- avviare nuove istanze di processo quando esposte a specifico ruolo
+-- definire la verifica automatica dei valori attesi (variabili di istanza processo)
+-- mantenere lo storico delle run e del loro esito
+-- evidenziare quali test sono falliti e per quale motivo
+
+E SE LO STESSO STRUMENTO DEDICATO AI TEST POTESSE ESSERE UTILIZZATO ANCHE COME GENERATORE DI CARICO ?
+- Con BAW VUT è possibile, con la sola limitazione relativa al fatto che le interfacce utente non sono utilizzate perchè le interazioni REST usano direttamente le API dedicate ai TASK 
+  dal browser non sono utilizzate e quindi le performance misurate saranno relative alla sola logica di business server side.
+  Come ? Mantenendo la stessa configurazione di base e sostituendo il generatore di payload 
+  Comunque meglio di nulla non vi pare ? 
+
+COSA SI PUO' OTTENERE CON QUESTO TOOL DI AUTOMAZIONE
+- maggior efficienza e produttività con riduzione dei tempi di lavorazione dei test e correzione del software
+- riduzione dei costi inerenti le risorse utilizzate
+- miglioramento della qualità del software prodotto
+
+COME VALUTARE QUESTO TOOL
+- il tool è open source, presente su repository git con licenze MIT (https://opensource.org/license/mit/)
+- è stato pensato e realizzato per meglio supportare i clienti e i partner di IBM
+- nel repository git sono presenti applicazioni demo e relative pre-configurazioni che possono essere utilizzate per valutare il tool con il minimo vostro impegno
+- le applicazioni demo sono presenti sia per ambiente BAW tradizionale (basato su WAS ND) sia per ambiente containerizzato (CP4BA)
+- oltre al tool procipale per la esecuzione del test/load sono presenti una serie di funzioni a supporto per semplificare tutte le attività di setup e pulizia dell' ambiente
+- per lo scenario containerizzato CP4BA sono presenti tool di semplificazione per deployment di LDAP dedicato a utenze virtuali e relativa configurazione automatica di IDP
+
+DESCRIZIONE DEL TOOL
+- tecnologia
+- runtime (immagine docker, sorgenti da repo git)
+- limitazioni
+- scalabilità in scenari di carico
+- descrizione contenuti dei repo git
+- descrizione delle applicazioni demo e delle loro configurazioni di run (test/load)
+- come configurare e realizzare uno scenario di test/load
+-- moduli custom payload e assert managers
+-- configurazione utenze virtuali
+-- assegnazione utenze virtuali a task subjects
+- configurazione necessaria su BAW
+-- scenario tradizionale
+-- scenario containerizzato
+- esempi di run con immagine docker
+- esempi di run con sorgenti locali
+
+ 
