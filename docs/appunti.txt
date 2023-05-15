@@ -1,80 +1,108 @@
-GENERICI
-- soluzioni di business con frequente evoluzione dei requisiti e modifica delle interfacce utente
-- frequenza differente tra variazione interfacce utente(+) e processo di business(-)
-- il prodotto di una elaborazione di un TASK interfaccia web consiste di uno o più oggetti JSON
-- riprogettare i test che interagiscono al livello del browser web è oneroso, si usano prodotti generici
-- riprogettare i test che interagiscono a livello di TASK è relativamente semplice e veloce con l'ausilio di strumenti ad hoc per il BAW
+(descrizione dell'argomento affrontato)
 
-OPERAZIONI MANUALI NECESSARIE PER SETUP DI UNIT TEST
-- definizione della snapshot sulla quale eseguire il test
-- pulizia dei processi/task presenti su ambiente di test (altre versioni di snapshot, precedenti run, etc...)
-- configurazione utenze e loro profilazione nello specifico ambiente di run time
-- definizione delle procedure e dei dataset che l'utente dovrà seguire/usare per ogni caso di uso (intero percorso di una istanza di processo)
--- chi definisce il manuale di solito non è lo sviluppatore, è una seconda figura con conoscenza della applicazione che poi dovrà in qualche modo supportare il tester
-- operazioni per il setup dell'ambiente (tra quelle ricorrenti per ogni test e one-shot iniziali)
+TEST AUTOMATION FOR BUSINESS PROCESSES
+The costs and time required are very often derived from:
+- business solutions with frequent evolution of requirements and modification of user interfaces
+- the process model becomes stable before the completion of the web interfaces, with generic tools (web interaction only) to perform an automated test you have to wait for the consolidation of the gui
+- different frequency between user interface variation(+) and business process(-)
+- redesigning tests that interact at the web browser level is often expensive, generic products are used to interact with the web browser
+- complexity in collecting the final information relating to the outcome of a process instance
 
-ESECUZIONE MANUALE DI UNIT TEST
-- può essere lo sviluppatore se ha visibilità e2e del processo, altrimenti altra figura opportunamente istruita
-- verifica manuale dei risultati e comparazione con dati attesi
-- storicizzazione dell'esito del test
-- difficoltà di utilizzo contemporaneo dell'ambiente di sviluppo tra sviluppatori e tester causato da tempi lunghi per esecuzione manuale dei test
-- tempi dilatati tra sviluppo versione, test manuali ed eventuali feedback al programmatore per correzione dei bugs con successiva reiterazione dei test
 
-LIMITAZIONI E COSTI DI ATTIVITA' MANUALI
-- comunicazione tra i ruoli, obbligo di produzione di documentazione aggiornata per ogni evoluzione
-- utilizzo di risorse in comune, ambiente di runtime se non disponibile apposito di TEST
-- continuo versionamento e deploy nuova versione in caso di ambiente di test dedicato
--- crescita esponenziale di numero di snapshot e aumento frequenza attività di svecchiamanto ambienti
-- tempi di esecuzione e verifica
+(cosa serve per realizzare l'attività)
 
-AUTOMAZIONE DEI TEST
-- con uno strumento ad hoc per il BAW si potrebbe:
--- automatizzare la quasi totalità delle operazioni manuali di predisposizione ambiente di test
--- eseguire in automatico i test per le interazioni umane
--- eseguire in automatico la verifica dei risultati attesi
+MANUAL OPERATIONS NECESSARY FOR UNIT TEST SETUP
+The costs and times required are very often derived from:
+- definition of the snapshot on which to run the test
+- cleaning of processes/tasks present on test environment (other versions of snapshots, previous runs, etc...)
+- configuration of users and their profiling in the specific run time environment
+- definition of the procedures and datasets that the user will have to follow/use for each use case (entire path of a process instance)
+-- whoever defines the operating manual is usually not the developer, it's a second figure with knowledge of the application who will then have to somehow support the tester
+- environment setup operations (among the recurring ones for each test and initial one-shot)
 
-LA POSSIBILE SOLUZIONE E' BAW Virtual Users Tool (BAWVUT)
-- Con questo tool è possibile:
--- simulare la interazione verso i task di processo presenti nella task list del portale (list, claim, release, get data, update data, complete) 
--- avviare nuove istanze di processo quando esposte a specifico ruolo
--- definire la verifica automatica dei valori attesi (variabili di istanza processo)
--- mantenere lo storico delle run e del loro esito
--- evidenziare quali test sono falliti e per quale motivo
+MANUAL EXECUTION OF UNIT TESTS
+The costs and times required are very often derived from:
+- it can be the developer if he has end-to-end visibility of the process, otherwise another suitably trained figure/role
+- manual verification of results and comparison with expected data
+- historicization of the test result
+- difficulty of simultaneous use of the development environment between developers and testers caused by long times for manual execution of the tests
+- dilated times between version development, manual tests and any feedback to the programmer for bug correction with subsequent reiteration of the tests
 
-E SE LO STESSO STRUMENTO DEDICATO AI TEST POTESSE ESSERE UTILIZZATO ANCHE COME GENERATORE DI CARICO ?
-- Con BAW VUT è possibile, con la sola limitazione relativa al fatto che le interfacce utente non sono utilizzate perchè le interazioni REST usano direttamente le API dedicate ai TASK 
-  dal browser non sono utilizzate e quindi le performance misurate saranno relative alla sola logica di business server side.
-  Come ? Mantenendo la stessa configurazione di base e sostituendo il generatore di payload 
-  Comunque meglio di nulla non vi pare ? 
+(evidenziazione delle complessità in modalità manuale)
 
-COSA SI PUO' OTTENERE CON QUESTO TOOL DI AUTOMAZIONE
-- maggior efficienza e produttività con riduzione dei tempi di lavorazione dei test e correzione del software
-- riduzione dei costi inerenti le risorse utilizzate
-- miglioramento della qualità del software prodotto
+LIMITATIONS AND COSTS OF MANUAL ACTIVITIES
+- communication between roles, obligation to produce updated documentation for each evolution
+- use of common resources, runtime environment if not available a specific test environment
+- continuous versioning and new version deployment in case of dedicated test environment, this involves exponential growth of the number of snapshots and increased frequency of environment updating activities
+- execution and verification times
 
-COME VALUTARE QUESTO TOOL
-- il tool è open source, presente su repository git con licenze MIT (https://opensource.org/license/mit/)
-- è stato pensato e realizzato per meglio supportare i clienti e i partner di IBM
-- nel repository git sono presenti applicazioni demo e relative pre-configurazioni che possono essere utilizzate per valutare il tool con il minimo vostro impegno
-- le applicazioni demo sono presenti sia per ambiente BAW tradizionale (basato su WAS ND) sia per ambiente containerizzato (CP4BA)
-- oltre al tool procipale per la esecuzione del test/load sono presenti una serie di funzioni a supporto per semplificare tutte le attività di setup e pulizia dell' ambiente
-- per lo scenario containerizzato CP4BA sono presenti tool di semplificazione per deployment di LDAP dedicato a utenze virtuali e relativa configurazione automatica di IDP
+(evidenziazione dei benefici automazione)
 
-DESCRIZIONE DEL TOOL
-- tecnologia
-- runtime (immagine docker, sorgenti da repo git)
-- limitazioni
-- scalabilità in scenari di carico
-- descrizione contenuti dei repo git
-- descrizione delle applicazioni demo e delle loro configurazioni di run (test/load)
-- come configurare e realizzare uno scenario di test/load
--- moduli custom payload e assert managers
--- configurazione utenze virtuali
--- assegnazione utenze virtuali a task subjects
-- configurazione necessaria su BAW
--- scenario tradizionale
--- scenario containerizzato
-- esempi di run con immagine docker
-- esempi di run con sorgenti locali
+TEST AUTOMATION
+The benefits of adopting ad hoc tools
+With a dedicated tool for IBM Business Automation Workflow you can:
+- automate almost all of the manual test environment preparation operations
+- run human interaction tests automatically
+- perform automatic verification of the expected results
+Redesigning the tests that interact at the TASK level is relatively simple and fast with the help of ad hoc tools for IBM Business Automation Workflow and allows to anticipate the test of the process logic compared to the test of the unique/gui specific logics.
 
- 
+(proposizione del tool)
+
+ONE OF THE POSSIBLE SOLUTION IS "BAW Virtual Users Tool" (BAWVUT)
+With this open source tool you can:
+- simulate the interaction with the process tasks present in the portal task list (list, claim, release, get data, update data, complete)
+- start new process instances when exposed to a specific role
+- define automatic verification of expected values (process instance variables)
+- maintain the history of the runs and their outcome
+- highlight which tests have failed and for what reason
+
+WHAT IF THE SAME INSTRUMENT DEDICATED TO TESTS COULD ALSO BE USED AS A LOAD GENERATOR?
+With BAW VUT it is possible and with the only limitation of exclusion of GUI user interfaces,
+these are not used because REST interactions directly use the API dedicated to TASKS.
+This means that the measured performance will be related only to the server side business logic.
+How ? Maintaining the same basic configuration and replacing the payload generator with, for example, the generation of random values always within the ranges allowed by the application.
+
+(sintesi dei benefici ottenibili)
+
+WHAT CAN YOU ACHIEVE WITH THIS AUTOMATION TOOL
+- greater efficiency and productivity with reduction of test processing times and software correction
+- reduction of costs inherent to the resources used
+- improvement of the quality of the produced software
+
+(come ottenere e valutare in autonomia il tool)
+
+HOW TO EVALUATE THIS TOOL
+- the tool is open source, present on a git repository (...TBD...) released using MIT licenses (https://opensource.org/license/mit/)
+- the tool is non-invasive, requires no installation of any kind on BAW servers, performs all its functions by simulating the end user from the outside and the system administrator for virtual users configurations
+- the tool is based on Python 3 technology available on every operating system among the most commonly used ones
+- the tool is also offered in Docker image format to simplify the client side setup operations
+- has been designed and created to better support IBM customers and IBM partners who cannot use other tools for various reasons
+- in the git repository there are demo applications and related pre-configurations that can be used to evaluate the tool with your minimum effort
+- demo applications are available for both traditional IBM Business Automation Workflow environment (based on WAS-ND) and containerized environment (CP4BA)
+- in addition to the main tool for executing the test/load, there are a series of support functions to simplify all setup and environment cleaning activities
+- for the CP4BA containerized scenario there are simplification tools for LDAP deployment dedicated to virtual users and relative automatic IDP configuration
+- the tool does not offer any mocking solutions for any services integrated by the processes being tested
+
+(descrizione dei dettagli, diventerà il piccolo manuale di uso)
+
+TOOL DESCRIPTION (to be completed...)
+- technology (Python language, framework Locust)
+- runtime (docker image, sources from git repo)
+- limitations
+- scalability in load scenarios
+- description of git repo contents
+- description of demo applications and their run configurations (test/load)
+- how to configure and implement a test/load scenario
+-- custom payload modules and assert managers
+-- configuration of virtual users
+-- assignment of virtual users to task subjects
+- configuration needed for test scenarios
+-- traditional scenery
+-- containerized scenario
+- run examples with docker image
+- run examples with tool sources on client machine
+
+NOTE
+
+In no way is this tool intended to replace the use of https://sdc-china.github.io/IDA-doc
+
