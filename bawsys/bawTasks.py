@@ -317,6 +317,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
     # Task functions
     #==========================================================
     
+    @task
     def bawLogin(self):        
         if self.user.loggedIn == False:
             if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_LOGIN ):
@@ -341,6 +342,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     else:
                         logging.error("User[%s] - bawLogin - failed login", userName)
 
+    @task
     def bawRefreshListTask(self):
         if self.user.loggedIn == True:
             if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_REFRESH_TASK_LIST ):
@@ -353,6 +355,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         else:
             self.forceLogin()
 
+    @task
     def bawClaimTask(self):
         if self.user.loggedIn == True:
             if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_CLAIM ):
@@ -377,6 +380,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         else:
             self.forceLogin()
 
+    @task
     def bawCompleteTask(self):
         if self.user.loggedIn == True:
             if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_COMPLETE ):
@@ -405,6 +409,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         else:
             self.forceLogin()
 
+    @task
     def bawGetTaskData(self):
         if self.user.loggedIn == True:
             if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_GETDATA ):
@@ -421,6 +426,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         else:
             self.forceLogin()
 
+    @task
     def bawSetTaskData(self):
         if self.user.loggedIn == True:
             if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_SETDATA ):
@@ -451,6 +457,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         else:
             self.forceLogin()
 
+    @task
     def bawReleaseTask(self):
         if self.user.loggedIn == True:
             if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_RELEASE ):
@@ -474,6 +481,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         else:
             self.forceLogin()
 
+    @task
     def bawCreateInstance(self):
         if self.isUnitTest == False:
             if self.user.loggedIn == True:
@@ -527,6 +535,7 @@ class UnitTestScenario(SequenceOfBpmTasks):
         if UnitTestScenario.tsMgr == None:
             UnitTestScenario.tsMgr : bawTSM.TestScenarioManager = bawTSM.TestScenarioManager(self.user.getEnvironment())
     
+    @task
     def bawCreateScenarioInstances(self):
         if UnitTestScenario.instanceCreated == False:
             UnitTestScenario.instanceCreated = True            

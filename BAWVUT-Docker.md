@@ -28,12 +28,16 @@ podman build -t quay.io/${REPO_NAME}/bawvut:latest -f ./Dockerfile
 ```
 
 ## Run BAWVUT image
+
+use '-p 8089:8089' when Locust configuration is set to 'headless = false'
 ```
+REPO_NAME=marco_antonioni
 podman run -it --rm --name bawvut \
+    -p 8089:8089
     -v /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations:/bawvut/configurations:Z \
     -v /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata:/bawvut/outputdata:Z \
-    -t quay.io/${REPO_NAME}/bawvut:latest /bin/bash
+    -t quay.io/${REPO_NAME}/bawvut:latest locust --config=./configurations/baw-vu-cfg-ut1.conf
 
-# from inside the container
+# or from inside the container
 locust --config=./configurations/baw-vu-cfg-ut1.conf
 ```

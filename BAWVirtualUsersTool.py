@@ -91,7 +91,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         else:
             IBMBusinessAutomationWorkflowUser.spawnedUsers += 1
 
-    @task
+    # used to avoid unuseful warning from Locust startup
     def _dummyTask(self):
         logging.warning("_dummyTask")
 
