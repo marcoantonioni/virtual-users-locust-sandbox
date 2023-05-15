@@ -39,7 +39,8 @@ locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-u
 
 
 
-
+ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations ./configurations
+ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata ./outputdata
 
 
 

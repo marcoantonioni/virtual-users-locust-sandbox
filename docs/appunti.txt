@@ -102,6 +102,9 @@ TOOL DESCRIPTION (to be completed...)
 - run examples with docker image
 - run examples with tool sources on client machine
 
+LIMITI v1
+- non gestisce lo start di Activity opzionali
+
 NOTE
 
 In no way is this tool intended to replace the use of https://sdc-china.github.io/IDA-doc
