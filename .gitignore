@@ -1,6 +1,6 @@
 *.ldif
-configurations
-outputdata
+configurations/
+outputdata/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
