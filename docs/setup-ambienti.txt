@@ -1,0 +1,116 @@
+
+
+#*********************************************************************************
+# Setup ambiente BAW VUT in CP4BA
+#*********************************************************************************
+
+#=================================================================================
+# 1. (optional) LDAP + IDP, Onboarding utenti
+#=================================================================================
+
+CP4BA_NS=cp4ba
+
+./add-ldap.sh -p vux-cfg1.properties
+./add-phpadmin.sh -p ./vux-cfg1.properties -n ${CP4BA_NS}
+    credentials: cn=admin,dc=vuxdomain,dc=net / passw0rd
+
+# verifica NS CP4BA in .properties
+./add-idp.sh -p ./idp1.properties
+  
+ADMIN_PASSW=$(oc get secret platform-auth-idp-credentials -n ${CP4BA_NS} -o jsonpath='{.data.admin_password}' | base64 -d)
+CP4ADMIN_PASSW=$(oc get secrets -n ${CP4BA_NS} | grep ldif | awk '{print $1}' | xargs oc get secret -n ${CP4BA_NS} -o jsonpath='{.data.ldap_user\.ldif}' | base64 -d | grep "dn: uid=cp4admin" -A4 | grep userpassword | awk '{print $2}')
+echo "admin / ${ADMIN_PASSW}"
+echo "cp4admin / ${CP4ADMIN_PASSW}"
+
+ROUTE_CONSOLE=$(oc get route -n ${CP4BA_NS} | grep cp-console | awk '{print "https://"$2}')
+ROUTE_BASE=$(oc get route -n ${CP4BA_NS} | grep cpd | awk '{print "https://"$2}')
+echo "Pak console ${ROUTE_CONSOLE}"
+echo "Pak base ${ROUTE_BASE}"
+
+# utenza admin, login route ROUTE_CONSOLE per verifica IDP (identity providers)
+# utenza admin, login route ROUTE_BASE per verifica onboarding utenze (access control)
+
+#-----------------------------------
+python ./iamOnboardUsers.py -e ./configurations/env1.properties -d vuxdomain -f ./configurations/creds-cfg1.csv
+
+#=================================================================================
+# 2. Deploy demo apps
+#=================================================================================
+
+Deploy TWX
+Verifica gruppi definiti in applicazione (ProcessAdmin), se primo deployment sono vuoti
+
+#=================================================================================
+# 3. Configurazione Groups e Teams
+#=================================================================================
+
+python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -o add
+
+python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./configurations/teams-vu-cfg1.csv -o add
+
+
+#*********************************************************************************
+# Setup ambiente BAW VUT in BAW traditional (WAS-ND)
+#*********************************************************************************
+
+
+
+wsadmin.bat -username admin -password admin -lang jython
+./wsadmin.sh -username admin -password admin -lang jython
+
+# create group
+print AdminTask.createGroup ('[-cn VUXAllUsers-vuxdomain -description VUXAllUsers-vuxdomain]')
+
+# create user
+print AdminTask.createUser ('[-uid vuxuser1 -password newPassw0rd -confirmPassword newPassw0rd -cn vuxuser1 -sn vuxuser1]')
+
+# add user to group
+print AdminTask.addMemberToGroup('[-memberUniqueName uid=vuxuser1,o=defaultWIMFileBasedRealm -groupUniqueName cn=VUSGroup1,o=defaultWIMFileBasedRealm]')
+
+print AdminConfig.save()
+
+# get members of group
+print AdminTask.getMembersOfGroup('[-uniqueName cn=VUSGroup1,o=defaultWIMFileBasedRealm]')
+
+print AdminTask.searchUsers('[-uid *]')
+
+print AdminTask.searchGroups('[-cn *]')
+
+#---------------
+AdminTask.addFileRegistryAccount(-userId username -password password)
+
+#---------------
+
+def createUsers(maxUsers):
+  count = 0
+  while count<maxUsers:
+    count = count + 1
+    command = '[-uid vuxuser'+str(count)+' -password vuxPassw0rd -confirmPassword vuxPassw0rd -cn vuxuser'+str(count)+' -sn vuxuser'+str(count)+']'
+    print AdminTask.createUser (command)
+  print "Done !"
+  
+createUsers(100)
+
+print AdminTask.createGroup ('[-cn VUXAllUsers-vuxdomain -description VUXAllUsers-vuxdomain]')
+print AdminTask.createGroup ('[-cn VUXGroup1 -description VUXGroup1]')
+print AdminTask.createGroup ('[-cn VUXGroup2 -description VUXGroup2]')
+print AdminTask.createGroup ('[-cn VUXGroup3 -description VUXGroup3]')
+print AdminTask.createGroup ('[-cn VUXGroup4 -description VUXGroup4]')
+
+def addUsersToGroup(groupName, fromIdx, toIdx):
+  count = fromIdx
+  while count<=toIdx:
+    command = '[-memberUniqueName uid=vuxuser'+str(count)+',o=defaultWIMFileBasedRealm -groupUniqueName cn='+groupName+',o=defaultWIMFileBasedRealm]'
+    print AdminTask.addMemberToGroup(command)
+    count = count + 1
+  print "Done !"
+
+addUsersToGroup('VUXAllUsers-vuxdomain', 0, 100)
+addUsersToGroup('VUXGroup1', 1, 50)
+addUsersToGroup('VUXGroup2', 51, 100)
+addUsersToGroup('VUXGroup3', 41, 60)
+addUsersToGroup('VUXGroup4', 61, 70)
+
+print AdminConfig.save()
+
+# restart server per vedere anche i gruppi

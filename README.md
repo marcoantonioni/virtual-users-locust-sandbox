@@ -268,53 +268,5 @@ curl -X 'GET' \
 
 
 
-#=================================================================================
-# Setup ambiente VUX
-#=================================================================================
-
-#=================================================================================
-# 1. (optional) LDAP + IDP, Onboarding utenti
-#=================================================================================
-CP4BA_NS=cp4ba
-
-./add-ldap.sh -p vux-cfg1.properties
-./add-phpadmin.sh -p ./vux-cfg1.properties -n ${CP4BA_NS}
-  cn=admin,dc=vuxdomain,dc=net / passw0rd
-
-# verifica NS CP4BA in .properties
-./add-idp.sh -p ./idp1.properties
-  
-ADMIN_PASSW=$(oc get secret platform-auth-idp-credentials -n ${CP4BA_NS} -o jsonpath='{.data.admin_password}' | base64 -d)
-CP4ADMIN_PASSW=$(oc get secrets -n ${CP4BA_NS} | grep ldif | awk '{print $1}' | xargs oc get secret -n ${CP4BA_NS} -o jsonpath='{.data.ldap_user\.ldif}' | base64 -d | grep "dn: uid=cp4admin" -A4 | grep userpassword | awk '{print $2}')
-echo "admin / ${ADMIN_PASSW}"
-echo "cp4admin / ${CP4ADMIN_PASSW}"
-
-ROUTE_CONSOLE=$(oc get route -n ${CP4BA_NS} | grep cp-console | awk '{print "https://"$2}')
-ROUTE_BASE=$(oc get route -n ${CP4BA_NS} | grep cpd | awk '{print "https://"$2}')
-echo "Pak console ${ROUTE_CONSOLE}"
-echo "Pak base ${ROUTE_BASE}"
-
-# utenza admin, login route ROUTE_CONSOLE per verifica IDP (identity providers)
-# utenza admin, login route ROUTE_BASE per verifica onboarding utenze (access control)
-
-python ./iamOnboardUsers.py -e ./configurations/env1.properties -d vuxdomain -f ./configurations/creds-cfg1.csv
-
-#=================================================================================
-# 2. Deploy demo apps
-#=================================================================================
-
-Deploy TWX
-Verifica gruppi definiti in applicazione (ProcessAdmin), se primo deployment sono vuoti
-
-#=================================================================================
-# 3. Configurazione Groups e Teams
-#=================================================================================
-
-python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -o add
-
-python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./configurations/teams-vu-cfg1.csv -o add
-
-
-
 ```
 

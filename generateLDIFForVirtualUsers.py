@@ -62,6 +62,7 @@ class LdifGroup:
         record = "dn: cn="+self.groupName+","+baseDomain+"\n"
         record += "objectClass: groupOfNames\n"
         record += "objectClass: top\n"
+        record += "cn: "+self.groupName+"\n"
         for user in self.users:
             record += "member: uid="+user.getUserName()+","+baseDomain+"\n"
 

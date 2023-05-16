@@ -1,4 +1,4 @@
-
+- aggiungere attributi SCIM per ldap
 
 - rivedere UT con scenari determinati payload/assert managers 
 -- test 1: voti predefiniti per nome
@@ -6,14 +6,13 @@
 
 - rivedere nomi processi app test
 
-- versione containerizzata
-
 - documentazione
+-- uso
+-- configurazione
 
 ??? Riprovare con seconda demo UnitTest
 - verificare come aggiornare utenti in Groups per app appena creata (restart ? api rest ?)
 
-- exposed CSHS
 
 GET
 https://ibmbaw:9443/rest/bpm/wle/v1/exposed/service
