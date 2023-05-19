@@ -54,6 +54,7 @@ python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./config
 #*********************************************************************************
 
 
+cd \IBM\Workflow\v18.0\bin
 
 wsadmin.bat -username admin -password admin -lang jython
 ./wsadmin.sh -username admin -password admin -lang jython
@@ -76,10 +77,15 @@ print AdminTask.searchUsers('[-uid *]')
 
 print AdminTask.searchGroups('[-cn *]')
 
+#------------------------------------
+print AdminTask.deleteGroup ('[-uniqueName cn=operators,cn=users,dc=yourco,dc=com]')
+print AdminTask.deleteUser ('[-uniqueName uid=dmeyers,cn=users,dc=yourco,dc=com]')
+
+
 #---------------
 AdminTask.addFileRegistryAccount(-userId username -password password)
 
-#---------------
+#-------------------------
 
 def createUsers(maxUsers):
   count = 0
@@ -91,12 +97,14 @@ def createUsers(maxUsers):
   
 createUsers(100)
 
+#-------------------------
 print AdminTask.createGroup ('[-cn VUXAllUsers-vuxdomain -description VUXAllUsers-vuxdomain]')
 print AdminTask.createGroup ('[-cn VUXGroup1 -description VUXGroup1]')
 print AdminTask.createGroup ('[-cn VUXGroup2 -description VUXGroup2]')
 print AdminTask.createGroup ('[-cn VUXGroup3 -description VUXGroup3]')
 print AdminTask.createGroup ('[-cn VUXGroup4 -description VUXGroup4]')
 
+#-------------------------
 def addUsersToGroup(groupName, fromIdx, toIdx):
   count = fromIdx
   while count<=toIdx:
@@ -105,7 +113,7 @@ def addUsersToGroup(groupName, fromIdx, toIdx):
     count = count + 1
   print "Done !"
 
-addUsersToGroup('VUXAllUsers-vuxdomain', 0, 100)
+addUsersToGroup('VUXAllUsers-vuxdomain', 1, 100)
 addUsersToGroup('VUXGroup1', 1, 50)
 addUsersToGroup('VUXGroup2', 51, 100)
 addUsersToGroup('VUXGroup3', 41, 60)
@@ -114,3 +122,28 @@ addUsersToGroup('VUXGroup4', 61, 70)
 print AdminConfig.save()
 
 # restart server per vedere anche i gruppi
+
+
+#-------------------------
+# rimozione gruppi
+print AdminTask.deleteGroup ('[-uniqueName cn=VUXAllUsers-vuxdomain,o=defaultWIMFileBasedRealm ]')
+print AdminTask.deleteGroup ('[-uniqueName cn=VUXGroup1,o=defaultWIMFileBasedRealm ]')
+print AdminTask.deleteGroup ('[-uniqueName cn=VUXGroup2,o=defaultWIMFileBasedRealm ]')
+print AdminTask.deleteGroup ('[-uniqueName cn=VUXGroup3,o=defaultWIMFileBasedRealm ]')
+print AdminTask.deleteGroup ('[-uniqueName cn=VUXGroup4,o=defaultWIMFileBasedRealm ]')
+
+print AdminConfig.save()
+
+#-------------------------
+# rimozione utenze
+def deleteUsers(maxUsers):
+  count = 0
+  while count<maxUsers:
+    count = count + 1
+    command = '[-uniqueName uid=vuxuser'+str(count)+',o=defaultWIMFileBasedRealm ]'
+    print AdminTask.deleteUser (command)
+  print "Done !"
+  
+deleteUsers(100)
+
+print AdminConfig.save()

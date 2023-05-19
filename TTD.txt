@@ -1,4 +1,4 @@
-- definire yaml per deployment ocp
+- definire yaml per deployment ocp img docker
 
 - completare setup traditional con rimozione utenze e gruppi bawvut
 
