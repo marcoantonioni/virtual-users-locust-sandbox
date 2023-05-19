@@ -1,8 +1,7 @@
 - definire yaml per deployment ocp img docker
 
-- completare setup traditional con rimozione utenze e gruppi bawvut
-
 - aggiungere attributi SCIM per ldap
+  https://www.ibm.com/docs/en/cloud-paks/1.0?topic=users-updating-scim-ldap-attributes-mapping
 
 - rivedere UT con scenari determinati payload/assert managers 
 -- test 1: voti predefiniti per nome
@@ -16,48 +15,6 @@
 
 ??? Riprovare con seconda demo UnitTest
 - verificare come aggiornare utenti in Groups per app appena creata (restart ? api rest ?)
-
-
-GET
-https://ibmbaw:9443/rest/bpm/wle/v1/exposed/service
-https://ibmbaw:9443/rest/bpm/wle/v1/exposed/service?includeServiceSubtypes=url%2C+dashboard%2C+administration_service%2C+startable_service%2C+and+not_exposed
-
-  -
-  ID:
-  "2015.3753",
-  type:
-  "service",
-  subtype:
-  "startable_service",
-  runURL:
-  "https://ibmbaw:9443/teamworks/executecf?modelID=1.a3cdd0cc-6fcb-44c8-9499-c7478ec50883&branchID=2063.61391e31-a3af-4423-ba6b-1ec0d5be3b81",
-  itemID:
-  "1.a3cdd0cc-6fcb-44c8-9499-c7478ec50883",
-  itemReference:
-  "/1.a3cdd0cc-6fcb-44c8-9499-c7478ec50883",
-  processAppID:
-  "2066.d58041d9-d0ae-456a-a3ef-9cad1a63fbb5",
-  processAppName:
-  "VirtualUsersSandboxTraditional",
-  processAppAcronym:
-  "VUST",
-  snapshotID:
-  "2064.9c092839-e33e-4cdb-b76a-00a1daacd67b",
-  snapshotCreatedOn:
-  "2023-05-14T12:07:49.000+00:00",
-  display:
-  "ExposedHumanService",
-  tip:
-  true,
-  branchID:
-  "2063.61391e31-a3af-4423-ba6b-1ec0d5be3b81",
-  branchName:
-  "Main",
-  isDefault:
-  false,
-  isMobileReady:
-  false
-  },
 
 
 #----------------------------------
@@ -184,3 +141,241 @@ curl -sk -H "Authorization: Bearer $zentoken" -H "Content-Type: application/json
   "_messageCode_": "Success",
   "message": "Success"
 }
+
+
+#-----------------------------
+
+TNS=cp4ba
+
+# IAM token
+
+iamadmin=$(oc get secret -n ${TNS} platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 -d)
+iampass=$(oc get secret -n ${TNS} platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)
+
+echo $iamadmin $iampass
+
+iamhost=https://$(oc get route -n ${TNS} cp-console -o jsonpath="{.spec.host}")
+iamaccesstoken=$(curl -sk -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=UTF-8" -d "grant_type=password&username=$iamadmin&password=$iampass&scope=openid" $iamhost/idprovider/v1/auth/identitytoken | jq -r .access_token)
+
+echo $iamaccesstoken
+
+curl -sk -X GET --header "Authorization: Bearer $iamaccesstoken" --header "Content-Type: application/json" ${iamhost}/idmgmt/identity/api/v1/scim/attributemappings | jq .
+
+
+[
+  {
+    "idp_id": "default",
+    "idp_type": "ldap",
+    "user": {
+      "id": "dn",
+      "userName": "uid",
+      "principalName": "uid",
+      "displayName": "cn",
+      "externalId": "dn",
+      "emails": "mail",
+      "created": "createTimestamp",
+      "lastModified": "modifyTimestamp",
+      "phoneNumbers": [
+        {
+          "value": "mobile",
+          "type": "mobile"
+        },
+        {
+          "value": "telephoneNumber",
+          "type": "work"
+        }
+      ],
+      "objectClass": "person",
+      "groups": "memberOf",
+      "name": {
+        "givenName": "cn",
+        "familyName": "sn",
+        "fullName": "cn"
+      }
+    },
+    "group": {
+      "id": "dn",
+      "name": "cn",
+      "principalName": "cn",
+      "displayName": "cn",
+      "externalId": "dn",
+      "created": "createTimestamp",
+      "lastModified": "modifyTimestamp",
+      "objectClass": "groupOfUniqueNames",
+      "members": "uniqueMember"
+    }
+  },
+  {
+    "idp_id": "cp4ba_demo",
+    "idp_type": "ldap",
+    "user": {
+      "id": "dn",
+      "userName": "uid",
+      "principalName": "uid",
+      "displayName": "cn",
+      "externalId": "dn",
+      "emails": "mail",
+      "created": "createTimestamp",
+      "lastModified": "modifyTimestamp",
+      "phoneNumbers": [
+        {
+          "value": "mobile",
+          "type": "mobile"
+        },
+        {
+          "value": "telephoneNumber",
+          "type": "work"
+        }
+      ],
+      "name": {
+        "givenName": "cn",
+        "familyName": "sn",
+        "fullName": "cn"
+      },
+      "objectClass": "person",
+      "groups": "memberOf"
+    },
+    "group": {
+      "id": "dn",
+      "name": "cn",
+      "principalName": "cn",
+      "displayName": "cn",
+      "externalId": "dn",
+      "created": "createTimestamp",
+      "lastModified": "modifyTimestamp",
+      "objectClass": "groupOfNames",
+      "members": "member"
+    }
+  },
+  {
+    "idp_id": "vuxdomain",
+    "idp_type": "ldap",
+    "user": {
+      "id": "dn",
+      "userName": "uid",
+      "principalName": "uid",
+      "displayName": "cn",
+      "externalId": "dn",
+      "emails": [
+        {
+          "value": "mail",
+          "type": "work"
+        },
+        {
+          "value": "mail",
+          "type": "home"
+        }
+      ]
+    },
+    "group": {
+      "id": "dn",
+      "name": "cn",
+      "principalName": "cn",
+      "displayName": "cn",
+      "externalId": "dn",
+      "members": "member"
+    }
+  }
+]
+
+
+# esempio configurazione SCIM
+export SCIM_DATA='{"idp_id":"vuxdomain","idp_type":"ldap","user":{"id":"dn","userName":"uid","principalName":"uid","displayName":"cn","givenName":"cn","familyName":"sn","fullName":"cn","externalId":"dn","phoneNumbers":[{"value":"mobile","type":"mobile"},{"value":"telephoneNumber","type":"work"}],"objectClass":"person","groups":"memberOf"},"group":{"id":"dn","name":"cn","principalName":"cn","displayName":"cn","externalId":"dn","created":"createTimestamp","lastModified":"modifyTimestamp","objectClass":"groupOfNames","members":"member"}}'
+
+curl -sk -X POST --header "Authorization: Bearer $iamaccesstoken" --header "Content-Type: application/json" -d $SCIM_DATA ${iamhost}/idmgmt/identity/api/v1/scim/attributemappings | jq .
+
+{
+  "idp_id": "vuxdomain",
+  "idp_type": "ldap",
+  "user": {
+    "id": "dn",
+    "userName": "uid",
+    "principalName": "uid",
+    "displayName": "cn",
+    "givenName": "cn",
+    "familyName": "sn",
+    "fullName": "cn",
+    "externalId": "dn",
+    "phoneNumbers": [
+      {
+        "value": "mobile",
+        "type": "mobile"
+      },
+      {
+        "value": "telephoneNumber",
+        "type": "work"
+      }
+    ],
+    "objectClass": "person",
+    "groups": "memberOf"
+  },
+  "group": {
+    "id": "dn",
+    "name": "cn",
+    "principalName": "cn",
+    "displayName": "cn",
+    "externalId": "dn",
+    "created": "createTimestamp",
+    "lastModified": "modifyTimestamp",
+    "objectClass": "groupOfNames",
+    "members": "member"
+  }
+}
+
+# esempio di aggiornamento SCIM: "objectClass":"groupOfUniqueNames","members":"uniqueMember"
+
+export SCIM_DATA='{"idp_id":"vuxdomain","idp_type":"ldap","user":{"id":"dn","userName":"uid","principalName":"uid","displayName":"cn","givenName":"cn","familyName":"sn","fullName":"cn","externalId":"dn","phoneNumbers":[{"value":"mobile","type":"mobile"},{"value":"telephoneNumber","type":"work"}],"objectClass":"person","groups":"memberOf"},"group":{"id":"dn","name":"cn","principalName":"cn","displayName":"cn","externalId":"dn","created":"createTimestamp","lastModified":"modifyTimestamp","objectClass":"groupOfUniqueNames","members":"uniqueMember"}}'
+
+IDP_ID=vuxdomain
+curl -sk -X PUT --header "Authorization: Bearer $iamaccesstoken" --header "Content-Type: application/json" -d $SCIM_DATA ${iamhost}/idmgmt/identity/api/v1/scim/attributemappings/$IDP_ID | jq .
+
+{
+  "idp_id": "vuxdomain",
+  "idp_type": "ldap",
+  "user": {
+    "id": "dn",
+    "userName": "uid",
+    "principalName": "uid",
+    "displayName": "cn",
+    "givenName": "cn",
+    "familyName": "sn",
+    "fullName": "cn",
+    "externalId": "dn",
+    "phoneNumbers": [
+      {
+        "value": "mobile",
+        "type": "mobile"
+      },
+      {
+        "value": "telephoneNumber",
+        "type": "work"
+      }
+    ],
+    "objectClass": "person",
+    "groups": "memberOf"
+  },
+  "group": {
+    "id": "dn",
+    "name": "cn",
+    "principalName": "cn",
+    "displayName": "cn",
+    "externalId": "dn",
+    "created": "createTimestamp",
+    "lastModified": "modifyTimestamp",
+    "objectClass": "groupOfUniqueNames",
+    "members": "uniqueMember"
+  }
+}
+
+
+# esempio di cancellazione SCIM
+
+IDP_ID=vuxdomain
+curl -sk -X DELETE --header "Authorization: Bearer $iamaccesstoken" --header "Content-Type: application/json" -d $SCIM_DATA ${iamhost}/idmgmt/identity/api/v1/scim/attributemappings/$IDP_ID | jq .
+
+
+#------------------------------
+
+oc get -n cp4ba configmap platform-auth-idp -o yaml
+
+
