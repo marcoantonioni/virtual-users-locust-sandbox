@@ -63,23 +63,6 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Vecchi
 ```
 locust --config=./configurations/baw-vu-cfg-1.conf

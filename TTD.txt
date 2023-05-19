@@ -1,3 +1,7 @@
+- definire yaml per deployment ocp
+
+- completare setup traditional con rimozione utenze e gruppi bawvut
+
 - aggiungere attributi SCIM per ldap
 
 - rivedere UT con scenari determinati payload/assert managers 
