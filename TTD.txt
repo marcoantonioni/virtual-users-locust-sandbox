@@ -1,7 +1,5 @@
 - definire yaml per deployment ocp img docker
 
-- aggiungere attributi SCIM per ldap
-  https://www.ibm.com/docs/en/cloud-paks/1.0?topic=users-updating-scim-ldap-attributes-mapping
 
 - rivedere UT con scenari determinati payload/assert managers 
 -- test 1: voti predefiniti per nome
@@ -16,6 +14,11 @@
 ??? Riprovare con seconda demo UnitTest
 - verificare come aggiornare utenti in Groups per app appena creata (restart ? api rest ?)
 
+#----------------------------------
+# Refs
+
+https://www.ibm.com/docs/en/cloud-paks/1.0?topic=apis-directory-management
+https://www.ibm.com/docs/en/cloud-paks/1.0?topic=guide-iam-your-product-platform-users
 
 #----------------------------------
 Unit Test
