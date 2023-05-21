@@ -2,7 +2,7 @@
 
 FROM registry.redhat.io/rhel8/python-38:latest
 
-ENV BAWVUT_USER=185
+ENV BAWVUT_USER=1001
 EXPOSE 8089
 
 RUN pip install locust \
@@ -15,7 +15,7 @@ USER root
 RUN dnf install -y iputils telnet \
     && dnf clean all
 
-RUN mkdir -p /bawvut/bawsys
+RUN mkdir -p /bawvut/{bawsys,configurations,outputdata}
 WORKDIR /bawvut
 ADD ./bawsys/*.py ./bawsys/
 ADD ./bawsys/*.yp ./bawsys/

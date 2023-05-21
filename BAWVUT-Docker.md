@@ -33,11 +33,23 @@ use '-p 8089:8089' when Locust configuration is set to 'headless = false'
 ```
 REPO_NAME=marco_antonioni
 podman run -it --rm --name bawvut \
-    -p 8089:8089
+    -p 8089:8089 \
     -v /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations:/bawvut/configurations:Z \
     -v /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata:/bawvut/outputdata:Z \
     -t quay.io/${REPO_NAME}/bawvut:latest locust --config=./configurations/baw-vu-cfg-ut1.conf
 
 # or from inside the container
 locust --config=./configurations/baw-vu-cfg-ut1.conf
+```
+
+```
+REPO_NAME=marco_antonioni
+podman run -it --rm --name bawvut \
+    -p 8089:8089 \
+    -v /bawvut/configurations:/bawvut/configurations:Z \
+    -v /bawvut/outputdata:/bawvut/outputdata:Z \
+    -t quay.io/${REPO_NAME}/bawvut:latest locust --config=/bawvut/configurations/baw-vu-cfg-ut1.conf
+
+# or from inside the container
+locust --config=/bawvut/configurations/baw-vu-cfg-ut1.conf
 ```
