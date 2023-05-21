@@ -2,13 +2,18 @@
 #-------------------------------------
 # LOAD TEST
 
-cp virtual-users-locust-test-configs/configurations/baw-vu-cfg-1.conf ./conf1/
-cp virtual-users-locust-test-configs/configurations/env1.properties ./conf1/
-cp virtual-users-locust-test-configs/configurations/creds-cfg1.csv ./conf1/
-cp virtual-users-locust-test-configs/configurations/TS-TEST1.csv ./conf1/
-cp virtual-users-locust-test-configs/configurations/US-TS-TEST1.csv ./conf1/
-cp virtual-users-locust-test-configs/configurations/payloadManager-type1.py ./conf1/
-cp virtual-users-locust-test-configs/configurations/assertsManager-type1.py ./conf1/
+cd /home/marco/locust/studio/bawvut/virtual-users-locust-sandbox/k8s
+mkdir -p ./conf1
+cp /bawvut/configurations/baw-vu-cfg-1.conf ./conf1/
+cp /bawvut/configurations/env1.properties ./conf1/
+cp /bawvut/configurations/creds-cfg1.csv ./conf1/
+cp /bawvut/configurations/TS-TEST1.csv ./conf1/
+cp /bawvut/configurations/US-TS-TEST1.csv ./conf1/
+cp /bawvut/configurations/payloadManager-type1.py ./conf1/
+cp /bawvut/configurations/assertsManager-type1.py ./conf1/
+
+sed -i 's#/home/marco/locust/studio/bawvut/virtual-users-locust-test-configs#/bawvut#g' ./conf1/baw-vu-cfg-1.conf
+sed -i 's#/home/marco/locust/studio/bawvut/virtual-users-locust-test-configs#/bawvut#g' ./conf1/env1.properties
 
 export BAWVUT_CONFIG_FILE_NAME=baw-vu-cfg-1.conf
 
@@ -22,13 +27,18 @@ sleep 10
 #-------------------------------------
 # UNIT TEST
 
-cp virtual-users-locust-test-configs/configurations/baw-vu-cfg-ut1.conf ./conf2/
-cp virtual-users-locust-test-configs/configurations/env-ut1.properties ./conf2/
-cp virtual-users-locust-test-configs/configurations/creds-cfg-ut1.csv ./conf2/
-cp virtual-users-locust-test-configs/configurations/TS-UT1.csv ./conf2/
-cp virtual-users-locust-test-configs/configurations/US-TS-UT1.csv ./conf2/
-cp virtual-users-locust-test-configs/configurations/payloadManager-type-ut1.py ./conf2/
-cp virtual-users-locust-test-configs/configurations/assertsManager-type-ut1.py ./conf2/
+cd /home/marco/locust/studio/bawvut/virtual-users-locust-sandbox/k8s
+mkdir -p ./conf2
+cp /bawvut/configurations/baw-vu-cfg-ut1.conf ./conf2/
+cp /bawvut/configurations/env-ut1.properties ./conf2/
+cp /bawvut/configurations/creds-cfg-ut1.csv ./conf2/
+cp /bawvut/configurations/TS-UT1.csv ./conf2/
+cp /bawvut/configurations/US-TS-UT1.csv ./conf2/
+cp /bawvut/configurations/payloadManager-type-ut1.py ./conf2/
+cp /bawvut/configurations/assertsManager-type-ut1.py ./conf2/
+
+sed -i 's#/home/marco/locust/studio/bawvut/virtual-users-locust-test-configs#/bawvut#g' ./conf2/baw-vu-cfg-ut1.conf
+sed -i 's#/home/marco/locust/studio/bawvut/virtual-users-locust-test-configs#/bawvut#g' ./conf2/env-ut1.properties
 
 export BAWVUT_CONFIG_FILE_NAME=baw-vu-cfg-ut1.conf
 
@@ -39,3 +49,33 @@ oc delete deployment -n bawvut bawvut
 sleep 10
 ./deploy-bawvut.sh
 
+
+#-------------------------------------
+# Logs
+
+oc get pods -n bawvut | grep Running | awk '{print $1}' | xargs oc logs -f -n bawvut
+
+#-------------------------------------
+# Export outdata
+
+cd /home/marco/locust/studio/bawvut/virtual-users-locust-sandbox/k8s
+mkdir -p ./outdata
+PODNAME=$(oc get pods -n bawvut | grep Running | awk '{print $1}')
+oc cp -n bawvut ${PODNAME}:/bawvut/outputdata ./outdata
+ls -al ./outdata
+
+
+#-------------------------------------
+# Intra cluster URLs
+
+!!!! Non funziona, aprire case
+
+TNS=cp4ba
+SRV_CONSOLE=$(oc get route --no-headers -n ${TNS} cp-console | awk '{print $3}')
+SRV_BASE=$(oc get route --no-headers -n ${TNS} cpd | awk '{print $3}')
+
+oc get service --no-headers -n ${TNS} ${SRV_CONSOLE}
+oc get service --no-headers -n ${TNS} ${SRV_BASE}
+
+echo "BAW_IAM_HOST=https://"${SRV_CONSOLE}.${TNS}.svc.cluster.local
+echo "BAW_BASE_HOST=https://"${SRV_BASE}.${TNS}.svc.cluster.local
