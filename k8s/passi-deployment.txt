@@ -1,0 +1,41 @@
+
+#-------------------------------------
+# LOAD TEST
+
+cp virtual-users-locust-test-configs/configurations/baw-vu-cfg-1.conf ./conf1/
+cp virtual-users-locust-test-configs/configurations/env1.properties ./conf1/
+cp virtual-users-locust-test-configs/configurations/creds-cfg1.csv ./conf1/
+cp virtual-users-locust-test-configs/configurations/TS-TEST1.csv ./conf1/
+cp virtual-users-locust-test-configs/configurations/US-TS-TEST1.csv ./conf1/
+cp virtual-users-locust-test-configs/configurations/payloadManager-type1.py ./conf1/
+cp virtual-users-locust-test-configs/configurations/assertsManager-type1.py ./conf1/
+
+export BAWVUT_CONFIG_FILE_NAME=baw-vu-cfg-1.conf
+
+oc delete cm -n bawvut bawvut-configurations
+oc create cm -n bawvut bawvut-configurations --from-file=./conf1
+
+oc delete deployment -n bawvut bawvut
+sleep 10
+./deploy-bawvut.sh
+
+#-------------------------------------
+# UNIT TEST
+
+cp virtual-users-locust-test-configs/configurations/baw-vu-cfg-ut1.conf ./conf2/
+cp virtual-users-locust-test-configs/configurations/env-ut1.properties ./conf2/
+cp virtual-users-locust-test-configs/configurations/creds-cfg-ut1.csv ./conf2/
+cp virtual-users-locust-test-configs/configurations/TS-UT1.csv ./conf2/
+cp virtual-users-locust-test-configs/configurations/US-TS-UT1.csv ./conf2/
+cp virtual-users-locust-test-configs/configurations/payloadManager-type-ut1.py ./conf2/
+cp virtual-users-locust-test-configs/configurations/assertsManager-type-ut1.py ./conf2/
+
+export BAWVUT_CONFIG_FILE_NAME=baw-vu-cfg-ut1.conf
+
+oc delete cm -n bawvut bawvut-configurations
+oc create cm -n bawvut bawvut-configurations --from-file=./conf2
+
+oc delete deployment -n bawvut bawvut
+sleep 10
+./deploy-bawvut.sh
+
