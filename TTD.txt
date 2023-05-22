@@ -97,9 +97,9 @@ W1BcbRumpJaLZ0msHFzGzjAxSMa0eL6a
 
 
 
-TNS=cp4ba-starter
-
 # IAM token
+
+TNS=cp4ba
 
 iamadmin=$(oc get secret -n ${TNS} platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 -d)
 iampass=$(oc get secret -n ${TNS} platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 -d)

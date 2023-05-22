@@ -23,8 +23,11 @@ podman pull python:alpine3.18
 
 ## Build BAWVUT image
 ```
+podman login -u $QUAY_USER -p $QUAY_PWD quay.io
+
 REPO_NAME=marco_antonioni
 podman build -t quay.io/${REPO_NAME}/bawvut:latest -f ./Dockerfile
+podman push quay.io/${REPO_NAME}/bawvut:latest
 ```
 
 ## Run BAWVUT image

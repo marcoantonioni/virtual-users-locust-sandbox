@@ -21,7 +21,7 @@ oc delete cm -n bawvut bawvut-configurations
 oc create cm -n bawvut bawvut-configurations --from-file=./conf1
 
 oc delete deployment -n bawvut bawvut
-sleep 10
+sleep 1
 ./deploy-bawvut.sh
 
 #-------------------------------------
@@ -46,7 +46,7 @@ oc delete cm -n bawvut bawvut-configurations
 oc create cm -n bawvut bawvut-configurations --from-file=./conf2
 
 oc delete deployment -n bawvut bawvut
-sleep 10
+sleep 1
 ./deploy-bawvut.sh
 
 

@@ -92,7 +92,6 @@ class BpmExposedProcessManager:
             token = bpmSys._loginTraditional(bpmEnvironment, userName, userPassword) 
         else:
             token = bpmSys._loginZen(bpmEnvironment, userName, userPassword)
-        
         if token != None:
             response = None
             baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
@@ -105,7 +104,6 @@ class BpmExposedProcessManager:
             else:
                 my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer '+token }
                 response = requests.get(url=urlExposed, headers=my_headers, verify=False)
-            
             if response.status_code == 200:
                 data = response.json()["data"]
 
