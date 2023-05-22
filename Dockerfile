@@ -26,4 +26,3 @@ RUN echo "echo -e '\nUsage:\nlocust --config=path-to-cfg-file\n'" > ./usage.sh \
 
 USER ${BAWVUT_USER}
 CMD ["./usage.sh"]
-
