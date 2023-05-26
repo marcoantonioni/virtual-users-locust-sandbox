@@ -17,6 +17,8 @@ sed -i 's#/home/marco/locust/studio/bawvut/virtual-users-locust-test-configs#/ba
 
 export BAWVUT_CONFIG_FILE_NAME=baw-vu-cfg-1.conf
 
+oc new-project bawvut
+
 oc delete cm -n bawvut bawvut-configurations
 oc create cm -n bawvut bawvut-configurations --from-file=./conf1
 
@@ -41,6 +43,8 @@ sed -i 's#/home/marco/locust/studio/bawvut/virtual-users-locust-test-configs#/ba
 sed -i 's#/home/marco/locust/studio/bawvut/virtual-users-locust-test-configs#/bawvut#g' ./conf2/env-ut1.properties
 
 export BAWVUT_CONFIG_FILE_NAME=baw-vu-cfg-ut1.conf
+
+oc new-project bawvut
 
 oc delete cm -n bawvut bawvut-configurations
 oc create cm -n bawvut bawvut-configurations --from-file=./conf2

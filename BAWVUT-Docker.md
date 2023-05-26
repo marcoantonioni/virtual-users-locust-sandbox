@@ -33,26 +33,29 @@ podman push quay.io/${REPO_NAME}/bawvut:latest
 ## Run BAWVUT image
 
 use '-p 8089:8089' when Locust configuration is set to 'headless = false'
+
 ```
+mkdir -p ./test-configs/{conf1,conf2}
+mkdir -p ./test-configs/conf1/outputdata
+mkdir -p ./test-configs/conf2/outputdata
+
+
+touch ./test-configs/conf1/cfg1.conf
+touch ./test-configs/conf1/env1.properties
+touch ./test-configs/conf1/ts1.csv
+touch ./test-configs/conf1/us-ts1.csv
+touch ./test-configs/conf1/creds1.csv
+touch ./test-configs/conf1/assertManager1.py
+touch ./test-configs/conf1/payloadManager1.py
+
+
 REPO_NAME=marco_antonioni
 podman run -it --rm --name bawvut \
     -p 8089:8089 \
-    -v /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations:/bawvut/configurations:Z \
-    -v /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata:/bawvut/outputdata:Z \
-    -t quay.io/${REPO_NAME}/bawvut:latest locust --config=./configurations/baw-vu-cfg-ut1.conf
+    -v ./test-configs/conf1:/bawvut/configurations:Z \
+    -v ./test-configs/conf1/outputdata:/bawvut/outputdata:Z \
+    -t quay.io/${REPO_NAME}/bawvut:latest locust --config=./configurations/cfg1.conf
 
 # or from inside the container
-locust --config=./configurations/baw-vu-cfg-ut1.conf
-```
-
-```
-REPO_NAME=marco_antonioni
-podman run -it --rm --name bawvut \
-    -p 8089:8089 \
-    -v /bawvut/configurations:/bawvut/configurations:Z \
-    -v /bawvut/outputdata:/bawvut/outputdata:Z \
-    -t quay.io/${REPO_NAME}/bawvut:latest locust --config=/bawvut/configurations/baw-vu-cfg-ut1.conf
-
-# or from inside the container
-locust --config=/bawvut/configurations/baw-vu-cfg-ut1.conf
+locust --config=/bawvut/configurations/cfg1.conf
 ```

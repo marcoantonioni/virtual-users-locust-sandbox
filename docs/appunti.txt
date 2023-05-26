@@ -1,6 +1,27 @@
-(descrizione dell'argomento affrontato)
-
 TEST AUTOMATION FOR BUSINESS PROCESSES
+
+The complexity in designing and executing end-to-end tests of a business process can lead the manager
+of the project to limit the preventive verification of the application functions with a consequent 
+increase in the risks regarding the quality offered to the end user.
+Due to the stateful nature of business process management applications, it is never trivial nor cheaper to deal with
+bug-fixing operations and subsequent migration of process instances from the original template to the new template
+which offers fixes or even new features.
+
+In my experience gained in the previous role (business automation architect in the IBM Technology Expert Labs team),
+I have often supported customers also in this activity; each customer has independently chosen the products for generic functional tests,
+both open source and specific vendors. These have always been products that allow user interactions to be recorded via the browser
+and evaluate the outcome of the test based on the output presented in the browser.
+This approach has its value but can only be thought of and implemented at the time of GUI stabilization.
+It lacks the ability to evaluate everything that is internal to the business process or even what happens in the integration and choreography
+of activities outside the business process (intended in terms of values of process instance variables).
+It is normal that generic products cannot in any way "look" inside the instance of the process nor apply logic
+of "assertions" on the internal data/variables of the process instance.
+
+So it would be very useful to have a simple and flexible tool, easily adaptable to the functional business context and data model
+of each single process template and which allows you to make "assertions" on what is expected regarding the value of the process variables.
+
+Here a list of the generic activities and costs necessary for business process testing.
+
 The costs and time required are very often derived from:
 - business solutions with frequent evolution of requirements and modification of user interfaces
 - the process model becomes stable before the completion of the web interfaces, with generic tools (web interaction only) to perform an automated test you have to wait for the consolidation of the gui
@@ -8,8 +29,7 @@ The costs and time required are very often derived from:
 - redesigning tests that interact at the web browser level is often expensive, generic products are used to interact with the web browser
 - complexity in collecting the final information relating to the outcome of a process instance
 
-
-(cosa serve per realizzare l'attività)
+Some ideas on what is needed to carry out the activity
 
 MANUAL OPERATIONS NECESSARY FOR UNIT TEST SETUP
 The costs and times required are very often derived from:
@@ -28,25 +48,19 @@ The costs and times required are very often derived from:
 - difficulty of simultaneous use of the development environment between developers and testers caused by long times for manual execution of the tests
 - dilated times between version development, manual tests and any feedback to the programmer for bug correction with subsequent reiteration of the tests
 
-(evidenziazione delle complessità in modalità manuale)
-
-LIMITATIONS AND COSTS OF MANUAL ACTIVITIES
+COMPLEXITIES, LIMITATIONS AND COSTS OF MANUAL ACTIVITIES
 - communication between roles, obligation to produce updated documentation for each evolution
 - use of common resources, runtime environment if not available a specific test environment
 - continuous versioning and new version deployment in case of dedicated test environment, this involves exponential growth of the number of snapshots and increased frequency of environment updating activities
 - execution and verification times
 
-(evidenziazione dei benefici automazione)
-
-TEST AUTOMATION
+BENEFITS OF TEST AUTOMATION
 The benefits of adopting ad hoc tools
 With a dedicated tool for IBM Business Automation Workflow you can:
 - automate almost all of the manual test environment preparation operations
 - run human interaction tests automatically
 - perform automatic verification of the expected results
 Redesigning the tests that interact at the TASK level is relatively simple and fast with the help of ad hoc tools for IBM Business Automation Workflow and allows to anticipate the test of the process logic compared to the test of the unique/gui specific logics.
-
-(proposizione del tool)
 
 ONE OF THE POSSIBLE SOLUTION IS "BAW Virtual Users Tool" (BAWVUT)
 With this open source tool you can:
@@ -62,14 +76,10 @@ these are not used because REST interactions directly use the API dedicated to T
 This means that the measured performance will be related only to the server side business logic.
 How ? Maintaining the same basic configuration and replacing the payload generator with, for example, the generation of random values always within the ranges allowed by the application.
 
-(sintesi dei benefici ottenibili)
-
 WHAT CAN YOU ACHIEVE WITH THIS AUTOMATION TOOL
 - greater efficiency and productivity with reduction of test processing times and software correction
 - reduction of costs inherent to the resources used
 - improvement of the quality of the produced software
-
-(come ottenere e valutare in autonomia il tool)
 
 HOW TO EVALUATE THIS TOOL
 - the tool is open source, present on a git repository (...TBD...) released using MIT licenses (https://opensource.org/license/mit/)
@@ -102,10 +112,10 @@ TOOL DESCRIPTION (to be completed...)
 - run examples with docker image
 - run examples with tool sources on client machine
 
-LIMITI v1
-- non gestisce lo start di Activity opzionali
+LIMITS in version 1
+- the tool does not manage the start of optional Activities
 
-NOTE
 
+NOTE:
 In no way is this tool intended to replace the use of https://sdc-china.github.io/IDA-doc
 
