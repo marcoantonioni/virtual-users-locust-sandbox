@@ -16,7 +16,9 @@ CP4BA_NS=cp4ba
 
 # verifica NS CP4BA in .properties
 ./add-idp.sh -p ./idp1.properties
-  
+
+CP4BA_NS=cp4ba
+
 ADMIN_PASSW=$(oc get secret platform-auth-idp-credentials -n ${CP4BA_NS} -o jsonpath='{.data.admin_password}' | base64 -d)
 CP4ADMIN_PASSW=$(oc get secrets -n ${CP4BA_NS} | grep ldif | awk '{print $1}' | xargs oc get secret -n ${CP4BA_NS} -o jsonpath='{.data.ldap_user\.ldif}' | base64 -d | grep "dn: uid=cp4admin" -A4 | grep userpassword | awk '{print $2}')
 echo "admin / ${ADMIN_PASSW}"
@@ -33,6 +35,8 @@ echo "Pak base ${ROUTE_BASE}"
 #-----------------------------------
 python ./iamOnboardUsers.py -e ./configurations/env1.properties -d vuxdomain -f ./configurations/creds-cfg1.csv
 
+python ./iamOnboardUsers.py -e ./k8s/conf1/env1.properties -d vuxdomain -f ./k8s/conf1/creds-cfg1.csv
+ 
 #=================================================================================
 # 2. Deploy demo apps
 #=================================================================================
@@ -44,9 +48,15 @@ Verifica gruppi definiti in applicazione (ProcessAdmin), se primo deployment son
 # 3. Configurazione Groups e Teams
 #=================================================================================
 
+#---------------
 python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -o add
 
+python ./manageGroupsAndTeams.py -e ./k8s/conf1/env1.properties -g ./k8s/conf1/groups-vu-cfg1.csv -o add
+
+#---------------
 python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./configurations/teams-vu-cfg1.csv -o add
+
+python ./manageGroupsAndTeams.py -e ./k8s/conf1/env1.properties -t ./k8s/conf1/teams-vu-cfg1.csv -o add
 
 
 #*********************************************************************************

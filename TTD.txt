@@ -1,5 +1,6 @@
 - definire yaml per deployment ocp img docker
 
+- verifica slah finale su url per iamOnboardUsers.py
 
 - rivedere UT con scenari determinati payload/assert managers 
 -- test 1: voti predefiniti per nome

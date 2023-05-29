@@ -56,6 +56,24 @@ podman run -it --rm --name bawvut \
     -v ./test-configs/conf1/outputdata:/bawvut/outputdata:Z \
     -t quay.io/${REPO_NAME}/bawvut:latest locust --config=./configurations/cfg1.conf
 
+#--------------------------------------
+
+# bawvut
+REPO_NAME=marco_antonioni
+podman run -it --rm --name bawvut \
+    -p 8089:8089 \
+    -v ./k8s/conf1:/bawvut/configurations:Z \
+    -v ./k8s/outdata:/bawvut/outputdata:Z \
+    -t quay.io/${REPO_NAME}/bawvut:latest locust --config=/bawvut/configurations/baw-vu-cfg-1.conf
+
+# bawvut2
+REPO_NAME=marco_antonioni
+podman run -it --rm --name bawvut2 \
+    -p 8090:8089 \
+    -v ./k8s/conf1:/bawvut/configurations:Z \
+    -v ./k8s/outdata:/bawvut/outputdata:Z \
+    -t quay.io/${REPO_NAME}/bawvut:latest locust --config=/bawvut/configurations/baw-vu-cfg-1.conf
+
 # or from inside the container
 locust --config=/bawvut/configurations/cfg1.conf
 ```
