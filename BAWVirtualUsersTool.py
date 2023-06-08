@@ -254,7 +254,14 @@ def on_locust_init(environment, **kwargs):
                 else:
                     logging.info("!!! object with key[%s] not found", key)
                 
+            if bpmExposedProcessManager.hasExposedProcesses() == False:
+                if bawUtils.isUnitTestRun(bpmEnvironment):
+                    logging.error("!!! ERROR, no exposed processes for this configuration, cannot run unit test !!!")
+                    environment.runner.quit()
+                else:
+                    logging.info("!!! WARNING, no exposed processes for this configuration, cannot create new process instances !!!")
             logging.info("***********************")
+
 
             dynamicPLM : str = bpmEnvironment.getValue(bpmEnvironment.keyBAW_PAYLOAD_MANAGER)
             global bpmDynamicModule 

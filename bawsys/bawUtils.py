@@ -123,15 +123,27 @@ def import_module(name, package=None):
     return module
 """
 
-
-def setupAssertsManagerModule(bpmEnvironment):
-    bpmDynamicModuleAsserts = None
+def isUnitTestRun(bpmEnvironment):
+    unitTest = False
     strRunAssertsMagr = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_RUN_ASSERTS_MANAGER)
     if strRunAssertsMagr != None:
         if strRunAssertsMagr.lower() == "true":
-            dynamicAM = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_ASSERTS_MANAGER)
-            if dynamicAM != None and dynamicAM != "":
-                bpmDynamicModuleAsserts = import_module(dynamicAM)
+            unitTest = True
+    return unitTest
+
+def setupAssertsManagerModule(bpmEnvironment):
+    bpmDynamicModuleAsserts = None
+    if isUnitTestRun(bpmEnvironment):
+        dynamicAM = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_ASSERTS_MANAGER)
+        if dynamicAM != None and dynamicAM != "":
+            bpmDynamicModuleAsserts = import_module(dynamicAM)
+
+#    strRunAssertsMagr = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_RUN_ASSERTS_MANAGER)
+#    if strRunAssertsMagr != None:
+#        if strRunAssertsMagr.lower() == "true":
+#            dynamicAM = bpmEnvironment.getValue(bpmEnvironment.keyBAW_UNIT_TEST_ASSERTS_MANAGER)
+#            if dynamicAM != None and dynamicAM != "":
+#                bpmDynamicModuleAsserts = import_module(dynamicAM)
     return bpmDynamicModuleAsserts
 
 def removeSlash(srcText, begin: bool):

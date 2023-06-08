@@ -35,6 +35,9 @@ class BpmExposedProcessManager:
     def addProcessInfos(self, key: str, processInfo: bpmSys.BpmExposedProcessInfo):
         self.exposedProcesses[key] = processInfo  
 
+    def hasExposedProcesses(self):
+        return len(self.exposedProcesses) > 0
+
     def removeProcessInfos(self, key: str):
         self.exposedProcesses.pop(key)
 
