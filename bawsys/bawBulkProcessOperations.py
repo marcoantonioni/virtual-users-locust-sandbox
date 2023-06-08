@@ -63,10 +63,10 @@ class BpmProcessBulkOpsManager:
         return None
 
     def _workOnInstances(self, bpmEnvironment : bpmEnv.BpmEnvironment, action : str):
-        hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        hostUrl : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
         appProcessName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
         appProcessAcronym = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
-        baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        baseUri = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
 
         part1="action="+action+"&searchFilterScope=Both&projectFilter="+appProcessAcronym
         if action == "terminate":

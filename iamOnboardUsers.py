@@ -15,6 +15,7 @@ from bawsys import bawEnvironment as bpmEnv
 import bawsys.bawCommandLineManager as clpm
 import bawsys.bawCredentialsManager as creds
 from bawsys import bawSystem as bawSys
+from bawsys import bawUtils as bawUtils
 import sys, logging, json
 from json import JSONDecodeError
 import requests
@@ -68,8 +69,10 @@ def _cp4baToken(baseHost, userName, iamToken):
 
 def _userOnboard(bpmEnvironment : bpmEnv.BpmEnvironment, users, domainName):
         access_token : str = None
-        hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
+
+        hostUrl : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+        iamUrl = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST), False)
+        
         powerUser = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_USER_NAME)
         powerUserPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_USER_PASSWORD)
         access_token : str = _accessToken(iamUrl, powerUser, powerUserPassword)

@@ -88,8 +88,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         if bpmTask.isFederatedSystem():
             fullUrl = bpmTask.getFederatedSystem().getRestUrlPrefix()+"/v1/task/"+bpmTask.getId()
         else:
-            hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-            baseUri : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+            hostUrl : str = bawUtils.removeSlash(self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+            baseUri : str = bawUtils.removeSlash(self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
             fullUrl = hostUrl+baseUri+"/rest/bpm/wle/v1/task/"+bpmTask.getId()
         return fullUrl
 
@@ -147,7 +147,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
         if self.user.loggedIn == True:
             uriBaseTaskList = ""
             taskListFederated = False
-            hostUrl : str = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+            hostUrl : str = bawUtils.removeSlash(self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
             processAppName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
             processAppAcronym = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
             
@@ -162,7 +162,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                 uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
                 nameType = processAppAcronym
             else:
-                baseUri = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+                baseUri = bawUtils.removeSlash(self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
                 if baseUri == None:
                     baseUri = ""
                 uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"

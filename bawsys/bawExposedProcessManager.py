@@ -14,6 +14,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 import requests, json, logging, random, sys
 import bawsys.bawEnvironment as bpmEnv
 import bawsys.bawSystem as bpmSys
+import bawsys.bawUtils as bawUtils
 from json import JSONDecodeError
 
 requests.packages.urllib3.disable_warnings() 
@@ -83,7 +84,7 @@ class BpmExposedProcessManager:
         return processInfo 
 
     def LoadProcessInstancesInfos(self, bpmEnvironment : bpmEnv.BpmEnvironment):
-        hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        hostUrl = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
         token = None
 
         userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
@@ -94,7 +95,7 @@ class BpmExposedProcessManager:
             token = bpmSys._loginZen(bpmEnvironment, userName, userPassword)
         if token != None:
             response = None
-            baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+            baseUri = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
             urlExposed = hostUrl+baseUri+"/rest/bpm/wle/v1/exposed/process?excludeProcessStartUrl=false"
 
             my_headers = None
@@ -189,8 +190,8 @@ class BpmExposedProcessManager:
     def loadExposedItemsForUser(self, bpmEnvironment : bpmEnv.BpmEnvironment, processInfo: bpmSys.BpmExposedProcessInfo, user):
         forMe = False
         response = None
-        hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        hostUrl = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+        baseUri = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
         urlExposed = hostUrl+baseUri+"/rest/bpm/wle/v1/exposed/process?excludeProcessStartUrl=false"
 
         my_headers = None

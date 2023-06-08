@@ -52,7 +52,7 @@ class GroupsTeamsManager:
             if self.cookieTraditional != None:
                 self.loggedIn = True
         else:
-            baseHost : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+            baseHost : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
             self.csrfToken = bawSys._csrfToken(baseHost, userName, userPassword)
             self.authorizationBearerToken = bawSys._loginZen(self.bpmEnvironment, userName, userPassword)
             if self.authorizationBearerToken != None and self.csrfToken != None:
@@ -129,8 +129,8 @@ class GroupsTeamsManager:
     def _queryGroupList(self):
         ok = False
         # legge lista gruppi da server
-        hostUrl : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        baseUri = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        hostUrl : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+        baseUri : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
 
         self.appAcronym : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
         self.appName : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
@@ -164,8 +164,8 @@ class GroupsTeamsManager:
         return ok
 
     def _operateGroups(self, mode : str):
-        hostUrl : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        baseUri = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        hostUrl : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+        baseUri : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
         if baseUri == None:
             baseUri = ""
         uriBaseRest = baseUri+"/rest/bpm/wle/v1"
@@ -253,8 +253,8 @@ class GroupsTeamsManager:
     def _queryTeamList(self):
         ok = False
         # legge lista gruppi da server
-        hostUrl : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        baseUri = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        hostUrl : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+        baseUri : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
 
         self.appAcronym : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
         self.appSnapName : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
@@ -291,8 +291,8 @@ class GroupsTeamsManager:
     def _operateTeams(self, mode : str):
         ok = False
         # legge lista gruppi da server
-        hostUrl : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        baseUri = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        hostUrl : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+        baseUri : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
         self.appAcronym : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
         self.appSnapName : str = self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
         if baseUri == None:

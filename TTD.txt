@@ -2,6 +2,8 @@
 
 - verificare esito exposed process prima di avviare test
 
+- non crea numero max processi in scenario load test
+
 - verifica slash finale su url per iamOnboardUsers.py
 
 - rivedere UT con scenari determinati payload/assert managers 

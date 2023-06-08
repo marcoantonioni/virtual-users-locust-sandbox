@@ -122,7 +122,7 @@ class BpmProcessInstanceManager:
         return ok
 
     def createInstance(self, bpmEnvironment : bpmEnv.BpmEnvironment, runningTraditional, userName, processInfo: bawSys.BpmExposedProcessInfo, payload : str, my_headers, my_cookies=None):                
-        hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        hostUrl : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
         urlStartInstance = hostUrl+processInfo.getStartUrl()+"&parts=header&params="+payload
         response = requests.post(url=urlStartInstance, headers=my_headers, cookies=my_cookies, verify=False)
         if response.status_code == 200:
@@ -165,8 +165,8 @@ class BpmProcessInstanceManager:
             else:
                 self._headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
 
-            hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-            baseUri : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+            hostUrl : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+            baseUri : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
             appAcronym : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
 
             statusFilter = ""
@@ -224,8 +224,8 @@ class BpmProcessInstanceManager:
     def exportProcessInstancesData(self, bpmEnvironment : bpmEnv.BpmEnvironment, bpdName: str, status: str, dateFrom: str, dateTo: str):
         listOfInstances = self.searchProcessInstances(bpmEnvironment, bpdName, status, dateFrom, dateTo)
         if listOfInstances != None:
-            hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-            baseUri : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+            hostUrl : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+            baseUri : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
             numProcesses = len(listOfInstances)
             idx = 0
             while idx < numProcesses:
@@ -256,8 +256,8 @@ class BpmProcessInstanceManager:
             else:
                 self._headers['Authorization'] = bawUtils._basicAuthHeader(userName, userPassword)
 
-            hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-            baseUri : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+            hostUrl : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+            baseUri : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
 
             fullUrl = hostUrl+baseUri+"/rest/bpm/wle/v1/process/"+pid+"?parts=header|data"
             response = requests.get(url=fullUrl, headers=self._headers, verify=False)
@@ -283,8 +283,8 @@ class BpmProcessInstanceManager:
         return None
 
     def exportProcessInstancesDataByPid(self, bpmEnvironment : bpmEnv.BpmEnvironment, listOfPids):
-        hostUrl : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-        baseUri : str = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+        hostUrl : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+        baseUri : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
         listOfInstances = []
         idx = 0
         for pid in listOfPids:      

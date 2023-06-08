@@ -58,7 +58,7 @@ podman run -it --rm --name bawvut \
 
 #--------------------------------------
 
-# bawvut
+# prima istanza bawvut
 REPO_NAME=marco_antonioni
 podman run -it --rm --name bawvut \
     -p 8089:8089 \
@@ -66,7 +66,7 @@ podman run -it --rm --name bawvut \
     -v ./k8s/outdata:/bawvut/outputdata:Z \
     -t quay.io/${REPO_NAME}/bawvut:latest locust --config=/bawvut/configurations/baw-vu-cfg-1.conf
 
-# bawvut2
+# seconda istanza bawvut2
 REPO_NAME=marco_antonioni
 podman run -it --rm --name bawvut2 \
     -p 8090:8089 \

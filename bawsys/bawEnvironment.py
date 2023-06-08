@@ -14,6 +14,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 import logging
 from jproperties import Properties
+from bawsys import bawUtils as bawUtils 
+
 
 class BpmEnvironment:
     configFullPathName : str = None

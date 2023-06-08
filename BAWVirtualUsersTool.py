@@ -167,7 +167,7 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     # for each virtual user
 
     def on_start(self):
-        self.host = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_BASE_HOST)
+        self.host = bawUtils.removeSlash(bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
         self.min_think_time = int(bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MIN))
         self.max_think_time = int(bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MAX))
         self.setIdleMode()

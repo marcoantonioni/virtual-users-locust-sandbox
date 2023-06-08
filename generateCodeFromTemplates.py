@@ -38,11 +38,9 @@ def generateOutputFileNames(payloadTemplateMgr: templMgr.PayloadTemplateManager,
     fAssertName = fAssertName.replace(".","_")
     fNameDataModel = fName+"_DataModel"
     fNameSchema = fName+"_JsonSchema"
-    if outPath[-1] == "/":
-        outPath = outPath[:-1]
-    else:
-        if outPath[-1] == "\\":
-            outPath = outPath[:-1]
+ 
+    outPath = bawUtils.removeSlash(outPath, False)        
+
     outNames["_outputNameSchema"] = outPath+"/"+fNameSchema+".py"
     outNames["_outputNameDataModel"] = outPath+"/"+fNameDataModel+".py"
     outNames["_outputPayloadManager"] = outPath+"/"+fName+".py"   

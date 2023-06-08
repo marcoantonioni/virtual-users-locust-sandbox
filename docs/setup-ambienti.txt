@@ -12,7 +12,7 @@ CP4BA_NS=cp4ba
 
 ./add-ldap.sh -p vux-cfg1.properties
 ./add-phpadmin.sh -p ./vux-cfg1.properties -n ${CP4BA_NS}
-    credentials: cn=admin,dc=vuxdomain,dc=net / passw0rd
+# credentials: cn=admin,dc=vuxdomain,dc=net / passw0rd
 
 # verifica NS CP4BA in .properties
 ./add-idp.sh -p ./idp1.properties
@@ -33,6 +33,8 @@ echo "Pak base ${ROUTE_BASE}"
 # utenza admin, login route ROUTE_BASE per verifica onboarding utenze (access control)
 
 #-----------------------------------
+# !!! aggiornare URL e password cluster 
+
 python ./iamOnboardUsers.py -e ./configurations/env1.properties -d vuxdomain -f ./configurations/creds-cfg1.csv
 
 python ./iamOnboardUsers.py -e ./k8s/conf1/env1.properties -d vuxdomain -f ./k8s/conf1/creds-cfg1.csv

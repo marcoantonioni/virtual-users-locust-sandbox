@@ -133,3 +133,20 @@ def setupAssertsManagerModule(bpmEnvironment):
             if dynamicAM != None and dynamicAM != "":
                 bpmDynamicModuleAsserts = import_module(dynamicAM)
     return bpmDynamicModuleAsserts
+
+def removeSlash(srcText, begin: bool):
+    outTxt = srcText
+    if len(srcText) > 0:
+        if begin == False:
+            if srcText[-1] == "/":
+                outTxt = srcText[:-1]
+            else:
+                if srcText[-1] == "\\":
+                    outTxt = srcText[:-1]
+        else:
+            if srcText[0] == "/":
+                outTxt = srcText[1:]
+            else:
+                if srcText[0] == "\\":
+                    outTxt = srcText[1:]
+    return outTxt

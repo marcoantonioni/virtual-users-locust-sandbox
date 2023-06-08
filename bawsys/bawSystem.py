@@ -14,6 +14,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 import requests, random, logging, sys, re, base64, json
 from json import JSONDecodeError
 import bawsys.bawEnvironment as bpmEnv
+import bawsys.bawUtils as bawUtils
 from requests.auth import HTTPBasicAuth
 
 #==========================================================================
@@ -444,8 +445,8 @@ def _isBawTraditional( bpmEnvironment : bpmEnv.BpmEnvironment ):
     return runTraditional
 
 def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, userName = None, userPassword = None):
-    iamUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST)
-    hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
+    iamUrl = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_IAM_HOST), False)
+    hostUrl = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
     if userName == None or userPassword == None:
         userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
         userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
@@ -471,10 +472,8 @@ def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, userName = None, userPassw
     return None
 
 def _loginTraditional(bpmEnvironment : bpmEnv.BpmEnvironment, userName: str, userPassword: str):
-    hostUrl = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST)
-    if hostUrl.endswith('/'):
-        hostUrl = hostUrl[:-1]
-    baseUri = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER)
+    hostUrl = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
+    baseUri = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
     if baseUri == None:
         baseUri = ""
     my_headers = {'Accept': 'application/json'}    
