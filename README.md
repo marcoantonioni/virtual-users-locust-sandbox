@@ -20,7 +20,7 @@ Comandi vari
 #---------------------------------
 # Load test
 
-cd /home/marco/locust/studio/virtual-users-locust-sandbox
+cd /home/marco/locust/studio/bawvut/virtual-users-locust-sandbox
 
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1.conf
 

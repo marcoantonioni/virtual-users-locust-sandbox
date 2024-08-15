@@ -372,7 +372,12 @@ def _csrfToken(baseHost, userName, userPassword):
     csrfToken : str = None
     my_headers = {'Content-Type': 'application/json'}
     basic = HTTPBasicAuth(userName, userPassword)
-    response = requests.post(url=baseHost+"/bas/bpm/system/login", headers=my_headers, data="{}", verify=False, auth=basic)
+
+    # 20240815
+    baseUri = bpmEnv.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER);
+    response = requests.post(url=baseHost+baseUri+"/ops/system/login", headers=my_headers, data="{}", verify=False, auth=basic)
+    #response = requests.post(url=baseHost+"/bas/bpm/system/login", headers=my_headers, data="{}", verify=False, auth=basic)
+    
     if logging.getLogger().isEnabledFor(logging.DEBUG):
         logging.debug("_csrfToken status code: %s", response.status_code)
     if response.status_code < 300:
@@ -460,6 +465,10 @@ def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, userName = None, userPassw
     params : str = "grant_type=password&scope=openid&username="+userName+"&password="+userPassword
     my_headers = {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}
     urlIdTk=iamUrl+"/idprovider/v1/auth/identitytoken"
+
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
+        logging.debug("URL Login ZEN: %s", urlIdTk)
+
     response = requests.post(url=urlIdTk, data=params, headers=my_headers, verify=False)
     if response.status_code == 200:
         access_token = response.json()["access_token"]

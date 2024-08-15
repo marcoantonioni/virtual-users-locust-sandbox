@@ -106,14 +106,26 @@ class BpmExposedProcessManager:
                 my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
                 response = requests.get(url=urlExposed, headers=my_headers, cookies=token, verify=False)
             else:
+                # eseguire test per ambiente federato
+                # /pfs/rest/bpm/federated/v1/launchableEntities?avoidBasicAuthChallenge=true&includeServiceSubtypes=startable_service,dashboard
+                # federato
+                # urlExposed = hostUrl+"/pfs/rest/bpm/federated/v1/launchableEntities?avoidBasicAuthChallenge=true"
+                
                 my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer '+token }
                 response = requests.get(url=urlExposed, headers=my_headers, verify=False)
             if response.status_code == 200:
+                # NON federato
                 data = response.json()["data"]
+                # federato
+                # data = response.json()
 
                 # print(json.dumps(data, indent=2))
 
+                # NON federato
                 exposedItemsList = data["exposedItemsList"]
+                # federato
+                # exposedItemsList = data["items"]
+
                 self.appName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
                 self.appAcronym = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
                 appSnapshotName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_SNAPSHOT_NAME)
@@ -157,7 +169,9 @@ class BpmExposedProcessManager:
                                 startUrl = expIt["startURL"]
                                 for pn in self.appProcessNames:
                                     if pn == processName:                                                                                                        
+
                                         # print(self.appName, self.appAcronym, self.snapshotName, self.tip, processName, self.appId, expIt["itemID"])
+                                        
                                         listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(self.appName, self.appAcronym, self.snapshotName, self.tip, processName, self.appId, bpdId, startUrl) )
                     except KeyError:
                         pass

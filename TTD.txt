@@ -1,6 +1,9 @@
+#----------------------------------
+- deploy applicazione di test con script
+
 - definire yaml per deployment ocp img docker
 
-- verificare esito exposed process prima di avviare test
+- avvio processo con evento
 
 - non crea numero max processi in scenario load test
 
