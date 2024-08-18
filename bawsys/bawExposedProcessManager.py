@@ -177,7 +177,7 @@ class BpmExposedProcessManager:
                                 for pn in self.appProcessNames:
                                     if pn == processName:                                                                                                        
                                         listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(self.appName, self.appAcronym, self.snapshotName, self.tip, processName, self.appId, bpdId, startUrl) )
-                                        print("Added process: ", self.appName, self.appAcronym, self.snapshotName, self.tip, processName, self.appId, expIt["itemID"])                                        
+                                        logging.info("Added process name [%s] from app[%s, %s, %s] appId [%s] itemId [%s]", processName, self.appName, self.appAcronym, self.snapshotName, self.appId, expIt["itemID"])                                     
                     except KeyError:
                         pass
 
