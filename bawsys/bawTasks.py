@@ -117,10 +117,12 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             configuredSnapName = snapName
             useTip = True
 
+        #print("===> ", snapName, configuredSnapName, appAcronym, useTip, len(tasksList))
+
         bpmTaksItems = []
         while len(tasksList) > 0:            
             bpmTask : bawSys.BpmTask = bawSys.BpmTask( tasksList.pop() )
-            
+
             if snapName == configuredSnapName:
                 selectTask = False
                 if useTip == True:
@@ -132,15 +134,27 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         if bpmTask.getSnapshotName() != None and bpmTask.getSnapshotName() == configuredSnapName:
                             selectTask = True
 
+                # print("==========> taskSubject", bpmTask.getSubject(), bpmTask.getProcessName(), selectTask)
+                
                 if selectTask == True:
                     # inserisce in lista se task di processo configurato
-                    listOfProcessNames = epm.getAppProcessNames()                                        
+                    listOfProcessNames = epm.getAppProcessNames()       
+                    
+                    # print("===========> listOfProcessNames: ", len(listOfProcessNames))                                 
+                    
                     for procName in listOfProcessNames:
-                        if procName == bpmTask.getProcessName():
-                            if self.user.isSubjectForUser(bpmTask.getSubject()) == True:
-                                if (bpmTask.getRole() != None and isClaiming == True) or (bpmTask.getRole() == None and isClaiming == False):             
-                                    bpmTaksItems.append(bpmTask)
+                        # print("====================> procName: ", procName)
 
+                        # if procName == bpmTask.getProcessName():
+                        if procName.find(bpmTask.getProcessName()) != -1:
+                            # print("====================> procName OK: ", procName)
+
+                            if self.user.isSubjectForUser(bpmTask.getSubject()) == True:
+                                # print("===============> OK subject for user ")
+                                if (bpmTask.getRole() != None and isClaiming == True) or (bpmTask.getRole() == None and isClaiming == False):  
+                                    # print("====================> append task: ", bpmTask.getSubject(), bpmTask.getProcessName())                                  
+                                    bpmTaksItems.append(bpmTask)
+        
         return bawSys.BpmTaskList(len(bpmTaksItems), bpmTaksItems)
 
     def _listTasks(self, interaction, size):
@@ -149,27 +163,41 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             taskListFederated = False
             hostUrl : str = bawUtils.removeSlash(self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
             processAppName = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
-            processAppAcronym = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
+            # processAppAcronym = self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
             
             # query task list
             offset = "0"
             constParams : str = "interaction=claimed_and_available&calcStats=false&includeAllBusinessData=false"
 
             my_headers = self._prepareHeaders()
-            nameType = None
+            # nameType = None
+
+            baseUri = bawUtils.removeSlash(self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
+            if baseUri == None:
+                baseUri = ""
+            uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
+
             if self.user.runningTraditional == False:
-                taskListFederated = True
-                uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
-                nameType = processAppAcronym
-            else:
-                baseUri = bawUtils.removeSlash(self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
-                if baseUri == None:
-                    baseUri = ""
-                uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
-                nameType = processAppName
-            fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&size=25&processAppName="+nameType
+                if self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_DEPLOYMENT_MODE) == self.user.getEnvValue(bpmEnv.BpmEnvironment.valBAW_DEPLOYMENT_MODE_PAK_FEDERATED):
+                    taskListFederated = True
+                    uriBaseTaskList = "/pfs/rest/bpm/federated/v1/tasks"
+
+                # 20240817
+                # nameType = processAppAcronym
+                #nameType = processAppName
+            #else:
+            #    baseUri = bawUtils.removeSlash(self.user.getEnvValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
+            #    if baseUri == None:
+            #        baseUri = ""
+            #    uriBaseTaskList = baseUri+"/rest/bpm/wle/v1/tasks"
+            #    #nameType = processAppName
+            
+            fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&size=25&processAppName="+processAppName
+
+            # logging.info("==>> fullURL: %s", fullUrl)
 
             with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
+
                 restResponseManager: responseMgr.RestResponseManager = responseMgr.RestResponseManager("_listTasks", response, self.user.userCreds.getName(), None, [401, 409])
                 if restResponseManager.getStatusCode() == 200:
 
@@ -179,8 +207,20 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     size = 0
                     items = None
                     if self.user.runningTraditional == False:
-                        size = restResponseManager.getObject("size")
-                        items = restResponseManager.getObject("items")
+
+                        # 20240817
+                        # size = restResponseManager.getObject("size")
+                        # items = restResponseManager.getObject("items")
+
+                        data = restResponseManager.getObject("data")
+                        size = data["size"]
+                        try:
+                            items = data["items"]
+                        except KeyError:
+                            pass
+
+                        # print("user: %s, size: %d", self.user.userCreds.getName(), size)
+
                     else:
                         data = restResponseManager.getObject("data")
                         size = data["size"]

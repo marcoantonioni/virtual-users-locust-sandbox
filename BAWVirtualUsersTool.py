@@ -120,12 +120,15 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         found = False
         userId = self.userCreds.getName()
         dictionary = bpmUserSubjects.getDictionary()
+        # print("======>> ", userId, dictionary)
         if dictionary != None:
             try:
                 taskSubjects = dictionary[userId]
-                for t in taskSubjects:
+                for t in taskSubjects:          
+                    # print("======>> ", userId, t)          
                     if bpmDynamicModule.isMatchingTaskSubject(taskSubjectText, t) != -1:
                         found = True
+                        # print("====>>> taskSubject: ", userId, t, taskSubjectText)
                         break
             except:
                 # ignore, userId not in dictionary

@@ -21,6 +21,11 @@ class BpmEnvironment:
     configFullPathName : str = None
     configValues : Properties = None
 
+    keyBAW_DEPLOYMENT_MODE : str = "BAW_DEPLOYMENT_MODE"
+    valBAW_DEPLOYMENT_MODE_TRADITIONAL : str = "TRADITIONAL"
+    valBAW_DEPLOYMENT_MODE_PAK_STANDALONE : str = "PAK_STANDALONE"
+    valBAW_DEPLOYMENT_MODE_PAK_FEDERATED : str = "PAK_FEDERATED"
+
     keyBAW_IAM_HOST : str = "BAW_IAM_HOST"
     keyBAW_BASE_HOST : str = "BAW_BASE_HOST"
 

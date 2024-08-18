@@ -24,6 +24,8 @@ cd /home/marco/locust/studio/bawvut/virtual-users-locust-sandbox
 
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1.conf
 
+locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-baw1.conf
+
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1-traditional.conf
 
 

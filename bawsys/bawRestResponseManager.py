@@ -23,6 +23,7 @@ class RestResponseManager:
     js = None
 
     def __init__(self, contextName, response, userName, bpmTask, ignoreCodes):
+
         self.contextName = contextName
         self.response = response
         self.userName = userName

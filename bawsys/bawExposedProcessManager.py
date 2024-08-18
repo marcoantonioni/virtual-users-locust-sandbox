@@ -97,34 +97,39 @@ class BpmExposedProcessManager:
         else:
             token = bpmSys._loginZen(bpmEnvironment, userName, userPassword)
         if token != None:
+            # 20240818
+            federatedDeployment = False
+            if bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_DEPLOYMENT_MODE) == bpmEnvironment.getValue(bpmEnv.BpmEnvironment.valBAW_DEPLOYMENT_MODE_PAK_FEDERATED):
+                federatedDeployment = True
+
             response = None
             baseUri = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
-            urlExposed = hostUrl+baseUri+"/rest/bpm/wle/v1/exposed/process?excludeProcessStartUrl=false"
+
+            # 20240818
+            if federatedDeployment == True:
+                urlExposed = hostUrl+"/pfs/rest/bpm/federated/v1/launchableEntities?avoidBasicAuthChallenge=true"
+            else:
+                urlExposed = hostUrl+baseUri+"/rest/bpm/wle/v1/exposed/process?excludeProcessStartUrl=false"
+
+            # print("==>> LoadProcessInstancesInfos %s", urlExposed)
 
             my_headers = None
             if bpmSys._isBawTraditional(bpmEnvironment):
                 my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
                 response = requests.get(url=urlExposed, headers=my_headers, cookies=token, verify=False)
             else:
-                # eseguire test per ambiente federato
-                # /pfs/rest/bpm/federated/v1/launchableEntities?avoidBasicAuthChallenge=true&includeServiceSubtypes=startable_service,dashboard
-                # federato
-                # urlExposed = hostUrl+"/pfs/rest/bpm/federated/v1/launchableEntities?avoidBasicAuthChallenge=true"
-                
                 my_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer '+token }
                 response = requests.get(url=urlExposed, headers=my_headers, verify=False)
             if response.status_code == 200:
-                # NON federato
-                data = response.json()["data"]
-                # federato
-                # data = response.json()
+                if federatedDeployment == True:
+                    data = response.json()
+                    exposedItemsList = data["items"]
+                else:
+                    data = response.json()["data"]
+                    exposedItemsList = data["exposedItemsList"]
 
                 # print(json.dumps(data, indent=2))
-
-                # NON federato
-                exposedItemsList = data["exposedItemsList"]
-                # federato
-                # exposedItemsList = data["items"]
+                # print(json.dumps(exposedItemsList, indent=2))
 
                 self.appName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_NAME)
                 self.appAcronym = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_PROCESS_APPLICATION_ACRONYM)
@@ -150,16 +155,18 @@ class BpmExposedProcessManager:
                     try:
                         snapOk = False
 
-                        # print(expIt["processAppName"], expIt["processAppAcronym"], expIt["tip"], useTip)
+                        # print(">>>>>>>>>>>> ", expIt["processAppName"], expIt["processAppAcronym"], expIt["tip"], useTip)
 
                         if self.appName == expIt["processAppName"] and self.appAcronym == expIt["processAppAcronym"]: 
 
                             # print(json.dumps(expIt, indent=2))
 
-                            if appSnapshotName == "" and useTip == True and expIt["tip"] == True:                                
+                            if appSnapshotName == "" and useTip == True: # and expIt["tip"] == True:                                
                                 snapOk = True
                             else:
-                                if appSnapshotName == expIt["snapshotName"] and useTip == expIt["tip"]:
+                                if appSnapshotName == expIt["snapshotName"]:
+                                    # if useTip: 
+                                    #    if expIt["tip"].lower() == "true":
                                     snapOk = True
                             if snapOk == True:
                                 if self.appId == None:
@@ -169,10 +176,8 @@ class BpmExposedProcessManager:
                                 startUrl = expIt["startURL"]
                                 for pn in self.appProcessNames:
                                     if pn == processName:                                                                                                        
-
-                                        # print(self.appName, self.appAcronym, self.snapshotName, self.tip, processName, self.appId, expIt["itemID"])
-                                        
                                         listOfProcessInfos.append( bpmSys.BpmExposedProcessInfo(self.appName, self.appAcronym, self.snapshotName, self.tip, processName, self.appId, bpdId, startUrl) )
+                                        print("Added process: ", self.appName, self.appAcronym, self.snapshotName, self.tip, processName, self.appId, expIt["itemID"])                                        
                     except KeyError:
                         pass
 
@@ -221,45 +226,49 @@ class BpmExposedProcessManager:
         
         if response.status_code == 200:
             data = response.json()["data"]
+            
             # print(json.dumps(data, indent=2))
+            
             exposedItemsList = data["exposedItemsList"]
-            for expItem in exposedItemsList:
+            if exposedItemsList != None:
 
-                # type: process, ???
+                for expItem in exposedItemsList:
 
-                # print("expItem", json.dumps(expItem,indent=2))
+                    # type: process, ???
 
-                snapName = ""
-                appName = ""
-                snapName = ""
-                acrName = ""
-                try:
-                    acrName = expItem["processAppAcronym"]
-                    if acrName == None:
-                        acrName = ""
-                except:
-                    pass
-                try:
-                    appName = expItem["processAppName"]
-                    if appName == None:
-                        appName = ""
-                except:
-                    pass
-                try:
-                    snapName = expItem["snapshotName"]
-                    if snapName == None:
-                        snapName = ""
-                except:
-                    pass
-                procName = expItem["display"]
-                tipItem = expItem["tip"]
+                    # print("expItem", json.dumps(expItem,indent=2))
 
-                # forza snapshot se configurata tip
-                if processInfo.isTip() and tipItem:
-                    snapName = processInfo.getSnapshotName()
-                if appName == processInfo.getAppName() and acrName == processInfo.getAppAcronym() and procName == processInfo.getAppProcessName() and snapName == processInfo.getSnapshotName():
-                    forMe = True
-                    break
+                    snapName = ""
+                    appName = ""
+                    snapName = ""
+                    acrName = ""
+                    try:
+                        acrName = expItem["processAppAcronym"]
+                        if acrName == None:
+                            acrName = ""
+                    except:
+                        pass
+                    try:
+                        appName = expItem["processAppName"]
+                        if appName == None:
+                            appName = ""
+                    except:
+                        pass
+                    try:
+                        snapName = expItem["snapshotName"]
+                        if snapName == None:
+                            snapName = ""
+                    except:
+                        pass
+                    procName = expItem["display"]
+                    tipItem = expItem["tip"]
+
+                    # forza snapshot se configurata tip
+                    if processInfo.isTip() and tipItem:
+                        snapName = processInfo.getSnapshotName()
+                    if appName == processInfo.getAppName() and acrName == processInfo.getAppAcronym() and procName == processInfo.getAppProcessName() and snapName == processInfo.getSnapshotName():
+                        forMe = True
+                        break
 
         else:
             print(response.status_code, response.text)

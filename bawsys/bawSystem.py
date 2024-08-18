@@ -444,8 +444,12 @@ def usersRange( userId: str ):
 
 def _isBawTraditional( bpmEnvironment : bpmEnv.BpmEnvironment ):
     runTraditional = False
-    runMode = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_TASK_LIST_STRATEGY)    
-    if runMode == bpmEnv.BpmEnvironment.valBAW_TASK_LIST_STRATEGY_STANDALONE:
+
+    # runMode = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_TASK_LIST_STRATEGY)    
+    # if runMode == bpmEnv.BpmEnvironment.valBAW_TASK_LIST_STRATEGY_STANDALONE:
+    #     runTraditional = True
+    runMode = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_DEPLOYMENT_MODE)    
+    if runMode == bpmEnv.BpmEnvironment.valBAW_DEPLOYMENT_MODE_TRADITIONAL:
         runTraditional = True
     return runTraditional
 
