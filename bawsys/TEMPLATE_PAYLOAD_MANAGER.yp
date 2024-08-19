@@ -50,6 +50,42 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
     # The following code is an example from demo apps, remove it if not needed
 
     """
+    Process: VUSLoanRequest
+    key: 
+    task key: 'Evaluate Loan Request Data'
+    task key: 'Validate Loan Request Data'
+    """
+    if text.find('Start-VUSLoanRequest') != -1:
+        rndVal : int = random.randint(0, 100) + 1
+        retObject["jsonObject"] = {
+            'loanRequest': {
+                'userName': 'customer'+str(rndVal), 
+                'amountRequested': 100000, 
+                'loanDurationMonths': 36, 
+                'requestorAnnualNetIncome': 300000,
+                'activeLoans': 0,
+                'badPayer': False,
+                'challengeYourLuck': False
+            }
+        }
+        retObject["thinkTime"] = random.randint(0, 5)
+
+    if text.find('Evaluate Loan Request Data') != -1:
+        rndVal : int = random.randint(0, 100) + 1
+        if preExistPayload != None:
+            loanRequest = preExistPayload["loanRequest"]
+            print(json.dumps(loanRequest, indent=2))
+
+        retObject["jsonObject"] = {'rejected': False} 
+        retObject["thinkTime"] = random.randint(0, 5)
+
+    if text.find('Validate Loan Request Data') != -1:
+        rndVal : int = random.randint(50, 150) + 1
+
+        retObject["jsonObject"] =  {'loanAccepted': True}
+        retObject["thinkTime"] = random.randint(0, 5)
+
+    """
     Process: VUSClaimCompleteTwoRoles 
     key: [CCTR]
     task key: 'Compile Request [CCTR]'
