@@ -118,6 +118,8 @@ python ./generateCodeFromTemplates.py -e ./configurations/env1-traditional.prope
 
 python ./generateCodeFromTemplates.py -e ./configurations/env-ut1.properties -o ./configurations
 
+python ./generateCodeFromTemplates.py -f -e ../virtual-users-locust-test-configs/configurations/env1-starter.properties -o ../virtual-users-locust-test-configs/configurations
+
 
 # creazione utenze e gruppi ldap
 python generateLDIFForVirtualUsers.py -c ./configurations/ldif4vu-cfg1.properties -l ./configurations/vux-cfg1.ldif -u ./configurations/creds-cfg1.csv
