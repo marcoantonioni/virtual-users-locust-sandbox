@@ -54,7 +54,7 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
     key: 
     task key: 'Evaluate Loan Request Data'
     task key: 'Validate Loan Request Data'
-    """
+
     if text.find('Start-VUSLoanRequest') != -1:
         rndVal : int = random.randint(0, 100) + 1
         retObject["jsonObject"] = {
@@ -71,19 +71,39 @@ def buildPayloadForSubject(text: str , preExistPayload: dict = None, unitTestCre
         retObject["thinkTime"] = random.randint(0, 5)
 
     if text.find('Evaluate Loan Request Data') != -1:
-        rndVal : int = random.randint(0, 100) + 1
+        rndVal : int = random.randint(0, 1)
         if preExistPayload != None:
             loanRequest = preExistPayload["loanRequest"]
+            installmentAmount = preExistPayload["installmentAmount"]
+            requestorMonthlyNetIncome = preExistPayload["requestorMonthlyNetIncome"]
+            riskLevel = preExistPayload["riskLevel"]
             print(json.dumps(loanRequest, indent=2))
-
-        retObject["jsonObject"] = {'rejected': False} 
+            print("installmentAmount", installmentAmount)
+            print("requestorMonthlyNetIncome", requestorMonthlyNetIncome)
+            print("riskLevel", riskLevel)
+        rejected = False
+        if rndVal == 1:
+            rejected = True
+        retObject["jsonObject"] = {'rejected': rejected} 
         retObject["thinkTime"] = random.randint(0, 5)
 
     if text.find('Validate Loan Request Data') != -1:
-        rndVal : int = random.randint(50, 150) + 1
-
-        retObject["jsonObject"] =  {'loanAccepted': True}
+        rndVal : int = random.randint(0, 1)
+        if preExistPayload != None:
+            loanRequest = preExistPayload["loanRequest"]
+            installmentAmount = preExistPayload["installmentAmount"]
+            requestorMonthlyNetIncome = preExistPayload["requestorMonthlyNetIncome"]
+            riskLevel = preExistPayload["riskLevel"]
+            print(json.dumps(loanRequest, indent=2))
+            print("installmentAmount", installmentAmount)
+            print("requestorMonthlyNetIncome", requestorMonthlyNetIncome)
+            print("riskLevel", riskLevel)
+        loanAccepted = False
+        if rndVal == 1:
+            loanAccepted = True
+        retObject["jsonObject"] =  {'loanAccepted': loanAccepted}
         retObject["thinkTime"] = random.randint(0, 5)
+    """
 
     """
     Process: VUSClaimCompleteTwoRoles 
