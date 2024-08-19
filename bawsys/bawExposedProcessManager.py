@@ -155,19 +155,20 @@ class BpmExposedProcessManager:
                     try:
                         snapOk = False
 
-                        # print(">>>>>>>>>>>> ", expIt["processAppName"], expIt["processAppAcronym"], expIt["tip"], useTip)
+                        # print(">>>>>>>>>>>> ", expIt["processAppName"], expIt["processAppAcronym"], expIt["tip"], useTip, "appSnapshotName="+appSnapshotName)
 
                         if self.appName == expIt["processAppName"] and self.appAcronym == expIt["processAppAcronym"]: 
 
                             # print(json.dumps(expIt, indent=2))
 
-                            if appSnapshotName == "" and useTip == True: # and expIt["tip"] == True:                                
+                            if appSnapshotName == "" and useTip == True and expIt["tip"] == True:                                
                                 snapOk = True
                             else:
                                 if appSnapshotName == expIt["snapshotName"]:
                                     # if useTip: 
                                     #    if expIt["tip"].lower() == "true":
                                     snapOk = True
+                            # print("==== snapOk: ", snapOk)
                             if snapOk == True:
                                 if self.appId == None:
                                     self.appId = expIt["processAppID"] 
