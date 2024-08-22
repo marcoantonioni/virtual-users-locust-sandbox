@@ -1,6 +1,8 @@
 #----------------------------------
 - deploy applicazione di test con script
 
+- rivedere sys.exit() e sostituire ove possibile con self.environment.runner.quit()
+
 - definire yaml per deployment ocp img docker
 
 - avvio processo con evento

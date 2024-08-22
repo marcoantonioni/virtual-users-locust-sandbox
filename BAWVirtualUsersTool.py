@@ -146,12 +146,17 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
             self.selectedUserActions = dict()
             self.selectedUserActions[bawEnv.BpmEnvironment.keyBAW_ACTION_LOGIN] = bawEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
             setOfActions = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_ACTIONS)
-            actions = setOfActions.split(",")
-            for act in actions:
-                action = act.strip().upper()
-                if (action == bawEnv.BpmEnvironment.keyBAW_ACTION_REFRESH_TASK_LIST or action == bawEnv.BpmEnvironment.keyBAW_ACTION_CLAIM) or action == bawEnv.BpmEnvironment.keyBAW_ACTION_COMPLETE or action == bawEnv.BpmEnvironment.keyBAW_ACTION_RELEASE or action == bawEnv.BpmEnvironment.keyBAW_ACTION_GETDATA or action == bawEnv.BpmEnvironment.keyBAW_ACTION_SETDATA or action == bawEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS:
-                    self.selectedUserActions[action] = bawEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
-
+            if setOfActions != None:
+                actions = setOfActions.split(",")
+                for act in actions:
+                    action = act.strip().upper()
+                    if (action == bawEnv.BpmEnvironment.keyBAW_ACTION_REFRESH_TASK_LIST or action == bawEnv.BpmEnvironment.keyBAW_ACTION_CLAIM) or action == bawEnv.BpmEnvironment.keyBAW_ACTION_COMPLETE or action == bawEnv.BpmEnvironment.keyBAW_ACTION_RELEASE or action == bawEnv.BpmEnvironment.keyBAW_ACTION_GETDATA or action == bawEnv.BpmEnvironment.keyBAW_ACTION_SETDATA or action == bawEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS:
+                        self.selectedUserActions[action] = bawEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
+            else:
+                # abort run
+                logging.error("Error BAW_VU_ACTIONS parameter is not configured correctly !")
+                self.environment.runner.quit()
+                
     def setIdleMode(self):
         strNotify : str = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_IDLE_NOTIFY)
         strMaxInterctions : str = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_IDLE_NOTIFY_AFTER_NUM_INTERACTIONS)
