@@ -329,7 +329,8 @@ class BpmProcessInstanceManager:
           processInstanceInfo = bpmProcessInstanceManager.createInstance(bpmEnvironment, runningTraditional, userName, processInfo, strPayload, _headers)
           if processInstanceInfo != None:
               listOfInstances.append(processInstanceInfo)
-              if isLog:
-                print("Created process "+processName+" instance id["+processInstanceInfo.getPiid()+"], state["+processInstanceInfo.getState()+"]")
+              logging.info("ProcessInstanceManager [%d/%d]- Created process[%s] instance id[%s] state[%s]", count+1, maxInstances, processName, processInstanceInfo.getPiid(), processInstanceInfo.getState())
+              #if isLog:
+              #  print("Created process "+processName+" instance id["+processInstanceInfo.getPiid()+"], state["+processInstanceInfo.getState()+"]")
           count += 1
       return listOfInstances

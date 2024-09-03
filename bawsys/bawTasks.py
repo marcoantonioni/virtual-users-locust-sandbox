@@ -587,6 +587,7 @@ class UnitTestScenario(SequenceOfBpmTasks):
             if self.isActionEnabled(bpmEnv.BpmEnvironment.keyBAW_ACTION_CREATEPROCESS ):                              
                 logging.info("User[%s] - bawCreateScenarioInstances - creating [%d] instances", userName, maxInstances)
             else:
+                maxInstances = 0
                 logging.info("User[%s] - bawCreateScenarioInstances - no instances will be created, action 'BAW_ACTION_CREATEPROCESS' is disabled.", userName)
 
             listOfInstances = pim._createProcessInstancesBatch(self.user.getEnvironment(), self.user.getExposedProcessManager(), pim, 
