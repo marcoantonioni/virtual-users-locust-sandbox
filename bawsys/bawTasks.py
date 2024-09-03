@@ -408,7 +408,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         if bpmTask.hasAction("ACTION_CLAIM"):
                             if self._taskClaim(bpmTask) == True:
                                 self.user.idleCounter = 0
-                                logging.info("User[%s] - bawClaimTask - claimed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                                logging.info("User[%s] - bawClaimTask - claimed task[%s] subject[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getSubject())
                             if logging.getLogger().isEnabledFor(logging.DEBUG):
                                 if self._taskGetDetails(bpmTask) == True:
                                     logging.debug("bawClaimTask TASK [%s] DETAIL AFTER CLAIM actions[%s] variables[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions(), bpmTask.getVariableNames())
@@ -434,10 +434,10 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                             if self._taskGetData(bpmTask) == True:
                                 payloadInfos = self._buildPayload(bpmTask.getSubject(), bpmTask.getTaskData() )
                                 payload = bawUtils._extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
-                                logging.info("User[%s] - bawCompleteTask working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                                logging.info("User[%s] - bawCompleteTask working on task[%s] subject[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getSubject())
                                 if self._taskComplete(bpmTask, payload) == True:
                                     self.user.idleCounter = 0
-                                    logging.info("User[%s] - bawCompleteTask - completed task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                                    logging.info("User[%s] - bawCompleteTask - completed task[%s] subject[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getSubject())
                             else:
                                 if logging.getLogger().isEnabledFor(logging.DEBUG):
                                     logging.debug("User[%s] - bawCompleteTask TASK [%s] ERROR, cannot _taskGetData, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
@@ -458,7 +458,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     bpmTask : bawSys.BpmTask = taskList.getPreparedTaskRandom()
                     if self._taskGetData(bpmTask) == True:
                         self.user.idleCounter = 0
-                        logging.info("User[%s] - bawGetTaskData - got data from task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                        logging.info("User[%s] - bawGetTaskData - read data from task[%s] subject[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getSubject())
                     if logging.getLogger().isEnabledFor(logging.DEBUG):
                         logging.debug("User[%s] - bawGetTaskData TASK [%s] CLEANED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
                 else:
@@ -480,10 +480,10 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                             if self._taskGetData(bpmTask) == True:
                                 payloadInfos = self._buildPayload(bpmTask.getSubject(), bpmTask.getTaskData())
                                 payload = bawUtils._extractPayloadOptionalThinkTime(payloadInfos, self.user, True)
-                                logging.info("User[%s] - bawSetTaskData working on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                                logging.info("User[%s] - bawSetTaskData working on task[%s] subject[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getSubject())
                                 if self._taskSetData(bpmTask, payload) == True:
                                     self.user.idleCounter = 0
-                                    logging.info("User[%s] - bawSetTaskData - set data and postponed on task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                                    logging.info("User[%s] - bawSetTaskData - set data and postponed on task[%s] subject[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getSubject())
                                 if logging.getLogger().isEnabledFor(logging.DEBUG):
                                     logging.debug("User[%s] - bawSetTaskData TASK [%s] UPDATED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
                             else:
@@ -510,7 +510,7 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         if bpmTask.hasAction("ACTION_CANCELCLAIM"):
                             if self._taskRelease(bpmTask) == True:
                                 self.user.idleCounter = 0
-                                logging.info("User[%s] - bawReleaseTask - released task[%s]", self.user.userCreds.getName(), bpmTask.getId())
+                                logging.info("User[%s] - bawReleaseTask - released task[%s] subject[%s]", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getSubject())
                             if logging.getLogger().isEnabledFor(logging.DEBUG):
                                 logging.debug("User[%s] - bawReleaseTask TASK [%s] RELEASED ", self.user.userCreds.getName(), bpmTask.getId())
                         else:
