@@ -1,0 +1,59 @@
+
+#-------------------------------------
+# BAW1-BAI
+
+cd /home/marco/locust/studio/bawvut/virtual-users-locust-sandbox/k8s
+mkdir -p ./baw1-bai
+cp /bawvut/configurations/baw-vu-cfg-baw1-bai.conf ./baw1-bai/
+cp /bawvut/configurations/env1-baw1-bai.properties ./baw1-bai/
+cp /bawvut/configurations/creds-baw1-bai.csv ./baw1-bai/
+cp /bawvut/configurations/TS-baw1-bai.csv ./baw1-bai/
+cp /bawvut/configurations/US-TS-baw1-bai.csv ./baw1-bai/
+cp /bawvut/configurations/payloadManager-starter.py ./baw1-bai/
+cp /bawvut/configurations/assertsManager-type1.py ./baw1-bai/
+
+sed -i 's#/home/marco/locust/studio/bawvut/virtual-users-locust-test-configs#/bawvut#g' ./baw1-bai/baw-vu-cfg-baw1-bai.conf
+sed -i 's#/home/marco/locust/studio/bawvut/virtual-users-locust-test-configs#/bawvut#g' ./baw1-bai/env1-baw1-bai.properties
+
+export BAWVUT_CONFIG_FILE_NAME=baw-vu-cfg-baw1-bai.conf
+
+oc new-project bawvut
+
+oc delete cm -n bawvut bawvut-configurations
+oc create cm -n bawvut bawvut-configurations --from-file=./baw1-bai
+
+oc delete deployment -n bawvut bawvut
+sleep 1
+./deploy-bawvut.sh
+
+
+
+#-------------------------------------
+# Logs
+
+oc get pods -n bawvut | grep Running | awk '{print $1}' | xargs oc logs -f -n bawvut
+
+#-------------------------------------
+# Export outdata
+
+cd /home/marco/locust/studio/bawvut/virtual-users-locust-sandbox/k8s
+mkdir -p ./outdata
+PODNAME=$(oc get pods -n bawvut | grep Running | awk '{print $1}')
+oc cp -n bawvut ${PODNAME}:/bawvut/outputdata ./outdata
+ls -al ./outdata
+
+
+#-------------------------------------
+# Intra cluster URLs
+
+!!!! Non funziona, aprire case
+
+TNS=cp4ba
+SRV_CONSOLE=$(oc get route --no-headers -n ${TNS} cp-console | awk '{print $3}')
+SRV_BASE=$(oc get route --no-headers -n ${TNS} cpd | awk '{print $3}')
+
+oc get service --no-headers -n ${TNS} ${SRV_CONSOLE}
+oc get service --no-headers -n ${TNS} ${SRV_BASE}
+
+echo "BAW_IAM_HOST=https://"${SRV_CONSOLE}.${TNS}.svc.cluster.local
+echo "BAW_BASE_HOST=https://"${SRV_BASE}.${TNS}.svc.cluster.local
