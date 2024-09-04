@@ -1,41 +1,73 @@
-# virtual-users-locust-sandbox
+# BAW Virtual Users Tool
 
+It is a tool written in Python language for simulating interactions between users and tasks of applications deployed in IBM Business Automation Workflow.
+
+It is based on the open source tool Locust (https://locust.io)
+
+The tool is designed to interact only with human tasks through the REST APIs made available by IBM BAW. The features allow you to request the list of tasks for a specific user, to claim a task, to release a previously claimed task to the team, to update the data of a task without completing it, to complete a task.
+
+The tool also allows you to create new process instances with an optional startup payload.
+
+It is possible to define a set of virtual users for each role defined in the process (TeamBindings). A virtual user can be associated with multiple roles. Each virtual user can be configured with its own access password.
+
+The tool can interact with IBM BAW deployed in Traditional (WAS), Containerized (CP4BA), Federated (CP4BA, mix of BAW and WFPS) mode.
+
+It can be used as a load generator for partial tests of applications and the underlying infrastructure. By partial test we mean that for example the workload normally generated for CSHS and Ajax calls is not activated because the tasks are only interacted with REST API calls, consequently the server is stressed less than in reality.
+
+Furthermore, applications that use IME cannot be completed autonomously by the tool.
+
+The tool is accompanied by an example application and a set of configurations that can be used as an example.
+
+This tool is open source
+```
+https://opensource.org/license/mit/
+MIT License
+
+Copyright 2023 Antonioni Marco
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
 
 ## Program structure
 
+Description of most important python files.
+
 ### BAWVirtualUsersTool.py
-Il modulo principale è 'BAWVirtualUsersTool.py', viene referenziato dal file '.conf' utilizzato come valore del parametro '--config' del programma 'locust'
+The main module is <b>BAWVirtualUsersTool.py</b>, it is referenced by the '.conf' file used as the value of the '--config' parameter of the 'locust' program
 ```
 locust --config=your-config-file
 ```
-Il modulo definisce una serie di metodi per la gestione degli eventi e una classe 'IBMBusinessAutomationWorkflowUser' che definisce i dati le operazioni di ogni singolo utente virtuale.
+The module defines a series of methods for event management and a class <b>IBMBusinessAutomationWorkflowUser</b> that defines the data and operations of each single virtual user.
 
-Il metodo di gestione dell'evento di inizializzazione esegue il setup di un modulo python dinamico che viene referenziato dalla variabile 'bpmDynamicModule'. Il modulo dinamico implementa il manager dei vari payload che vengono generati durante la run per ogni task (aggiornamento/completamento) e per la creazione di nuove istanze di processo.
-Il file sorgente python specifico per la run è referenziato dalla variabile 'BAW_PAYLOAD_MANAGER' nel file '.properties' a sua volta identificato dalla variabile 'BAW_ENV' (in .conf).
+The initialization event management method runs the setup of a dynamic python module that is referenced by the variable <b>bpmDynamicModule</b>. The dynamic module implements the manager of the various payloads that are generated during the run for each task (update/completion) and for the creation of new process instances.
+The python source file specific to the run is referenced by the variable <b>BAW_PAYLOAD_MANAGER</b> in '.properties' file in turn identified by the variable <b>BAW_ENV</b> in '.conf' file.
 
-Il metodo 'unitTestInstancesExporter' esegue l'export dei dati dei processi che sono stati avviati per un run configurato come unit test. I dati sono inseriti in un file in formato SQLite e consultabile con semplici query SQL.
+The 'unitTestInstancesExporter' method runs the export of the data of the processes that have been started for a run configured as a unit test. The data is inserted into a file in SQLite format and can be consulted with simple SQL queries.
 
 ### bawTasks.py
+The module defines two classes, <b>SequenceOfBpmTasks(SequentialTaskSet)</b> and <b>UnitTestScenario(SequenceOfBpmTasks)</b>
 
-Il modulo definisce due classi, 'SequenceOfBpmTasks(SequentialTaskSet)' e 'UnitTestScenario(SequenceOfBpmTasks)'
+The <b>SequenceOfBpmTasks</b> class extends SequentialTaskSet [from locust] and defines variables and methods for managing basic human task functionalities.
 
-La classe 'SequenceOfBpmTasks' estende 'SequentialTaskSet [locust]' e definisce variabili e metodi per la gestione delle funzionalità di base per human task.
+The <b>UnitTestScenario</b> class extends SequenceOfBpmTasks and defines the <b>bawCreateScenarioInstances</b> method for creating and cataloging process instances that will be the object of unit tests.
 
-La classe 'SequenceOfBpmTasks' estende 'SequenceOfBpmTasks' e definisce il metodo 'bawCreateScenarioInstances' per la creazione e catalogazione delle istanze di processo che saranno oggetto di unit test.
+The methods defined by the <b>SequenceOfBpmTasks<b> class allow you to perform the functions of reading the available tasks (task list), reading and updating the data of a human task, executing the claim, releasing, completing a human task. Log in and create a new process instance.
 
-I metodi definiti dalla classe 'SequenceOfBpmTasks' permettono di eseguire le funzioni di lettura dei tasks disponibili (task list), leggere e aggiornare i dati di uno human task, eseguire il claim, rilasciare, completare uno human task. Eseguire il login e creare una nuova istanza di processo.
-
-I metodi che generano un aggiornamento dei dati di un task e che avviano una nuova istanza di processo fanno uso dinamico del manager dei payload definito da 'bpmDynamicModule'.
-
+The methods that generate a task data update and that start a new process instance make dynamic use of the payload manager defined by <b>bpmDynamicModule</b>.
 
 
 
+WARNING: The following sections need to be updated and translated into English
 
 
-## Sandbox per struttura progetto finale
+## Development environment
 
 ```
-# moduli installati
+# Python modules used
 pip install locust
 pip install jproperties
 pip install warlock
@@ -45,11 +77,11 @@ pip install jsonpath-ng
 pip install sqlite-utils
 ```
 
-Comandi vari
+Commands (just as memo)
 ```
 
 #---------------------------------
-# Load test
+# Run Load Test
 
 cd /home/marco/locust/studio/bawvut/virtual-users-locust-sandbox
 
@@ -63,7 +95,7 @@ locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1
 
 
 #---------------------------------
-# Unit Test
+# Run Unit Test
 
 cd /home/marco/locust/studio/virtual-users-locust-sandbox
 
@@ -77,26 +109,11 @@ locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-u
 ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations ./configurations
 ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata ./outputdata
 
-# test immagine ocp
+# test docker image
 sudo mkdir /bawvut
 sudo ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations /bawvut/configurations
 sudo ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata /bawvut/outputdata
 
-```
-"""
-https://opensource.org/license/mit/
-MIT License
-
-Copyright 2023 Antonioni Marco
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-"""
-
-```
 
 
 
