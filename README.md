@@ -65,8 +65,18 @@ The methods that generate a task data update and that start a new process instan
 
 WARNING: The following sections need to be updated and translated into English
 
+## Docker image
+
+to be done...
+
+## Configuration files
+
+to be done...
+
 
 ## Development environment
+
+to be done...
 
 ```
 # Python modules used
