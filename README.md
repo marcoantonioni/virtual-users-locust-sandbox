@@ -18,6 +18,8 @@ Furthermore, applications that use IME cannot be completed autonomously by the t
 
 The tool is accompanied by an example application and a set of configurations that can be used as an example.
 
+The tool can be used from the command line or as a containerized image. In case of a containerized image the configuration files must be previously inserted into a config map.
+
 This tool is open source
 ```
 https://opensource.org/license/mit/
