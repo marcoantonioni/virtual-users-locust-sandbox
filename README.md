@@ -1,7 +1,38 @@
 # virtual-users-locust-sandbox
 
-Sandbox per struttura progetto finale
 
+## Program structure
+
+### BAWVirtualUsersTool.py
+Il modulo principale è 'BAWVirtualUsersTool.py', viene referenziato dal file '.conf' utilizzato come valore del parametro '--config' del programma 'locust'
+```
+locust --config=your-config-file
+```
+Il modulo definisce una serie di metodi per la gestione degli eventi e una classe 'IBMBusinessAutomationWorkflowUser' che definisce i dati le operazioni di ogni singolo utente virtuale.
+
+Il metodo di gestione dell'evento di inizializzazione esegue il setup di un modulo python dinamico che viene referenziato dalla variabile 'bpmDynamicModule'. Il modulo dinamico implementa il manager dei vari payload che vengono generati durante la run per ogni task (aggiornamento/completamento) e per la creazione di nuove istanze di processo.
+Il file sorgente python specifico per la run è referenziato dalla variabile 'BAW_PAYLOAD_MANAGER' nel file '.properties' a sua volta identificato dalla variabile 'BAW_ENV' (in .conf).
+
+Il metodo 'unitTestInstancesExporter' esegue l'export dei dati dei processi che sono stati avviati per un run configurato come unit test. I dati sono inseriti in un file in formato SQLite e consultabile con semplici query SQL.
+
+### bawTasks.py
+
+Il modulo definisce due classi, 'SequenceOfBpmTasks(SequentialTaskSet)' e 'UnitTestScenario(SequenceOfBpmTasks)'
+
+La classe 'SequenceOfBpmTasks' estende 'SequentialTaskSet [locust]' e definisce variabili e metodi per la gestione delle funzionalità di base per human task.
+
+La classe 'SequenceOfBpmTasks' estende 'SequenceOfBpmTasks' e definisce il metodo 'bawCreateScenarioInstances' per la creazione e catalogazione delle istanze di processo che saranno oggetto di unit test.
+
+I metodi definiti dalla classe 'SequenceOfBpmTasks' permettono di eseguire le funzioni di lettura dei tasks disponibili (task list), leggere e aggiornare i dati di uno human task, eseguire il claim, rilasciare, completare uno human task. Eseguire il login e creare una nuova istanza di processo.
+
+I metodi che generano un aggiornamento dei dati di un task e che avviano una nuova istanza di processo fanno uso dinamico del manager dei payload definito da 'bpmDynamicModule'.
+
+
+
+
+
+
+## Sandbox per struttura progetto finale
 
 ```
 # moduli installati

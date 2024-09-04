@@ -11,7 +11,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import logging, json, sys
+import logging, json, sys, random, time
 from datetime import datetime
 from locust import task, tag, SequentialTaskSet
 import bawsys.bawProcessInstanceManager as bawPIM
@@ -379,6 +379,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                     if self.user.loggedIn == True:
                         self.user.idleCounter = 0
                         logging.info("User[%s] - bawLogin - logged in", userName)
+                        think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
+                        time.sleep( think )
                     else:
                         logging.error("User[%s] - bawLogin - failed login", userName)
 
@@ -392,6 +394,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         logging.debug("User[%s] - bawRefreshListTask num TASKS [%d]", self.user.userCreds.getName(),taskList.getCount())
                 else:
                     self.nothingToDo("bawRefreshListTask task in list")
+                think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
+                time.sleep( think )
         else:
             self.forceLogin()
 
@@ -417,6 +421,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("User[%s] - bawClaimTask TASK [%s] CONFLICT, cannot claim task, actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
                 else:
                     self.nothingToDo("bawClaimTask no task to claim")
+                think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
+                time.sleep( think )
         else:
             self.forceLogin()
 
@@ -463,6 +469,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                         logging.debug("User[%s] - bawGetTaskData TASK [%s] CLEANED TASK DATA %s", self.user.userCreds.getName(), bpmTask.getId(), json.dumps(bpmTask.getTaskData(), indent = 2))
                 else:
                     self.nothingToDo("bawGetTaskData no task to set data")
+                think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
+                time.sleep( think )
         else:
             self.forceLogin()
 
@@ -518,6 +526,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
                                 logging.debug("User[%s] - bawReleaseTask TASK [%s] HAS NO ACTION_CANCELCLAIM, available actions %s", self.user.userCreds.getName(), bpmTask.getId(), bpmTask.getActions())
                 else:
                     self.nothingToDo("bawReleaseTask no task to release")
+                think : int = random.randint(self.user.min_think_time, self.user.max_think_time)
+                time.sleep( think )
         else:
             self.forceLogin()
 
