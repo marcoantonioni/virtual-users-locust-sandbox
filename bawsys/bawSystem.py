@@ -368,13 +368,15 @@ def _zenToken(self, baseHost, userName, iamToken):
                 response.failure("Response did not contain expected key 'accessToken'")
     return zenTk
 
-def _csrfToken(baseHost, userName, userPassword):
+# 20240905 added bpmEnvironment param 
+def _csrfToken(bpmEnvironment : bpmEnv.BpmEnvironment, baseHost, userName, userPassword):
     csrfToken : str = None
     my_headers = {'Content-Type': 'application/json'}
     basic = HTTPBasicAuth(userName, userPassword)
 
-    # 20240815
-    baseUri = bpmEnv.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER);
+    # 20240815 (da verificare con test carico)
+    baseUri = bpmEnvironment.getValue(bpmEnvironment.keyBAW_BASE_URI_SERVER)
+
     response = requests.post(url=baseHost+baseUri+"/ops/system/login", headers=my_headers, data="{}", verify=False, auth=basic)
     #response = requests.post(url=baseHost+"/bas/bpm/system/login", headers=my_headers, data="{}", verify=False, auth=basic)
     
