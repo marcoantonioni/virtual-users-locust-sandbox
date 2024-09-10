@@ -87,6 +87,9 @@ pip install jsonpath-ng
 
 # optional
 pip install sqlite-utils
+
+# update to latest version
+pip3 install -U --pre locust
 ```
 
 Commands (just as memo)
