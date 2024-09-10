@@ -250,7 +250,7 @@ def on_locust_init(environment, **kwargs):
             userTaskSubjects = bpmUTS.setupUserTaskSubjects(_fullPathBawUserTaskSubjects)
             userSubjectsDictionary = bpmUTS.createUserSubjectsDictionary(userTaskSubjects, taskSubjects)
             bpmUserSubjects.setDictionary(userSubjectsDictionary)
-            bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
+            bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment, environment)
 
             logging.debug("User Subjects Dictionary ", userSubjectsDictionary)
             logging.info("*** BAW EXPOSED PROCESSES in Application [%s] Acronym [%s] Snapshot [%s] Tip [%s]", bpmExposedProcessManager.getAppName(), bpmExposedProcessManager.getAppAcronym(), bpmExposedProcessManager.getSnapshotName(), bpmExposedProcessManager.isTip())

@@ -86,7 +86,7 @@ class BpmExposedProcessManager:
             processInfo = self.getProcessInfos(key)  
         return processInfo 
 
-    def LoadProcessInstancesInfos(self, bpmEnvironment : bpmEnv.BpmEnvironment):
+    def LoadProcessInstancesInfos(self, bpmEnvironment : bpmEnv.BpmEnvironment, environment):
         hostUrl = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
         token = None
 
@@ -142,8 +142,10 @@ class BpmExposedProcessManager:
                     if strUseTip.lower() == "true":
                         useTip = True
                 else:
-                    logging.error("Error, invalid 'tip' value, BAW_PROCESS_APPLICATION_SNAPSHOT_USE_TIP must be one of 'true' or 'false'")
-                    sys.exit()
+                    logging.error("Error, invalid 'tip' value, BAW_PROCESS_APPLICATION_SNAPSHOT_USE_TIP must be one of 'true' or 'false'. Quitting now")
+                    if environment != None:
+                        environment.runner.quit()
+
                 if appSnapshotName == None or appSnapshotName == "":
                     appSnapshotName = ""
                     useTip = True
@@ -183,8 +185,9 @@ class BpmExposedProcessManager:
                         pass
 
                 if len(listOfProcessInfos) == 0:
-                    logging.error("Error looking for application [%s] [%s], configured snapshot '%s' not present or not activated or not available as tip. Use empty value in BAW_PROCESS_APPLICATION_SNAPSHOT_NAME to run against the Tip. Or BAW_POWER_USER_NAME has not sufficient grants to eccess exposed processes", self.appName, self.appAcronym, appSnapshotName)
-                    sys.exit()
+                    logging.error("Error looking for application [%s] [%s], configured snapshot '%s' not present or not activated or not available as tip. Use empty value in BAW_PROCESS_APPLICATION_SNAPSHOT_NAME to run against the Tip. Or BAW_POWER_USER_NAME has not sufficient grants to eccess exposed processes, quitting now.", self.appName, self.appAcronym, appSnapshotName)
+                    if environment != None:
+                        environment.runner.quit()
 
                 for appProcInfo in listOfProcessInfos:
                     self.addProcessInfos(appProcInfo.getKey(), appProcInfo)

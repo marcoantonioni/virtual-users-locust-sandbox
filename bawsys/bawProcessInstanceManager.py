@@ -302,7 +302,7 @@ class BpmProcessInstanceManager:
                                       bpmDynamicModule,
                                       maxInstances : int, isLog=True):
       listOfInstances = []
-      authorizationBearerToken = bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment)
+      authorizationBearerToken = bpmExposedProcessManager.LoadProcessInstancesInfos(bpmEnvironment, None)
 
       userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
       userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)

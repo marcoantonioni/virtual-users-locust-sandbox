@@ -237,7 +237,7 @@ class PayloadTemplateManager:
 
     def getModel(self, bpmEnvironment : bpmEnv.BpmEnvironment):
         bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
-        bpmExposedProcessManager.LoadProcessInstancesInfos(self.bpmEnvironment)
+        bpmExposedProcessManager.LoadProcessInstancesInfos(self.bpmEnvironment, None)
         appId = bpmExposedProcessManager.getAppId()
         hostUrl : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
         baseUri : str = bawUtils.removeSlash(bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
