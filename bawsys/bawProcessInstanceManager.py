@@ -336,7 +336,7 @@ class BpmProcessInstanceManager:
                 #  print("Created process "+processName+" instance id["+processInstanceInfo.getPiid()+"], state["+processInstanceInfo.getState()+"]")
             count += 1
           except :
-            print("Error creating new process instance, retrying...")
+            print("Error creating new process instance, retry...")
 
 
       return listOfInstances
