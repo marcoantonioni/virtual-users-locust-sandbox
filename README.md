@@ -1,5 +1,7 @@
 # BAW Virtual Users Tool
 
+**[WORK IN PROGRESS...]**
+
 It is a tool written in Python language for simulating interactions between users and tasks of applications deployed in IBM Business Automation Workflow.
 
 It is based on the open source tool Locust (https://locust.io)
