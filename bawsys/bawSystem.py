@@ -476,6 +476,7 @@ def _loginZen(bpmEnvironment : bpmEnv.BpmEnvironment, userName = None, userPassw
         logging.debug("URL Login ZEN: %s", urlIdTk)
 
     response = requests.post(url=urlIdTk, data=params, headers=my_headers, verify=False)
+    
     if response.status_code == 200:
         access_token = response.json()["access_token"]
     if access_token != None:
