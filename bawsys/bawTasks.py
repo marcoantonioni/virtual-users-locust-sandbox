@@ -194,7 +194,8 @@ class SequenceOfBpmTasks(SequentialTaskSet):
             
             fullUrl = hostUrl+uriBaseTaskList+"?"+constParams+"&offset="+offset+"&size=25&processAppName="+processAppName
 
-            # logging.info("==>> fullURL: %s", fullUrl)
+            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                logging.debug("==>> _listTasks fullURL: %s", fullUrl)
 
             with self.client.get(url=fullUrl, headers=my_headers, catch_response=True) as response:
 
