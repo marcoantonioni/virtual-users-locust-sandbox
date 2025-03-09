@@ -178,7 +178,7 @@ The methods that generate a task data update and that start a new process instan
 
 ## Docker image
 
-to be done...
+[BAWVUT-Docker](./BAWVUT-Docker.md)
 
 ## Configuration files
 
@@ -186,7 +186,7 @@ to be done...
 
 ## Development environment setup and configuration
 
-to be done...
+to be updated and reorganized
 
 ```
 # Python modules used
