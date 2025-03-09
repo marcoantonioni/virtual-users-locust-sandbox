@@ -144,11 +144,9 @@ How ? Maintaining the same basic configuration and replacing the payload generat
 - run examples with docker image
 - run examples with tool sources on client machine
 
-Limits in version 1
-- the tool does not manage the start of optional Activities
+Limits in thsi version: the tool does not manage the start of optional Activities
 
-NOTE:
-In no way is this tool intended to replace the use of https://sdc-china.github.io/IDA-doc
+Note: In no way is this tool intended to replace the use of https://sdc-china.github.io/IDA-doc
 
 
 ## Program structure
@@ -178,20 +176,15 @@ The methods defined by the <b>SequenceOfBpmTasks<b> class allow you to perform t
 
 The methods that generate a task data update and that start a new process instance make dynamic use of the payload manager defined by <b>bpmDynamicModule</b>.
 
-
-
-WARNING: The following sections need to be updated and translated into English
-
 ## Docker image
 
 to be done...
 
 ## Configuration files
 
-to be done...
+[BAWVUT-Configuration](./docs/BAWVUT-Configuration.md)
 
-
-## Development environment
+## Development environment setup and configuration
 
 to be done...
 
@@ -209,13 +202,10 @@ pip install sqlite-utils
 pip3 install -U --pre locust
 ```
 
-Commands (just as memo)
+## Run examples
+
+### Run Load Test
 ```
-
-#---------------------------------
-# Run Load Test
-
-cd /home/marco/locust/studio/bawvut/virtual-users-locust-sandbox
 
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1.conf
 
@@ -224,32 +214,33 @@ locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-s
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-baw1.conf
 
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1-traditional.conf
+```
 
+### Run Unit Test
 
-#---------------------------------
-# Run Unit Test
-
-cd /home/marco/locust/studio/virtual-users-locust-sandbox
-
+```
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-ut1.conf
-
-
 ```
 
 
 
-ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations ./configurations
-ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata ./outputdata
-
-# test docker image
+### Test docker image
+```
 sudo mkdir /bawvut
 sudo ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations /bawvut/configurations
 sudo ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata /bawvut/outputdata
+```
+
+spare cfg
+```
+ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations ./configurations
+ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata ./outputdata
+```
 
 
 
 
-Vecchi
+### Tobe revised ...
 ```
 locust --config=./configurations/baw-vu-cfg-1.conf
 
@@ -280,11 +271,9 @@ python ./exportProcessInstancesData.py -e ./configurations/env1.properties -s Ac
 
 python ./exportProcessInstancesData.py -e ./configurations/env1.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z -n VUSClaimCompleteAuthorize
 
-
 python ./exportProcessInstancesData.py -e ./configurations/test.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z -n TestData
 
 python ./exportProcessInstancesData.py -e ./configurations/test.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z -n TestData -o ./outputdata/instances1.json
-
 
 # terminazione istanze
 python ./terminateProcessBulk.py -e ./configurations/env1.properties
@@ -326,18 +315,20 @@ python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configu
 
 sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_UNIT_TEST_SCENARIO" | jq .
 sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_PROCESS_INSTANCES" | jq .
+```
 
+```
 # https://github.com/locustio/locust/blob/master/examples/test_data_management.py
 # https://github.com/locustio/locust/blob/master/examples/dynamic_user_credentials.py
 
 # https://www.ibm.com/docs/en/bpm/8.6.0?topic=SSFPJS_8.6.0/com.ibm.wbpm.bpc.doc/topics/rrestapi_authtasks.htm
 
 # https://www.ibm.com/docs/en/baw/22.x?topic=server-process-federation-rest-apis
+```
 
 
-#=================================================================================
-# Preparazione struttura folder scenario
-
+## Preparazione struttura folder scenario
+```
 mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip
 mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/code
 mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/outputdata
@@ -354,8 +345,10 @@ python ./generateCodeFromTemplates.py -e /home/marco/locust/studio/BAWVUTScenari
 python ./generateCodeFromTemplates.py -e /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/VirtualUsersSandbox-tip-env.properties -o /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/code
 
 locust --config=/home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/VirtualUsersSandbox-tip.conf
+```
 
-
+#### notes...
+```
 #=================================================================================
 PFS Fedeated OpenAPI
 https://cpd-cp4ba.itzroks-120000c7nk-ww08nj-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-gb.containers.appdomain.cloud/pfs/rest/bpm/federated/openapi/index.html
@@ -435,12 +428,4 @@ curl -X 'GET' \
 
 #---------------------------------------------------------------------------------
 
-
-
-
-#---------------------------------------------------------------------------------
-
-
-
 ```
-
