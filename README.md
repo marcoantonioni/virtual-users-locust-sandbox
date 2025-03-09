@@ -148,6 +148,16 @@ Limits in thsi version: the tool does not manage the start of optional Activitie
 
 Note: In no way is this tool intended to replace the use of https://sdc-china.github.io/IDA-doc
 
+## Compainon repositories
+
+This repository is accompanied by two other repos that contain the BAW applications () and the configurations used for the run tests ().
+Clone all 3 repositories to have the following structure on the file system:
+<pre>
+.
+├── virtual-users-locust-sandbox
+├── virtual-users-locust-apps
+└── virtual-users-locust-test-configs
+</pre>
 
 ## Program structure
 
