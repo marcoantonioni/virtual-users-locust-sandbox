@@ -1,5 +1,10 @@
 # BAWVUT Configuration details
 
+Configuration files
+
+![BAWVUT Configuration](./images/BAWVUT-Configuration.png "BAWVUT Configuration")
+
+
 A run session is based on a set of configuration files.
 A first file references the remaining ones and is used to start the session.
 The first file <b>"Virtual Users Session"</b> (with extension '.conf') references 4 other files (extensions '.properties' and '.csv').
