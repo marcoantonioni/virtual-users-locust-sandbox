@@ -41,6 +41,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 Business Process Testing (BPT) validates end-to-end business workflows across multiple applications and systems, emphasizing the interconnectedness of these components. Crucial for identifying cross-functional impacts, BPT relies heavily on regression testing to detect unintended consequences from system changes. Given the complexity and time-intensive nature of testing diverse scenarios in long-running processes, automation is essential for effective BPT implementation, enabling efficient bug detection and ensuring system stability before production release.
 
+
 ## Test automation for business processes
 
 The complexity in designing and executing end-to-end tests of a business process can lead the manager of the project to limit the preventive verification of the application functions with a consequent increase in the risks regarding the quality offered to the end user.
@@ -96,6 +97,34 @@ With a dedicated tool for IBM Business Automation Workflow you can:
 - perform automatic verification of the expected results
 Redesigning the tests that interact at the TASK level is relatively simple and fast with the help of ad hoc tools for IBM Business Automation Workflow and allows to anticipate the test of the process logic compared to the test of the unique/gui specific logics.
 
+### Benefits of Assertion Capability for Long-Running Processes
+
+Assertions are crucial for verifying the correctness of long-running BPM processes. Here's why:
+
+- <b>Verification of Asynchronous Operations</b>:
+Long-running processes often involve asynchronous operations, making it challenging to determine when a process has completed and whether it has achieved the desired outcome. Assertions allow for the verification of the final state.
+
+- <b>Data Integrity Checks</b>:
+Assertions can verify that data has been correctly processed and stored at various stages of the process, ensuring data integrity.
+
+- <b>Outcome Validation</b>:
+They enable the validation of specific outcomes, such as the creation of a record in a database, the sending of an email, or the triggering of a downstream process.
+
+- <b>Fault Tolerance Verification</b>:
+Assertions can be used to verify that the process handles errors and exceptions correctly, ensuring fault tolerance.
+
+- <b>Increased Test Reliability</b>:
+Assertions provide a precise and automated way to verify process behavior, reducing the reliance on manual inspection and improving test reliability.
+
+- <b>Monitoring of Process State</b>:
+Assertions can be used to monitor the process state over time, and verify that the process has moved through the correct states.
+
+- <b>Verification of business rules</b>:
+Assertions can verify that the business rules within the process are being executed correctly.
+
+- <b>Reduced manual testing</b>:
+Automated assertions reduce the amount of manual testing required, saving time and resources.
+
 ### One of the possible solution is "BAW Virtual Users Tool" (BAWVUT)
 With this open source tool you can:
 - simulate the interaction with the process tasks present in the portal task list (list, claim, release, get data, update data, complete)
@@ -150,7 +179,7 @@ Note: In no way is this tool intended to replace the use of https://sdc-china.gi
 
 ## Companion repositories
 
-This repository is accompanied by two other repos that contain the BAW applications () and the configurations used for the run tests ().
+This repository is accompanied by two other repos that contain the BAW applications (virtual-users-locust-apps) and the configurations used for the run tests (virtual-users-locust-test-configs).
 Clone all 3 repositories to have the following structure on the file system:
 <pre>
 .
