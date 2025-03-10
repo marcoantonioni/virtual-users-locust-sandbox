@@ -41,7 +41,7 @@ def listProcessInstances(argv):
             # _status = "Active,Completed,Failed,Terminated"
             # _dateFrom = "2023-04-01T00:00:00Z"
             # _dateTo = "2023-04-30T00:00:00Z"
-            listOfInstances = pim.searchProcessInstances(bpmEnvironment, _status, _dateFrom, _dateTo)
+            listOfInstances = pim.searchProcessInstances(bpmEnvironment, None, _status, _dateFrom, _dateTo)
 
             if listOfInstances != None:
                 numProcesses = len(listOfInstances)

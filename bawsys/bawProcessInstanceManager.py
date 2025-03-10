@@ -150,6 +150,7 @@ class BpmProcessInstanceManager:
         userName = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_NAME)
         userPassword = bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_POWER_USER_PASSWORD)
         runningTraditional = bawSys._isBawTraditional(bpmEnvironment)
+
         if runningTraditional == True:
             cookieTraditional = bawSys._loginTraditional(bpmEnvironment, userName, userPassword)
             if cookieTraditional != None:

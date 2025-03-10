@@ -2,6 +2,8 @@
 
 **[WORK IN PROGRESS...]**
 
+Last update: 2025-03-10
+
 ## Brief introduction
 It is a tool written in Python language for simulating interactions between users and tasks of applications deployed in IBM Business Automation Workflow (both Traditional and CP4BA deployments).
 
@@ -225,10 +227,8 @@ The methods that generate a task data update and that start a new process instan
 
 ## Development environment setup and configuration
 
-to be updated and reorganized
-
+Install Python modules 
 ```
-# Python modules used
 pip install locust
 pip install jproperties
 pip install warlock
@@ -244,8 +244,9 @@ pip3 install -U --pre locust
 ## Run examples
 
 ### Run Load Test
-```
+Before run any scenario update configuration files for your runtime environment.
 
+```
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1.conf
 
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-starter.conf
@@ -256,50 +257,48 @@ locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1
 ```
 
 ### Run Unit Test
+Before run any scenario update configuration files for your runtime environment.
 
 ```
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-ut1.conf
 ```
 
+### Create process instances
 
-
-### Test docker image
 ```
-sudo mkdir /bawvut
-sudo ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations /bawvut/configurations
-sudo ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata /bawvut/outputdata
+python ./createProcessInstance.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -i 10
 ```
 
-spare cfg
-```
-ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/configurations ./configurations
-ln -s /home/marco/locust/studio/bawvut/virtual-users-locust-test-configs/outputdata ./outputdata
-```
+### List process instances
 
+```
+python ./listProcessInstances.py -e -e ../virtual-users-locust-test-configs/configurations/env1.properties -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z
+```
 
 
 
 ### Tobe revised ...
 ```
-locust --config=./configurations/baw-vu-cfg-1.conf
 
-locust --config=./configurations/baw-vu-cfg-1-traditional.conf
+    locust --config=./configurations/baw-vu-cfg-1.conf
+    locust --config=./configurations/baw-vu-cfg-1-traditional.conf
 
-#unit test
-locust --config=./configurations/baw-vu-cfg-ut1.conf
+    #unit test
+    locust --config=./configurations/baw-vu-cfg-ut1.conf
 
-# 1 utente
-locust -f ./BAWVirtualUsersTool.py --headless --only-summary --run-time 60s --users 1 --spawn-rate 1 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
+    # 1 utente
+    locust -f ./BAWVirtualUsersTool.py --headless --only-summary --run-time 60s --users 1 --spawn-rate 1 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
 
-# 10 utenti
-locust -f ./BAWVirtualUsersTool.py --headless --only-summary --run-time 60s --users 10 --spawn-rate 5 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
+    # 10 utenti
+    locust -f ./BAWVirtualUsersTool.py --headless --only-summary --run-time 60s --users 10 --spawn-rate 5 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
 
-# 2 utenti
-locust -f ./BAWVirtualUsersTool.py --headless --only-summary --run-time 60s --users 2 --spawn-rate 1 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds-user9-10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
+    # 2 utenti
+    locust -f ./BAWVirtualUsersTool.py --headless --only-summary --run-time 60s --users 2 --spawn-rate 1 --host http://ts.locust.org:8080/ --BAW_ENV ./configurations/env1.properties --BAW_USERS ./configurations/creds-user9-10.csv --BAW_TASK_SUBJECTS ./configurations/TS-TEST1.csv --BAW_USER_TASK_SUBJECTS ./configurations/US-TS-TEST1.csv
 
 # creazione istanze
 python ./createProcessInstance.py  -e ./configurations/env1.properties -i 10
 python ./createProcessInstance.py  -e ./configurations/env1-traditional.properties -i 10
+
 
 # lista istanze
 python ./listProcessInstances.py -e ./configurations/env1.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z
