@@ -301,13 +301,14 @@ python ./deleteProcessBulk.py -e ../virtual-users-locust-test-configs/configurat
 python ./generateCodeFromTemplates.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -o ../virtual-users-locust-test-configs/configurations
 ```
 
+### Generate users, groups in LDIF files and user credentials in CSV files
+```
+python generateLDIFForVirtualUsers.py -c ../virtual-users-locust-test-configs/configurations/ldif4vu-cfg1.properties -l ../virtual-users-locust-test-configs/configurations/vux-cfg1.ldif -u ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
+```
+
 
 ### Tobe revised ...
 ```
-
-# creazione utenze e gruppi ldap
-python generateLDIFForVirtualUsers.py -c ./configurations/ldif4vu-cfg1.properties -l ./configurations/vux-cfg1.ldif -u ./configurations/creds-cfg1.csv
-
 # onboard utenze in IAM
 python ./iamOnboardUsers.py -e ./configurations/env1.properties -d vuxdomain -f ./configurations/creds-cfg1.csv
 
