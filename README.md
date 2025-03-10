@@ -306,11 +306,14 @@ python ./generateCodeFromTemplates.py -e ../virtual-users-locust-test-configs/co
 python generateLDIFForVirtualUsers.py -c ../virtual-users-locust-test-configs/configurations/ldif4vu-cfg1.properties -l ../virtual-users-locust-test-configs/configurations/vux-cfg1.ldif -u ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
 ```
 
+# Onboard users into CP4BA IAM
+```
+python ./iamOnboardUsers.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -d vuxdomain -f ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
+```
+
 
 ### Tobe revised ...
 ```
-# onboard utenze in IAM
-python ./iamOnboardUsers.py -e ./configurations/env1.properties -d vuxdomain -f ./configurations/creds-cfg1.csv
 
 # gruppi e team bindings
 python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -o add
