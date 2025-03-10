@@ -276,10 +276,15 @@ python ./listProcessInstances.py -e ../virtual-users-locust-test-configs/configu
 
 ### Export process instance data
 
+To stdout
 ```
 python ./exportProcessInstancesData.py -e ../virtual-users-locust-test-configs/configurations/env1.properties  -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z -n VUSClaimCompleteTwoRoles
 ```
 
+To file
+```
+python ./exportProcessInstancesData.py -e ../virtual-users-locust-test-configs/configurations/env1.properties  -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z -n VUSClaimCompleteTwoRoles -o ../virtual-users-locust-test-configs/outputdata/VUSClaimCompleteTwoRoles-instances.json
+```
 
 
 ### Tobe revised ...
