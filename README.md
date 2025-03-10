@@ -286,34 +286,24 @@ To file
 python ./exportProcessInstancesData.py -e ../virtual-users-locust-test-configs/configurations/env1.properties  -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z -n VUSClaimCompleteTwoRoles -o ../virtual-users-locust-test-configs/outputdata/VUSClaimCompleteTwoRoles-instances.json
 ```
 
+### Terminate instances
+```
+python ./terminateProcessBulk.py -e ../virtual-users-locust-test-configs/configurations/env1.properties
+```
+
+### Delete instances
+```
+python ./deleteProcessBulk.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -t true
+```
+
+### Data model and code template generation
+```
+python ./generateCodeFromTemplates.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -o ../virtual-users-locust-test-configs/configurations
+```
+
 
 ### Tobe revised ...
 ```
-# export dati istanza processo
-python ./exportProcessInstancesData.py -e ./configurations/env1.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z -n VUSClaimCompleteTwoRoles
-
-python ./exportProcessInstancesData.py -e ./configurations/env1.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z -n VUSClaimCompleteAuthorize
-
-python ./exportProcessInstancesData.py -e ./configurations/test.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z -n TestData
-
-python ./exportProcessInstancesData.py -e ./configurations/test.properties -s Active,Terminated,Completed,Failed -f 2023-04-01T00:00:00Z -t 2023-04-30T00:00:00Z -n TestData -o ./outputdata/instances1.json
-
-# terminazione istanze
-python ./terminateProcessBulk.py -e ./configurations/env1.properties
-python ./terminateProcessBulk.py  -e ./configurations/env1-traditional.properties
-
-# cancellazione istanze
-python ./deleteProcessBulk.py -e ./configurations/env1.properties -t true
-python ./deleteProcessBulk.py  -e ./configurations/env1-traditional.properties -t true
-
-# generazione template modello dati
-python ./generateCodeFromTemplates.py -e ./configurations/env1.properties -o ./configurations
-python ./generateCodeFromTemplates.py -e ./configurations/env1-traditional.properties -o ./configurations
-
-python ./generateCodeFromTemplates.py -e ./configurations/env-ut1.properties -o ./configurations
-
-python ./generateCodeFromTemplates.py -f -e ../virtual-users-locust-test-configs/configurations/env1-starter.properties -o ../virtual-users-locust-test-configs/configurations
-
 
 # creazione utenze e gruppi ldap
 python generateLDIFForVirtualUsers.py -c ./configurations/ldif4vu-cfg1.properties -l ./configurations/vux-cfg1.ldif -u ./configurations/creds-cfg1.csv
