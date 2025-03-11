@@ -40,15 +40,13 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 ```
 
 <br>
-<span style="background-color:blue">
 <i>For an introduction to the benefits of end-to-end test automation for business processes see the link</i> https://github.com/marcoantonioni/BAWVirtualUsersTool
-</span>
 </br>
 
 ## How to evaluate this tool
 - the tool is open source, released using MIT licenses (https://opensource.org/license/mit/)
 - the tool is non-invasive, requires no installation of any kind on BAW servers, performs all its functions by simulating the end user from the outside and the system administrator for virtual users configurations
-- the tool is based on Python 3 technology available on every operating system among the most commonly used ones
+- the tool is based on Python v3 technology available on every operating system among the most commonly used ones
 - the tool is also offered in Docker image format to simplify the client side setup operations
 - has been designed and created to better support IBM customers and IBM partners who cannot use other tools for various reasons
 - in the git repository there are demo applications and related pre-configurations that can be used to evaluate the tool with your minimum effort
@@ -74,7 +72,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 - run examples with docker image
 - run examples with tool sources on client machine
 
-Limits in thsi version: the tool does not manage the start of optional Activities
+Limits in this version: the tool does not manage the start of optional Activities
 
 Note: In no way is this tool intended to replace the use of https://sdc-china.github.io/IDA-doc
 
@@ -93,7 +91,7 @@ Clone all 3 repositories to have the following structure on the file system:
 
 Description of most important python files.
 
-### BAWVirtualUsersTool.py
+### file: BAWVirtualUsersTool.py
 The main module is <b>BAWVirtualUsersTool.py</b>, it is referenced by the '.conf' file used as the value of the '--config' parameter of the 'locust' program
 ```
 locust --config=your-config-file
@@ -105,7 +103,7 @@ The python source file specific to the run is referenced by the variable <b>BAW_
 
 The 'unitTestInstancesExporter' method runs the export of the data of the processes that have been started for a run configured as a unit test. The data is inserted into a file in SQLite format and can be consulted with simple SQL queries.
 
-### bawTasks.py
+### file: bawTasks.py
 The module defines two classes, <b>SequenceOfBpmTasks(SequentialTaskSet)</b> and <b>UnitTestScenario(SequenceOfBpmTasks)</b>
 
 The <b>SequenceOfBpmTasks</b> class extends SequentialTaskSet [from locust] and defines variables and methods for managing basic human task functionalities.
