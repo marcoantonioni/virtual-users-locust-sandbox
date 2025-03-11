@@ -247,10 +247,11 @@ class GroupsTeamsManager:
                             bpmTeamInfo.operateTeam = team
                         else:
                             bpmTeamInfo.operateTeam.managerGroup = managerGroup
-                            if bpmTeamInfo.operateTeam.groups != None:
-                                bpmTeamInfo.operateTeam.groups = bpmTeamInfo.operateTeam.groups + [groupName]
-                            else:
-                                bpmTeamInfo.operateTeam.groups = [groupName]
+                            if groupName != None and groupName != "":
+                                if bpmTeamInfo.operateTeam.groups != None:
+                                    bpmTeamInfo.operateTeam.groups = bpmTeamInfo.operateTeam.groups + [groupName]
+                                else:
+                                    bpmTeamInfo.operateTeam.groups = [groupName]
 
                             if bpmTeamInfo.operateTeam.members != None:
                                 bpmTeamInfo.operateTeam.members = bpmTeamInfo.operateTeam.members + usersList
@@ -316,7 +317,7 @@ class GroupsTeamsManager:
         teamInfo : bawSys.TeamBindingInfo = None 
         for teamInfo in self.filteredListOfTeamInfo:
             urlUpdate = urlTeamBindingsBase + teamInfo.name            
-            logging.info("Updating team [%s] users[%d] groups[%d]", teamInfo.name, len(teamInfo.operateTeam.members), len(teamInfo.operateTeam.groups))
+            print("Updating team [",teamInfo.name,"] users[",len(teamInfo.operateTeam.members),"] groups[",len(teamInfo.operateTeam.groups),"]")
             response = None
             data = {}
             if mode.lower() == 'add':

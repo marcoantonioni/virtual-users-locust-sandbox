@@ -246,19 +246,21 @@ Remove users from Teams
 python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o remove
 ```
 
+Add users and groups to Teams
+```
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o add
+```
+
+Remove users and groups from Teams 
+```
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o remove
+```
+
 
 ### Tobe revised ...
 ```
 
 # gruppi e team bindings
-
-python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o add
-python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./configurations/teams-vu-cfg1.csv -o remove
-
-python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -t ./configurations/teams-vu-cfg1.csv -o add
-
-# unit test
-python ./manageGroupsAndTeams.py -e ./configurations/env-ut1.properties -g ./configurations/groups-vu-cfg-ut1.csv -t ./configurations/teams-vu-cfg-ut1.csv -o add
 
 # baw1-bai
 python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-baw1-bai.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-baw1-bai.csv -t ../virtual-users-locust-test-configs/configurations/teams-vu-baw1-bai.csv -o add

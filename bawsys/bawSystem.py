@@ -90,9 +90,12 @@ class TeamBindingInfo:
 class TeamBindingOperate:
     def __init__(self, name, group, users, managerGroup):
         self.groupName = name
-        self.groups = [group]
         self.members = users
         self.managerGroup = managerGroup
+        if group != "": 
+            self.groups = [group]
+        else:
+            self.groups = []
 
 class BpmExposedProcessInfo:
     def __init__(self, appName, appAcronym, snapshotName, tip, processName, appId, appBpdId, startUrl):
