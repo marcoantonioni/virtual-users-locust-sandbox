@@ -140,8 +140,9 @@ pip3 install -U --pre locust
 
 ## Run examples
 
+!!! Before run any scenario update configuration files for your runtime environment.
+
 ### Run Load Test
-Before run any scenario update configuration files for your runtime environment.
 
 ```
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1.conf
