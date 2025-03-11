@@ -40,7 +40,9 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 ```
 
 <br>
+<span style="background-color:rgba(10,10,10)">
 <i>For an introduction to the benefits of end-to-end test automation for business processes see the link</i> https://github.com/marcoantonioni/BAWVirtualUsersTool
+</span>
 </br>
 
 ## How to evaluate this tool
