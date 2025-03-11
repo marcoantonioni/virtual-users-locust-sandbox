@@ -260,11 +260,6 @@ python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configu
 ### Tobe revised ...
 ```
 
-# gruppi e team bindings
-
-# baw1-bai
-python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-baw1-bai.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-baw1-bai.csv -t ../virtual-users-locust-test-configs/configurations/teams-vu-baw1-bai.csv -o add
-
 sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_UNIT_TEST_SCENARIO" | jq .
 sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_PROCESS_INSTANCES" | jq .
 ```

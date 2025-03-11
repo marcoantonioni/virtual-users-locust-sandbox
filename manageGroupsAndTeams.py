@@ -380,10 +380,11 @@ def manageGroupsTeams(argv):
             if gtMgr.loggedIn == True:
                 if _operation != None:
                     if _fullPathGroupFile != None:
-                        print("Working on groups...")
+                        print("Working on Groups [",_operation,"]...")
                         gtMgr.manageGroups(_fullPathGroupFile, _operation)
                     if _fullPathTeamsFile != None:
-                        print("Working on Teams...")
+                        print("Working on Teams[",_operation,"]...")
+
                         gtMgr.manageTeams(_fullPathTeamsFile, _operation)
             else:
                 print("Not logged in")
