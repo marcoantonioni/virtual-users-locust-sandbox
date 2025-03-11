@@ -155,7 +155,6 @@ locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1
 ```
 
 ### Run Unit Test
-Before run any scenario update configuration files for your runtime environment.
 
 ```
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-ut1.conf
@@ -195,16 +194,32 @@ python ./deleteProcessBulk.py -e ../virtual-users-locust-test-configs/configurat
 ```
 
 ### Data model and code template generation
+This command exports the data model and creates a python files that can be used to generate payloads for the various human tasks of the process.
+The generated files are:
+<pre>
+payloadManager-<i>'process name-acronym-version'</i>.py
+payloadManager-<i>'process name-acronym-version'</i>-Datamodel'.py
+payloadManager-<i>'process name-acronym-version'</i>-JsonSchema.py
+assertManager-<i>'process name-acronym-version'</i>s.py
+</pre>
+For more details see [DataModelAndCodeTemplate](./DataModelAndCodeTemplate.md)
 ```
 python ./generateCodeFromTemplates.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -o ../virtual-users-locust-test-configs/configurations
 ```
 
 ### Generate users, groups in LDIF files and user credentials in CSV files
+This command generate and .ldif file and a .csv file.
+The .ldif file contains uers and groups definition as defined in .properties file.
+The .creds file contains user ids and credentials.
+
+For more details see [UsersAndGroupsDefinition](./UsersAndGroupsDefinition.md)
+
 ```
 python generateLDIFForVirtualUsers.py -c ../virtual-users-locust-test-configs/configurations/ldif4vu-cfg1.properties -l ../virtual-users-locust-test-configs/configurations/vux-cfg1.ldif -u ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
 ```
 
 # Onboard users into CP4BA IAM
+This command onboards the users defined in the .csv file into the CP4BA deployment.
 ```
 python ./iamOnboardUsers.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -d vuxdomain -f ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
 ```
