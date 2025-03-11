@@ -256,14 +256,27 @@ Remove users and groups from Teams
 python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o remove
 ```
 
-
-### Tobe revised ...
+### Unit Test data, query against exported SQLite db
+```
+sqlite-utils query --json-cols ../virtual-users-locust-test-configs/outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_UNIT_TEST_SCENARIO" | jq .
+sqlite-utils query --json-cols ../virtual-users-locust-test-configs/outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_PROCESS_INSTANCES" | jq .
 ```
 
-sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_UNIT_TEST_SCENARIO" | jq .
-sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_PROCESS_INSTANCES" | jq .
+
+
+
+## to be revised... Preparazione struttura folder scenario
+```
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/code
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/outputdata
+
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/code
+mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/outputdata
 ```
 
+#### notes...
 ```
 # https://github.com/locustio/locust/blob/master/examples/test_data_management.py
 # https://github.com/locustio/locust/blob/master/examples/dynamic_user_credentials.py
@@ -273,28 +286,6 @@ sqlite-utils query --json-cols ./outputdata/unittest-scenario1-sqlite.db "SELECT
 # https://www.ibm.com/docs/en/baw/22.x?topic=server-process-federation-rest-apis
 ```
 
-
-## Preparazione struttura folder scenario
-```
-mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip
-mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/code
-mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/outputdata
-
-mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis
-mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/code
-mkdir -p /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/outputdata
-
-# tool folder
-cd /home/marco/locust/studio/virtual-users-locust-sandbox/
-
-python ./generateCodeFromTemplates.py -e /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/VirtualUsersSandbox-tip-env.properties -o /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/code
-
-python ./generateCodeFromTemplates.py -e /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/VirtualUsersSandbox-tip-env.properties -o /home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTipBis/code
-
-locust --config=/home/marco/locust/studio/BAWVUTScenarios/VirtualUsersSandboxTip/VirtualUsersSandbox-tip.conf
-```
-
-#### notes...
 ```
 #=================================================================================
 PFS Fedeated OpenAPI
