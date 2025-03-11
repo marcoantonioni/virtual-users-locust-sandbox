@@ -240,6 +240,10 @@ class GroupsTeamsManager:
                         team = bawSys.TeamBindingOperate(teamName, groupName, usersList, managerGroup)
                         self.listOfTeams.append(team)
                         if bpmTeamInfo.operateTeam == None:
+                            if len(team.members) == 1 and team.members[0] == None:
+                                team.members = []
+                            if len(team.groups) == 1 and team.groups[0] == None:
+                                team.groups = []
                             bpmTeamInfo.operateTeam = team
                         else:
                             bpmTeamInfo.operateTeam.managerGroup = managerGroup
@@ -251,8 +255,7 @@ class GroupsTeamsManager:
                             if bpmTeamInfo.operateTeam.members != None:
                                 bpmTeamInfo.operateTeam.members = bpmTeamInfo.operateTeam.members + usersList
                             else:
-                                bpmTeamInfo.operateTeam.members = [] + usersList
-                        
+                                bpmTeamInfo.operateTeam.members = [] + usersList                
                         self.filteredListOfTeamInfo.append(bpmTeamInfo)
                     except:
                         logging.warning("_readTeamsArchive error, Team '%s' not present on server, skipped", teamName)
@@ -313,7 +316,7 @@ class GroupsTeamsManager:
         teamInfo : bawSys.TeamBindingInfo = None 
         for teamInfo in self.filteredListOfTeamInfo:
             urlUpdate = urlTeamBindingsBase + teamInfo.name            
-            print("Updating team", teamInfo.name)
+            logging.info("Updating team [%s] users[%d] groups[%d]", teamInfo.name, len(teamInfo.operateTeam.members), len(teamInfo.operateTeam.groups))
             response = None
             data = {}
             if mode.lower() == 'add':

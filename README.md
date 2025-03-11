@@ -225,14 +225,25 @@ python ./iamOnboardUsers.py -e ../virtual-users-locust-test-configs/configuratio
 ```
 
 ### Add / Remove users from BPM Groups (Process Admin Console / Groups management)
-Add users to groups
+Add users to Groups
 ```
 python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o add
 ```
 
-Remove users to groups
+Remove users from Groups
 ```
 python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o remove
+```
+
+### Add / Remove users from Teams (Process Admin Console / Installe Apps / Application Details)
+Add users to Teams
+```
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o add
+```
+
+Remove users from Teams 
+```
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o remove
 ```
 
 
@@ -240,10 +251,8 @@ python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configu
 ```
 
 # gruppi e team bindings
-python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o add
-python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -o remove
 
-python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./configurations/teams-vu-cfg1.csv -o add
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o add
 python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./configurations/teams-vu-cfg1.csv -o remove
 
 python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -t ./configurations/teams-vu-cfg1.csv -o add
