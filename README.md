@@ -218,10 +218,21 @@ For more details see [UsersAndGroupsDefinition](./UsersAndGroupsDefinition.md)
 python generateLDIFForVirtualUsers.py -c ../virtual-users-locust-test-configs/configurations/ldif4vu-cfg1.properties -l ../virtual-users-locust-test-configs/configurations/vux-cfg1.ldif -u ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
 ```
 
-# Onboard users into CP4BA IAM
+### Onboard users into CP4BA IAM
 This command onboards the users defined in the .csv file into the CP4BA deployment.
 ```
 python ./iamOnboardUsers.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -d vuxdomain -f ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
+```
+
+### Add / Remove users from BPM Groups (Process Admin Console / Groups management)
+Add users to groups
+```
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o add
+```
+
+Remove users to groups
+```
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o remove
 ```
 
 
@@ -229,7 +240,7 @@ python ./iamOnboardUsers.py -e ../virtual-users-locust-test-configs/configuratio
 ```
 
 # gruppi e team bindings
-python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -o add
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o add
 python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -g ./configurations/groups-vu-cfg1.csv -o remove
 
 python ./manageGroupsAndTeams.py -e ./configurations/env1.properties -t ./configurations/teams-vu-cfg1.csv -o add
