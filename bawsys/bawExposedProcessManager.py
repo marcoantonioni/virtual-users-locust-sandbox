@@ -211,6 +211,10 @@ class BpmExposedProcessManager:
                     except KeyError:
                         logging.error("%s error, response did not contain expected key 'Data', 'errorMessage'", contextName)
                         self.response.failure("Response did not contain expected key 'Data', 'errorMessage'")
+        else:
+            logging.error("Login failed for user [%s], terminating...", userName)
+            environment.runner.quit()
+            
         return token
     
     def loadExposedItemsForUser(self, bpmEnvironment : bpmEnv.BpmEnvironment, processInfo: bpmSys.BpmExposedProcessInfo, user):

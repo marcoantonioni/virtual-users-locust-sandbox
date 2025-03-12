@@ -149,7 +149,7 @@ pip3 install -U --pre locust
 ### Run Unit Test or Load Test
 The run type is defined by BAW_RUN_MODE variable
 ```
-locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1.conf
+locust --config=../virtual-users-locust-test-configs/configurations/baw-cp4ba/baw-vu-cfg-1.conf
 ```
 
 ### Create process instances
