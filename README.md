@@ -205,8 +205,10 @@ payloadManager-<i>'process name-acronym-version'</i>-JsonSchema.py
 assertManager-<i>'process name-acronym-version'</i>s.py
 </pre>
 For more details see [DataModelAndCodeTemplate](./DataModelAndCodeTemplate.md)
+
+*!!! ===>> Before run a generation make a backup of your previous generated files.*
 ```
-python ./generateCodeFromTemplates.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -o ../virtual-users-locust-test-configs/configurations
+python ./generateCodeFromTemplates.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -o ../virtual-users-locust-test-configs/configurations/managers
 ```
 
 ### Generate users, groups in LDIF files and user credentials in CSV files
