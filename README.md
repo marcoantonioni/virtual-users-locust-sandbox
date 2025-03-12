@@ -144,7 +144,13 @@ pip3 install -U --pre locust
 
 ## Run examples
 
-!!! Before run any scenario update configuration files for your runtime environment.
+In a **LOAD_TEST** scenario, the number of process instances started when CREATEPROCESS is present in BAW_VU_ACTIONS is variable and depends on the number of users registered in the Team defined as "starter" and on the actions that each of these users can perform sequentially depending on the values ​​set in BAW_VU_ACTIONS .
+
+In a **UNIT_TEST** scenario the number of completed process instances depends on the maximum duration limit defined by BAW_UNIT_TEST_MAX_DURATION.
+
+In both scenarios, the max number of process instances started is defined by the BAW_PROCESS_INSTANCES_MAX variable.
+
+*!!! ===>> Before run any scenario update configuration files for your runtime environment.*
 
 ### Run Unit Test or Load Test
 The run type is defined by BAW_RUN_MODE variable
@@ -155,13 +161,13 @@ locust --config=../virtual-users-locust-test-configs/configurations/baw-cp4ba/ba
 ### Create process instances
 Example for 10 instances
 ```
-python ./createProcessInstance.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -i 10
+python ./createProcessInstance.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -i 10
 ```
 
 ### List process instances
 Select process instances using filters for state (-s) and time range from-date (-f) / to-date (-t) 
 ```
-python ./listProcessInstances.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z
+python ./listProcessInstances.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z
 ```
 
 ### Export process instance data
@@ -169,24 +175,24 @@ Export process instances of specific process template (-n) using filters for sta
 
 Export to standard output
 ```
-python ./exportProcessInstancesData.py -e ../virtual-users-locust-test-configs/configurations/env1.properties  -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z -n VUSClaimCompleteTwoRoles
+python ./exportProcessInstancesData.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties  -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z -n VUSClaimCompleteTwoRoles
 ```
 
 Export to file
 ```
-python ./exportProcessInstancesData.py -e ../virtual-users-locust-test-configs/configurations/env1.properties  -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z -n VUSClaimCompleteTwoRoles -o ../virtual-users-locust-test-configs/outputdata/VUSClaimCompleteTwoRoles-instances.json
+python ./exportProcessInstancesData.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties  -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z -n VUSClaimCompleteTwoRoles -o ../virtual-users-locust-test-configs/outputdata/VUSClaimCompleteTwoRoles-instances.json
 ```
 
 ### Terminate instances
 Terminate all running instances for process templates defined in configuration file.
 ```
-python ./terminateProcessBulk.py -e ../virtual-users-locust-test-configs/configurations/env1.properties
+python ./terminateProcessBulk.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties
 ```
 
 ### Delete instances
 Terminate all running instances if -t set to true then delete all terminated process instances for process templates defined in configuration file.
 ```
-python ./deleteProcessBulk.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -t true
+python ./deleteProcessBulk.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -t true
 ```
 
 ### Data model and code template generation
@@ -200,7 +206,7 @@ assertManager-<i>'process name-acronym-version'</i>s.py
 </pre>
 For more details see [DataModelAndCodeTemplate](./DataModelAndCodeTemplate.md)
 ```
-python ./generateCodeFromTemplates.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -o ../virtual-users-locust-test-configs/configurations
+python ./generateCodeFromTemplates.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -o ../virtual-users-locust-test-configs/configurations
 ```
 
 ### Generate users, groups in LDIF files and user credentials in CSV files
@@ -217,39 +223,39 @@ python generateLDIFForVirtualUsers.py -c ../virtual-users-locust-test-configs/co
 ### Onboard users into CP4BA IAM
 This command onboards the users defined in the .csv file into the CP4BA deployment. It must be run after the deployment/configuration of LDAP server user for *.ldif* domain and after the IDP configuration pointing to LDAP.
 ```
-python ./iamOnboardUsers.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -d vuxdomain -f ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
+python ./iamOnboardUsers.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -d vuxdomain -f ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
 ```
 
 ### Add / Remove users from BPM Groups (Process Admin Console / Groups management)
 Add users to Groups
 ```
-python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o add
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o add
 ```
 
 Remove users from Groups
 ```
-python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o remove
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o remove
 ```
 
 ### Add / Remove users from Teams (Process Admin Console / Installed Apps / Application Details)
 Add users to Teams
 ```
-python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o add
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1-0.3.11.properties -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o add
 ```
 
 Remove users from Teams 
 ```
-python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o remove
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1-0.3.11.properties -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o remove
 ```
 
 Add users and groups to Teams
 ```
-python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o add
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1-0.3.11.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o add
 ```
 
 Remove users and groups from Teams 
 ```
-python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o remove
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1-0.3.11.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o remove
 ```
 
 ### Unit Test data, query against exported SQLite db
