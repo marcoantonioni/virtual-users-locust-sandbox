@@ -108,21 +108,21 @@ The module defines two classes, <b>SequenceOfBpmTasks(SequentialTaskSet)</b> and
 
 The <b>SequenceOfBpmTasks</b> class extends SequentialTaskSet [from locust] and defines variables and methods for managing basic human task functionalities.
 
-The <b>UnitTestScenario</b> class extends SequenceOfBpmTasks and defines the <b>bawCreateScenarioInstances</b> method for creating and cataloging process instances that will be the object of unit tests.
+The <b>UnitTestScenario</b> class extends SequenceOfBpmTasks and defines the <b>bawCreateScenarioInstances</b> method for creating and cataloging process instances that will be the object of unit tests. The cataloged process instances will then be exported to the SQLite database at the end of the run.
 
 The methods defined by the <b>SequenceOfBpmTasks<b> class allow you to perform the functions of reading the available tasks (task list), reading and updating the data of a human task, executing the claim, releasing, completing a human task. Log in and create a new process instance.
 
 The methods that generate a task data update and that start a new process instance make dynamic use of the payload manager defined by <b>bpmDynamicModule</b>.
 
-## Docker image
-
-[BAWVUT-Docker](./BAWVUT-Docker.md)
-
 ## Configuration files
 
 [BAWVUT-Configuration](./docs/BAWVUT-Configuration.md)
 
-## Development environment setup and configuration
+## Docker image
+
+[BAWVUT-Docker](./BAWVUT-Docker.md)
+
+## Development environment setup and configuration (Linux env)
 
 Install Python modules 
 ```
@@ -142,59 +142,51 @@ pip3 install -U --pre locust
 
 !!! Before run any scenario update configuration files for your runtime environment.
 
-### Run Load Test
-
+### Run Unit Test or Load Test
+The run type is defined by BAW_RUN_MODE variable
 ```
 locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1.conf
-
-locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-starter.conf
-
-locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-baw1.conf
-
-locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-1-traditional.conf
-```
-
-### Run Unit Test
-
-```
-locust --config=../virtual-users-locust-test-configs/configurations/baw-vu-cfg-ut1.conf
 ```
 
 ### Create process instances
-
+Example for 10 instances
 ```
 python ./createProcessInstance.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -i 10
 ```
 
 ### List process instances
+Select process instances using filters for state (-s) and time range from-date (-f) / to-date (-t) 
 ```
 python ./listProcessInstances.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z
 ```
 
 ### Export process instance data
+Export process instances of specific process template (-n) using filters for state (-s) and time range from-date (-f) / to-date (-t) 
 
-To stdout
+Export to standard output
 ```
 python ./exportProcessInstancesData.py -e ../virtual-users-locust-test-configs/configurations/env1.properties  -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z -n VUSClaimCompleteTwoRoles
 ```
 
-To file
+Export to file
 ```
 python ./exportProcessInstancesData.py -e ../virtual-users-locust-test-configs/configurations/env1.properties  -s Active,Terminated,Completed,Failed -f 2025-03-01T00:00:00Z -t 2025-03-31T00:00:00Z -n VUSClaimCompleteTwoRoles -o ../virtual-users-locust-test-configs/outputdata/VUSClaimCompleteTwoRoles-instances.json
 ```
 
 ### Terminate instances
+Terminate all running instances for process templates defined in configuration file.
 ```
 python ./terminateProcessBulk.py -e ../virtual-users-locust-test-configs/configurations/env1.properties
 ```
 
 ### Delete instances
+Terminate all running instances if -t set to true then delete all terminated process instances for process templates defined in configuration file.
 ```
 python ./deleteProcessBulk.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -t true
 ```
 
 ### Data model and code template generation
-This command exports the data model and creates a python files that can be used to generate payloads for the various human tasks of the process.
+This command exports the data model and creates python files that can be used to generate payloads for the various human tasks of the process.
 The generated files are:
 <pre>
 payloadManager-<i>'process name-acronym-version'</i>.py
@@ -208,9 +200,9 @@ python ./generateCodeFromTemplates.py -e ../virtual-users-locust-test-configs/co
 ```
 
 ### Generate users, groups in LDIF files and user credentials in CSV files
-This command generate and .ldif file and a .csv file.
-The .ldif file contains uers and groups definition as defined in .properties file.
-The .creds file contains user ids and credentials.
+This command generate an *.ldif* file and a *.csv* file.
+The *.ldif* file contains uers and groups definition as defined in *.properties* file.
+The *.creds* file contains user ids and passwords.
 
 For more details see [UsersAndGroupsDefinition](./UsersAndGroupsDefinition.md)
 
@@ -219,7 +211,7 @@ python generateLDIFForVirtualUsers.py -c ../virtual-users-locust-test-configs/co
 ```
 
 ### Onboard users into CP4BA IAM
-This command onboards the users defined in the .csv file into the CP4BA deployment.
+This command onboards the users defined in the .csv file into the CP4BA deployment. It must be run after the deployment/configuration of LDAP server user for *.ldif* domain and after the IDP configuration pointing to LDAP.
 ```
 python ./iamOnboardUsers.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -d vuxdomain -f ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
 ```
@@ -235,7 +227,7 @@ Remove users from Groups
 python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -o remove
 ```
 
-### Add / Remove users from Teams (Process Admin Console / Installe Apps / Application Details)
+### Add / Remove users from Teams (Process Admin Console / Installed Apps / Application Details)
 Add users to Teams
 ```
 python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/env1-0.3.11.properties -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o add
