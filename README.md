@@ -2,7 +2,7 @@
 
 **[WORK IN PROGRESS...]**
 
-Last update: 2025-03-10
+Last update: 2025-03-12
 
 ## Brief introduction
 It is a tool written in Python language for simulating interactions between users and tasks of applications deployed in IBM Business Automation Workflow (both Traditional and CP4BA deployments).
