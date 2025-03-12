@@ -2,6 +2,10 @@
 
 **[WORK IN PROGRESS...]**
 
+<img src="./docs/images/agent2.jpg" width="300" height="300">
+
+
+
 Last update: 2025-03-12
 
 ## Brief introduction

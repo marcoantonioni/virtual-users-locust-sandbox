@@ -2,7 +2,7 @@
 
 Configuration files
 
-![BAWVUT Configuration](./images/BAWVUT-Configuration.png "BAWVUT Configuration")
+![BAWVUT Configuration](./images/BAWVUT-Configuration.png)
 
 
 A run session is based on a set of configuration files.
