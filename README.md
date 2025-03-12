@@ -2,7 +2,7 @@
 
 **[WORK IN PROGRESS...]**
 
-<img src="./docs/images/agent2.jpg" width="300" height="300">
+<img src="./docs/images/agent2.jpg" width="350" height="350">
 
 
 
