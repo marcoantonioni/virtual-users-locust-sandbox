@@ -6,7 +6,7 @@
 
 
 
-Last update: 2025-03-12
+Last update: 2025-03-13
 
 ## Brief introduction
 It is a tool written in Python language for simulating interactions between users and tasks of applications deployed in IBM Business Automation Workflow (both Traditional and CP4BA deployments).
@@ -124,7 +124,7 @@ The methods that generate a task data update and that start a new process instan
 
 ## Docker image
 
-[BAWVUT-Docker](./BAWVUT-Docker.md)
+[BAWVUT-Docker](./docs/BAWVUT-Docker.md)
 
 ## Development environment setup and configuration (Linux env)
 
@@ -204,7 +204,7 @@ payloadManager-<i>'process name-acronym-version'</i>-Datamodel'.py
 payloadManager-<i>'process name-acronym-version'</i>-JsonSchema.py
 assertManager-<i>'process name-acronym-version'</i>s.py
 </pre>
-For more details see [DataModelAndCodeTemplate](./DataModelAndCodeTemplate.md)
+For more details see [BAWVUT-DataModelAndCodeTemplate](./docs/BAWVUT-DataModelAndCodeTemplate.md)
 
 *!!! ===>> Before run a generation make a backup of your previous generated files.*
 ```
@@ -216,7 +216,7 @@ This command generate an *.ldif* file and a *.csv* file.
 The *.ldif* file contains uers and groups definition as defined in *.properties* file.
 The *.creds* file contains user ids and passwords.
 
-For more details see [UsersAndGroupsDefinition](./UsersAndGroupsDefinition.md)
+For more details see [BAWVUT-UsersAndGroupsDefinition](./docs/BAWVUT-UsersAndGroupsDefinition.md)
 
 ```
 python generateLDIFForVirtualUsers.py -c ../virtual-users-locust-test-configs/configurations/ldif4vu-cfg1.properties -l ../virtual-users-locust-test-configs/configurations/vux-cfg1.ldif -u ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
