@@ -16,6 +16,21 @@ import bawsys.bawCommandLineManager as clpm
 from bawsys import bawLdiffConfiguration as bawLdif
 
 class LdifUser:
+    """
+    A class to represent an LDIF user record.
+
+    Attributes:
+        userName (str): The username and Surname of the user.
+        password (str): The password for the user.
+        domainName (str): The domain name of the user.
+        domainNameSuffix (str): The domain name suffix of the user.
+        uidNumber (int): The user ID number of the user.
+        gidNumber (int): The group ID number of the user.
+
+    Methods:
+        getUserName(): Returns the username of the user.
+        formatLdifRecord(): Returns the LDIF record for the user.
+    """    
     def __init__(self, userName: str, password: str, domainName: str, domainNameSuffix: str, uidNumber: int, gidNumber: int):
         self.userName: str = userName
         self.password: str = password
@@ -47,6 +62,19 @@ class LdifUser:
         return record
     
 class LdifGroup:
+    """
+    LdifGroup class to represent a group in an LDAP directory.
+
+    Attributes:
+        groupName (str): The name of the group.
+        domainName (str): The name of the domain.
+        domainNameSuffix (str): The suffix of the domain.
+        users (LdifUser): The users belonging to the group.
+
+    Methods:
+        getGroupName(): Returns the name of the group.
+        formatLdifRecord(): Returns a formatted LDIF record for the group.
+    """    
     def __init__(self, groupName: str, domainName: str, domainNameSuffix: str, users: LdifUser):
         self.groupName: str = groupName
         self.domainName = domainName
@@ -69,12 +97,46 @@ class LdifGroup:
         return record
 
 class UserRangeForGroup:
+    """
+    A class to represent a user range for a specific group.
+
+    Attributes:
+        groupName (str): The name of the group.
+        lowRange (int): The lower range of the user.
+        highRange (int): The higher range of the user.
+
+    Methods:
+        __init__(groupName: str, lowRange: int, highRange: int): Initializes the UserRangeForGroup object with the given parameters.
+    """    
     def __init__(self, groupName: str, lowRange: int, highRange: int):
         self.groupName = groupName
         self.lowRange = lowRange
         self.highRange = highRange
 
 class LdifGenerator:
+    """
+    LdifGenerator is a class for generating LDIF records for users and groups.
+
+    Attributes:
+        domainName (str): The domain name.
+        domainNameSuffix (str): The domain name suffix.
+        userPrefix (str): The user prefix.
+        userPassword (str): The user password.
+        allUsers (LdifUser): A list of LdifUser objects.
+        allGroups (LdifGroup): A list of LdifGroup objects.
+        allGroupsByName (dict): A dictionary of LdifGroup objects by name.
+        listOfUserRangesForGroups (UserRangeForGroup): A list of user ranges for groups.
+        gidNumber (int): The group ID number.
+        uidNumber (int): The user ID number.
+
+    Methods:
+        createUsers(totUsers: int) -> None: Creates users based on the total number of users.
+        rangeOfUsers(offset: int, totUsers: int) -> LdifUser: Returns a range of users based on the offset and total number of users.
+        createGroup(groupName: str, offset: int, totUsers: int) -> None: Creates a group with the specified name, offset, and total number of users.
+        buildGroupInfo(ldifDomain: str, ldifGroupsInfo: str, ldifAllUsersGroupPrefix: str) -> None: Builds group information based on the LDIF domain, groups info, and all users group prefix.
+        generateLdif(_fullOutputPath: str) -> None: Generates LDIF records and writes them to a file or prints them to the console.
+        generateUserCredentials(_fullOutputPath: str) -> None: Generates user credentials and writes them to a file or prints them to the console.
+    """    
     def __init__(self, domainName: str, domainNameSuffix: str, userPrefix: str, userPassword: str):
         self.domainName: str  = domainName
         self.domainNameSuffix = domainNameSuffix
@@ -186,6 +248,15 @@ class LdifGenerator:
         print("\n\nGenerated "+str(len(self.allUsers))+" set of credentials")
 
 def createLdif(argv):
+    """
+    Creates LDIF file with users and groups.
+
+    Parameters:
+    argv (list): List of command line arguments.
+
+    Returns:
+    None
+    """    
     if argv != None:
         ok = False
         ldifCfg : bawLdif.LdifConfiguration = bawLdif.LdifConfiguration()

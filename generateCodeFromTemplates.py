@@ -86,7 +86,15 @@ def filesExists(fileNames):
     return False
 
 def generateCodeFromTemplates(argv):
+    """
+    Generates code from templates based on the provided arguments.
 
+    Parameters:
+    argv (list): A list of command line arguments.
+
+    Returns:
+    None
+    """
     ok = False
     if argv != None:
         bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()
