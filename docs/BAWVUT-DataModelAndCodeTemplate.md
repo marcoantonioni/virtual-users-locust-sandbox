@@ -1,3 +1,3 @@
-# Data Model and Code Template
+# BAWVUT Data Model and Code Template
 
 work in progress...

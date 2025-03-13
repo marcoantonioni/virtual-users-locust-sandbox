@@ -1,5 +1,7 @@
 
-# BAWVUT in Docker
+# BAWVUT Docker
+
+work in progress...
 
 ## Base images
 
