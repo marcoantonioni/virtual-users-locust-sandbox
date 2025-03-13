@@ -4,8 +4,6 @@
 
 <img src="./docs/images/agent2.jpg" width="350" height="350">
 
-
-
 Last update: 2025-03-13
 
 ## Brief introduction
@@ -46,6 +44,8 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 <br>
 <i>For an introduction to the benefits of end-to-end test automation for business processes see the link</i> https://github.com/marcoantonioni/BAWVirtualUsersTool
 </br>
+
+The source code of BAWVirtualUsersTool has been documented using by **IBM watsonx Code Assistant** 
 
 ## How to evaluate this tool
 - the tool is open source, released using MIT licenses (https://opensource.org/license/mit/)

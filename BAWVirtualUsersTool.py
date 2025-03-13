@@ -117,6 +117,15 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         return {"username": self.userCreds.getName()}
 
     def isSubjectForUser(self, taskSubjectText):
+        """
+        Check if the given taskSubjectText is in the user's subjects list.
+
+        Parameters:
+        taskSubjectText (str): The task subject text to check.
+
+        Returns:
+        bool: True if the taskSubjectText is in the user's Subject list, False otherwise.
+        """
         found = False
         userId = self.userCreds.getName()
         dictionary = bpmUserSubjects.getDictionary()
@@ -142,6 +151,15 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         return bpmExposedProcessManager
     
     def configureVirtualUserActions(self):
+        """
+        Configure the virtual user actions.
+
+        Parameters:
+        self (object): The instance of the class.
+
+        Returns:
+        None
+        """
         if self.selectedUserActions == None:
             self.selectedUserActions = dict()
             self.selectedUserActions[bawEnv.BpmEnvironment.keyBAW_ACTION_LOGIN] = bawEnv.BpmEnvironment.keyBAW_ACTION_ACTIVATED
@@ -158,6 +176,15 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
                 self.environment.runner.quit()
                 
     def setIdleMode(self):
+        """
+        SetIdleMode function sets the idle notification mode.
+
+        Parameters:
+        self (instance of the class): The instance of the class.
+
+        Returns:
+        None
+        """        
         strNotify : str = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_IDLE_NOTIFY)
         strMaxInterctions : str = bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_IDLE_NOTIFY_AFTER_NUM_INTERACTIONS)
         if strNotify != None:
@@ -175,6 +202,15 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
     # for each virtual user
 
     def on_start(self):
+        """
+        This function is called when the virtual user starts.
+
+        Parameters:
+        self (object): The instance of the class.
+
+        Returns:
+        object: The return value of the super().on_start() function.
+        """        
         self.host = bawUtils.removeSlash(bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
         self.min_think_time = int(bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MIN))
         self.max_think_time = int(bpmEnvironment.getValue(bawEnv.BpmEnvironment.keyBAW_VU_THINK_TIME_MAX))
@@ -193,6 +229,16 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
         return super().on_start()
     
     def on_stop(self):
+        """
+        This function is called when the user stops the service.
+        It logs the user's name and then calls the parent class's on_stop() function.
+
+        Parameters:
+        self (MyUser): The current instance of the class.
+
+        Returns:
+        bool: The result of calling the parent class's on_stop() => bool function.
+        """        
         if self.userCreds != None:
             logging.debug("MyUser %s is stopping... ", self.userCreds.getName())
         return super().on_stop()
@@ -202,6 +248,15 @@ class IBMBusinessAutomationWorkflowUser(FastHttpUser):
 
 @events.init_command_line_parser.add_listener
 def _(parser):
+    """
+    Add arguments to the parser for BAW environment, users, task subjects, and user task subjects.
+
+    Args:
+        parser (argparse.ArgumentParser): The parser to add arguments to.
+
+    Returns:
+        None
+    """    
     parser.add_argument("--BAW_ENV", type=str, env_var="LOCUST_BAW_ENV", include_in_web_ui=True, default="", help="ok")
     parser.add_argument("--BAW_USERS", type=str, env_var="LOCUST_BAW_USERS", include_in_web_ui=True, default="", help="ok")
     parser.add_argument("--BAW_TASK_SUBJECTS", type=str, env_var="LOCUST_BAW_TASK_SUBJECTS", include_in_web_ui=True, default="", help="ok")
@@ -209,17 +264,46 @@ def _(parser):
 
 @events.test_start.add_listener
 def on_test_start(environment, **kwargs):
+    """
+    This function is called at the start of a BAW Virtual User Tool run.
+
+    Args:
+        environment (obj): An object containing the parsed options for the BAW Virtual User Tool run.
+        **kwargs (dict): Additional keyword arguments.
+
+    Returns:
+        None
+    """    
     logging.info("A 'BAW Virtual User Tool' run is starting, configured with")
     logging.info("  BAW_ENV [%s]", environment.parsed_options.BAW_ENV)
     logging.info("  BAW_USERS [%s]", environment.parsed_options.BAW_USERS)
 
 @events.test_stop.add_listener
 def on_test_stop(environment, **kwargs):
+    """
+    This function is called when a BAW test is ending.
+
+    Args:
+        environment (str): The environment where the test is running.
+        **kwargs: Additional keyword arguments.
+
+    Returns:
+        None
+    """    
     logging.info("A BAW test is ending")
 
 @events.init.add_listener
 def on_locust_init(environment, **kwargs):
+    """
+    Initialize the environment for the locust test.
 
+    Args:
+        environment (locust.env.Environment): The locust environment object.
+        kwargs (dict): Additional keyword arguments.
+
+    Returns:
+        None
+    """
     try:
         if isinstance(environment.runner, MasterRunner):
             logging.debug("Running on master node")
@@ -293,15 +377,42 @@ def on_locust_init(environment, **kwargs):
 
 @events.quitting.add_listener
 def on_locust_quitting(environment, **kwargs):
+    """
+    This function is called when a Locust is quitting.
+
+    Parameters:
+        environment (locust.env.Environment): The current environment.
+
+    Returns:
+        None    
+    """
     logging.debug("Quitting now...")
     return
 
 @events.quit.add_listener
 def on_locust_quit(**kwargs):
+    """
+    Callback function that is executed when a Locust process is terminated.
+
+    Args:
+        kwargs (dict): Dictionary of keyword arguments.
+
+    Returns:
+        None
+    """
     logging.debug("Quit.")
     return
 
 def unitTestInstancesExporter(environment):
+    """
+    Export process instances data from unit test scenario.
+
+    Parameters:
+    environment (bpmEnvironment.BPMEnvironment): The environment object.
+
+    Returns:
+    None
+    """    
     try:
         time.sleep(15)
         scenarioMgr : bawUnitTests.TestScenarioManager = bawUnitTests.TestScenarioManager.getInstance()
