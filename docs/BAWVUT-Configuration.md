@@ -61,33 +61,34 @@ It contains has dedicated sections each one with dedicated set of 'key=values' s
 
 ### Admin and power user credentials:
 <pre>
-<b>BAW_POWER_USER_NAME</b> = BAW administrator user id (ex: cp4admin)
+<b>BAW_POWER_USER_NAME</b> = BAW administrator user id (ex: cp4admin, dadmin)
 
 <b>BAW_POWER_USER_PASSWORD</b> = password
 
-<b>BAW_IAM_USER_NAME</b> = PAK administrator user id (ex: cpadmin)
+<b>BAW_IAM_USER_NAME</b> = PAK administrator user id (ex: cpadmin), not used for Traditional deployment
 
 <b>BAW_IAM_USER_PASSWORD</b> = password
 </pre>
 
 ### Users configuration
 <pre>
-<b>BAW_USERS_STRATEGY</b> = virtual users uniqueness (values: UNIQUE | TWINS) when TWINS multiple Locust runners can impersonate the same user id
+<b>BAW_USERS_STRATEGY</b> = virtual users uniqueness (values: UNIQUE | TWINS), when TWINS is set multiple Locust **runners** can impersonate the same user id
 
 <b>BAW_USERS_TYPE</b> = future use (REAL | VUX_NUMBERED)
 
 <b>BAW_USER_ORDER_MODE</b> = users login order (SORTED_FIFO | SORTED_LIFO | SORTED_RANDOM)
 
-<b>BAW_VU_THINK_TIME_MIN</b> = Virtual User think time for task complete, update, etc..., integer value in seconds
+<b>BAW_VU_THINK_TIME_MIN</b> = Virtual User think time for task commands (complete, update, etc...), integer value in seconds
 
-<b>BAW_VU_VERBOSE</b> = message mode for idle virtual user (false | true)
+<b>BAW_VU_VERBOSE</b> = log message mode for idle virtual user (false | true)
 
 <b>BAW_VU_IDLE_NOTIFY</b> = log idle virtual user (false | true)
 
-<b>BAW_VU_IDLE_NOTIFY_AFTER_NUM_INTERACTIONS</b> = log idle virtual users after N iterations (ex: 100)
+<b>BAW_VU_IDLE_NOTIFY_AFTER_NUM_INTERACTIONS</b> = logs idle (nothing to do) virtual users after N iterations (ex: 100)
 </pre>
 
 ### Application configuration
+A run session can be run against only one application.
 <pre>
 <b>BAW_PROCESS_APPLICATION_NAME</b> = application name (ex: VirtualUsersSandbox)
 
@@ -102,9 +103,9 @@ It contains has dedicated sections each one with dedicated set of 'key=values' s
 <pre>
 <b>BAW_PROCESS_NAMES</b> = comma separated list of process names (ex: VUSClaimCompleteTwoRoles,VUSClaimCompleteAuthorize,ClaimCompileAndValidate)
 
-<b>BAW_VU_ACTIONS</b> =CREATEPROCESS,TASK_LIST,CLAIM,GETDATA,SETDATA,COMPLETE,RELEASE
+<b>BAW_VU_ACTIONS</b> = comma separated list of actions
 
-<i>BAW_VU_ACTIONS is a comma separated list of options (Login is always enabled): 
+<i>BAW_VU_ACTIONS (Login is always enabled): 
   value CLAIM: a unassign task
   value COMPLETE: complete a claimed task
   value GETDATA: get data values from claimd task
@@ -116,6 +117,7 @@ It contains has dedicated sections each one with dedicated set of 'key=values' s
 ### Run configuration
 <pre>
 <b>BAW_RUN_MODE</b> = run mode (values: LOAD_TEST | UNIT_TEST)
+<i>When run mode is UNIT_TEST the 'assert manager' python files can be configured and executed at the end of session.</i>
 
 <b>BAW_PAYLOAD_MANAGER</b> = full pathname of python dynamically loaded module (ex: ../virtual-users-locust-test-configs/configurations/payloadManager-type1.py)
 
