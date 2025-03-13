@@ -130,9 +130,9 @@ A run session can be run against only one application.
 
 <b>BAW_UNIT_TEST_OUT_FILE_NAME</b> = output data of complete instances to file (ex: ../virtual-users-locust-test-configs/outputdata/unittest-scenario1.json)
 
-<b>BAW_UNIT_TEST_OUT_USE_DB</b> = output data of complete instances to SQLite db (values: false | true)
+<b>BAW_UNIT_TEST_OUT_USE_DB</b> = output data to SQLite db (values: false | true)
 
-<b>BAW_UNIT_TEST_OUT_SQLITEDB_NAME</b> = output data of complete instances to SQLite db file (ex: ../virtual-users-locust-test-configs/outputdata/unittest-scenario1-sqlite.db)
+<b>BAW_UNIT_TEST_OUT_SQLITEDB_NAME</b> = SQLite db file (ex: ../virtual-users-locust-test-configs/outputdata/unittest-scenario1-sqlite.db)
 
 <b>BAW_UNIT_TEST_RUN_ASSERTS_MANAGER</b> =run assert manager at the end of unit test (must use SQLlite db) (values: false | true)
 
