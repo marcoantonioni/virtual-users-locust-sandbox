@@ -4,32 +4,33 @@ Configuration files
 
 ![BAWVUT Configuration](./images/BAWVUT-Configuration.png)
 
-
 A run session is based on a set of configuration files.
 A first file references the remaining ones and is used to start the session.
-The first file <b>"Virtual Users Session"</b> (with extension '.conf') references 4 other files (extensions '.properties' and '.csv').
+The main file <b>"Virtual Users Session"</b> (with extension '.conf') references 4 other files (extensions '.properties' and '.csv').
+It must be referenced as the value of '**--config**' parameter for command '**locust**'.
 
 ## The "Virtual Users Session" file 
 This file has a KEY=VALUE structure.
 It contains the following information:
 <pre>
-<b>locustfile</b> = the path to the 'BAWVirtualUsersTool.py' file that identifies the tool's starting point
+<b>locustfile</b> = the path to the 'BAWVirtualUsersTool.py' file that identifies the tool's entry point
 
-<b>headless</b> = the Locust tool execution mode (values: true | false)
+<b>headless</b> = the Locust tool execution mode, with or withour user interface (values: true | false)
+<i>When run in non-headles mode navigate via web browser to http://0.0.0.0:8089/ then press "Start" button</i>
 
 <b>host</b> = identifies a reference url (use a fake address: http://nowhere.net or other as desired)
 
 <b>only-summary</b> = type of final report produced by locust (values: true | false)
 
-<b>users</b> = number of virtual users that will be started in the session (e.g. 100) must be related to the users present in the runtime environment
+<b>users</b> = number of virtual users that will be started in the session (e.g. 100) must be related to the users present in the runtime environment IDP
 
 <b>spawn-rate</b> = number of users started every second starting from the session start (e.g. 10)
 
-<b>run-time</b> = maximum session execution time expressed in minutes (e.g. 10m)
+<b>run-time</b> = maximum time execution expressed in minutes (e.g. 10m)
 
 <b>loglevel</b> = log verbosity level (values: DEBUG | INFO | WARNING | ERROR | CRITICAL)
 
-<b>BAW_ENV</b> = the path to the configuration file of the environment (ex: ../virtual-users-locust-test-configs/configurations/env1.properties)
+<b>BAW_ENV</b> = the path to the configuration file of the runtime environment (ex: ../virtual-users-locust-test-configs/configurations/env1.properties)
 
 <b>BAW_USERS</b> = the path to the user credentials file (ex: ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv)
 
@@ -40,19 +41,22 @@ It contains the following information:
 
 ## The "Runtime Environment" file 
 This file has a KEY=VALUE structure.
+
+It is referenced by the variable **BAW_ENV**.
+
 It contains has dedicated sections each one with dedicated set of 'key=values' statements.
 
 ### Runtime environment values:
 <pre>
-<b>BAW_IAM_HOST</b> = host name for IAM access (ex: https://cp-console-cp4ba-demo.apps....)
+<b>BAW_IAM_HOST</b> = host name for CP4BA IAM access (ex: https://cp-console-cp4ba-demo.apps...., https://baw.standalone.net:9443)
 
-<b>BAW_BASE_HOST</b> = host name for BAW access (ex: https://cpd-cp4ba-demo.apps....)
+<b>BAW_BASE_HOST</b> = host name for BAW access (ex: https://cpd-cp4ba-demo.apps...., https://baw.standalone.net:9443)
 
 <b>BAW_BASE_URI_SERVER</b> = used only if BAW_TASK_LIST_STRATEGY=STANDALONE, empty if 'Traditional', for CP4BA BAStudio authoring the value is '/bas', if set must have a starting slash '/'
 
 <b>BAW_DEPLOYMENT_MODE</b> = deployment mode (values: TRADITIONAL | PAK_STANDALONE | PAK_FEDERATED)
 
-<b>BAW_TASK_LIST_STRATEGY</b> = task list strategi (values: STANDALONE | FEDERATEDPORTAL)
+<b>BAW_TASK_LIST_STRATEGY</b> = task list strategy (values: STANDALONE | FEDERATEDPORTAL)
 </pre>
 
 ### Admin and power user credentials:
@@ -136,6 +140,8 @@ It contains has dedicated sections each one with dedicated set of 'key=values' s
 ## The "Name Password Email" file 
 This file has a CSV structure.
 
+It is referenced by the variable **BAW_USERS**.
+
 It contains users credentials and email. 
 Each row contains the following information:
 <pre>
@@ -145,6 +151,8 @@ All users listed in this file must be present in the authentication domain confi
 
 ## The "Task Subjects" file 
 This file has a CSV structure.
+
+It is referenced by the variable **BAW_TASK_SUBJECTS**.
 
 It is composed of two columns named <b>TASK_SUBJECTS</b> and <b>SUBJECT_TEXT</b>.
 
@@ -162,6 +170,8 @@ example:
 
 ## The "Users and Task Subjects" file 
 This file has a CSV structure.
+
+It is referenced by the variable **BAW_USER_TASK_SUBJECTS**.
 
 It is composed of two or more columns named <b>USER</b> and <b>TSN(n)</b>.
 
