@@ -19,6 +19,15 @@ import sys, logging
 #----------------------------------
 
 def deleteProcessInstances(argv):
+    """
+    Delete process instances based on the provided arguments.
+
+    Parameters:
+    argv (list): A list of command line arguments.
+
+    Returns:
+    None
+    """    
     ok = False
     terminate = False
     if argv != None:
