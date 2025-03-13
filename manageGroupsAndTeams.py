@@ -23,6 +23,15 @@ from bawsys import bawUtils as bawUtils
 class GroupsTeamsManager:
 
     def __init__(self, bpmEnvironment : bpmEnv.BpmEnvironment):
+        """
+        Initializes the BAW object.
+
+        Parameters:
+        bpmEnvironment (bpmEnv.BpmEnvironment): The BPM environment object.
+
+        Returns:
+        None
+        """        
         self.appAcronym = None
         self.appName = None
         self.appSnapName = None 
@@ -85,6 +94,15 @@ class GroupsTeamsManager:
     # Groups
     #============================================================
     def _readGroupsArchive(self, fullPathName : str):
+        """
+        Read groups archive file and create group objects.
+
+        Args:
+            fullPathName (str): The full path name of the groups archive file.
+
+        Returns:
+            bool: True if the operation was successful, False otherwise.
+        """        
         # legge file e crea oggetto lista gruppi
         with open(fullPathName,'r') as data:
             for item in csv.DictReader(data, skipinitialspace=True):
@@ -132,6 +150,15 @@ class GroupsTeamsManager:
         return True
     
     def _queryGroupList(self):
+        """
+        Query the list of groups from the server.
+
+        Parameters:
+        - self: The instance of the class.
+
+        Returns:
+        - ok: A boolean value indicating if the query was successful.
+        """        
         ok = False
         # legge lista gruppi da server
         hostUrl : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
@@ -169,6 +196,15 @@ class GroupsTeamsManager:
         return ok
 
     def _operateGroups(self, mode : str):
+        """
+        This function operates on a list of groups.
+
+        Parameters:
+        mode (str): The mode of operation. Can be "add" or "remove".
+
+        Returns:
+        bool: True if the operation was successful, False otherwise.
+        """        
         hostUrl : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
         baseUri : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_URI_SERVER), False)
         if baseUri == None:
@@ -194,6 +230,16 @@ class GroupsTeamsManager:
         return True
     
     def manageGroups(self, fullPathName: str, mode: str):
+        """
+        Manage groups based on the mode provided.
+
+        Parameters:
+        fullPathName (str): The full path name of the groups file.
+        mode (str): The mode to operate on the groups.
+
+        Returns:
+        bool: True if the groups operations were completed successfully, False otherwise.
+        """        
         if self._queryGroupList() == True:
             if self._readGroupsArchive(fullPathName) == True:            
                 if self._operateGroups(mode) == True:
@@ -206,6 +252,15 @@ class GroupsTeamsManager:
     #============================================================
 
     def _readTeamsArchive(self, fullPathName : str):
+        """
+        Read teams archive file and create team objects.
+
+        Parameters:
+        fullPathName (str): The full path name of the teams archive file.
+
+        Returns:
+        bool: True if the operation was successful, False otherwise.
+        """        
         # legge file e crea oggetto lista gruppi
         with open(fullPathName,'r') as data:
             for item in csv.DictReader(data, skipinitialspace=True):
@@ -264,6 +319,15 @@ class GroupsTeamsManager:
         return True
     
     def _queryTeamList(self):
+        """
+        Query team bindings from BAW server.
+
+        Parameters:
+        self (object): Instance of the class.
+
+        Returns:
+        bool: True if query was successful, False otherwise.
+        """        
         ok = False
         # legge lista gruppi da server
         hostUrl : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
@@ -302,6 +366,15 @@ class GroupsTeamsManager:
         return ok
 
     def _operateTeams(self, mode : str):
+        """
+        Update team users and groups.
+
+        Args:
+            mode (str): Mode of operation. Can be "add" or "remove".
+
+        Returns:
+            bool: True if operation was successful, False otherwise.
+        """        
         ok = False
         # legge lista gruppi da server
         hostUrl : str = bawUtils.removeSlash(self.bpmEnvironment.getValue(bpmEnv.BpmEnvironment.keyBAW_BASE_HOST), False)
@@ -352,6 +425,16 @@ class GroupsTeamsManager:
         return ok
     
     def manageTeams(self, fullPathName: str, mode: str):
+        """
+        Manage teams based on the mode and full path name.
+
+        Args:
+            fullPathName (str): The full path name of the teams file.
+            mode (str): The mode of operation, e.g., 'add', 'remove', 'update'.
+
+        Returns:
+            bool: True if the teams operations are completed successfully, False otherwise.
+        """        
         if self._queryTeamList() == True:
             if self._readTeamsArchive(fullPathName) == True:            
                 if self._operateTeams(mode) == True:
@@ -360,7 +443,15 @@ class GroupsTeamsManager:
         return False
 
 def manageGroupsTeams(argv):
+    """
+    Manage groups and teams in a business process management (BPM) environment.
 
+    Parameters:
+    argv (list): A list of command-line arguments.
+
+    Returns:
+    None
+    """
     ok = False
     if argv != None:
         bpmEnvironment : bpmEnv.BpmEnvironment = bpmEnv.BpmEnvironment()

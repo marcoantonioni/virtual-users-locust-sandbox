@@ -19,6 +19,15 @@ import sys, logging
 #----------------------------------
 
 def terminateProcessInstances(argv):
+    """
+    Terminate all process instances in the specified environment.
+
+    Parameters:
+    argv (list): List of command line arguments.
+
+    Returns:
+    None
+    """    
     ok = False
     if argv != None:
         bpmEnvironment : bawEnv.BpmEnvironment = bawEnv.BpmEnvironment()

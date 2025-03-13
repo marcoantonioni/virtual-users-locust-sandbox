@@ -19,6 +19,15 @@ import sys, logging
 #----------------------------------
 
 def listProcessInstances(argv):
+    """
+    List process instances based on the provided parameters.
+
+    Parameters:
+    argv (list): List of command line arguments.
+
+    Returns:
+    None
+    """    
     ok = False
     terminate = False
     if argv != None:
