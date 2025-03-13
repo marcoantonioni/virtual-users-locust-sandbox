@@ -23,8 +23,16 @@ from bawsys import bawUtils as bawUtils
 bpmExposedProcessManager : bpmExpProcs.BpmExposedProcessManager = bpmExpProcs.BpmExposedProcessManager()
 bpmProcessInstanceManager : bpmPIM.BpmProcessInstanceManager = bpmPIM.BpmProcessInstanceManager()
 
-
 def createProcessInstances(argv):
+    """
+    Creates process instances based on the provided arguments.
+
+    Parameters:
+    argv (list): A list of command line arguments.
+
+    Returns:
+    None
+    """    
     ok = False
     terminate = False
     if argv != None:

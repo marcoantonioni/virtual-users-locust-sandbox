@@ -20,7 +20,7 @@ import sys, logging, json
 #----------------------------------
 
 
-def listProcessInstances(argv):
+def exportProcessInstancesData(argv):
     ok = False
     terminate = False
     if argv != None:
@@ -49,7 +49,7 @@ def listProcessInstances(argv):
 def main(argv):
     logger = logging.getLogger('root')
     logger.setLevel(logging.INFO)    
-    listProcessInstances(argv)
+    exportProcessInstancesData(argv)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

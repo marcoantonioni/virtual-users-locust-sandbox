@@ -59,26 +59,29 @@ The source code of BAWVirtualUsersTool has been documented using by **IBM watson
 - for the CP4BA containerized scenario there are simplification tools for LDAP deployment dedicated to virtual users and relative automatic IDP configuration
 - the tool does not offer any mocking solutions for any services integrated by the processes being tested
 
-## Tool description (to be completed...)
-- technology (Python language, framework Locust)
-- runtime (docker image, sources from git repo)
-- limitations
-- scalability in load scenarios
-- description of git repo contents
-- description of demo applications and their run configurations (test/load)
-- how to configure and implement a test/load scenario
--- custom payload modules and assert managers
--- configuration of virtual users
--- assignment of virtual users to task subjects
-- configuration needed for test scenarios
--- traditional scenery
--- containerized scenario
-- run examples with docker image
-- run examples with tool sources on client machine
+## Tool description
 
-Limits in this version: the tool does not manage the start of optional Activities
+- [TBD] description of demo applications and their run configurations (test/load)
 
-Note: In no way is this tool intended to replace the use of https://sdc-china.github.io/IDA-doc
+- [TBD] how to configure and implement a test/load scenario
+
+  a) custom payload modules and assert managers
+  
+  b) configuration of virtual users
+  
+  c) assignment of virtual users to task subjects
+
+- [TBD] configuration needed for test scenarios
+
+  a) traditional scenario
+  
+  b) containerized scenario
+
+- [TBD] run examples with docker image
+
+- Limitations in this version
+
+  a) the tool does not manage the start of optional Activities
 
 ## Companion repositories
 
@@ -90,6 +93,10 @@ Clone all 3 repositories to have the following structure on the file system:
 ├── virtual-users-locust-apps
 └── virtual-users-locust-test-configs
 </pre>
+
+## Main modules descriptions
+
+[BAWVUT Main modules descriptions](./docs/BAWVUT-Modules-descriptions.md)
 
 ## Program structure
 
@@ -265,6 +272,8 @@ python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configu
 sqlite-utils query --json-cols ../virtual-users-locust-test-configs/outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_UNIT_TEST_SCENARIO" | jq .
 sqlite-utils query --json-cols ../virtual-users-locust-test-configs/outputdata/unittest-scenario1-sqlite.db "SELECT * FROM BAW_PROCESS_INSTANCES" | jq .
 ```
+
+Note: In no way is this tool intended to replace the use of https://sdc-china.github.io/IDA-doc
 
 
 
