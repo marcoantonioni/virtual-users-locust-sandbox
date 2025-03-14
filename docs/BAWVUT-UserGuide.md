@@ -238,9 +238,33 @@ After preparing all the configuration files, ensure that the paths in the "Virtu
 ---
 ## 2. Configure virtual users
 
-For CP4BA IDP configuration see git repo [cp4ba-idp-ldap](https://github.com/marcoantonioni/cp4ba-idp-ldap)
+To create a file in .ldif format use the command 'generateLDIFForVirtualUsers.py'.
+
+example:
+```
+python generateLDIFForVirtualUsers.py -c ../virtual-users-locust-test-configs/configurations/ldif4vu-cfg1.properties -l ../virtual-users-locust-test-configs/configurations/vux-cfg1.ldif -u ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
+```
+
+Parameters '-c' and '-u' are the input files to the command, parameter '-l' defines the path of the file that will be generated. The generated file can then be used to configure an LDAP.
+
+For CP4BA IDP/LDAP configuration see git repo [cp4ba-idp-ldap](https://github.com/marcoantonioni/cp4ba-idp-ldap)
 
 ## 3. Deploy your application
+
+To deploy a BAW application in CP4BA production-like environment use the command '' from repository [virtual-users-locust-apps](https://github.com/marcoantonioni/virtual-users-locust-apps)
+
+example:
+```
+TNS=cp4ba-demo
+BAW_NAME=baw1
+CR_CP4BA=icp4adeploy
+PAKADMIN_USER=cp4admin
+PAKADMIN_PASSWORD=dem0s
+APPLICATION=../zips/VirtualUsersSandbox-0.3.11.zip
+
+./install-application.sh -n ${TNS} -b ${BAW_NAME} -c ${CR_CP4BA} -u ${PAKADMIN_USER} -p ${PAKADMIN_PASSWORD} -a ${APPLICATION}
+```
+
 
 ## 4. Configure BPM Groups and Application Teams
 
