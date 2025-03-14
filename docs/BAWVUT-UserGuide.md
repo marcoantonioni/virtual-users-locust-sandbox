@@ -28,7 +28,7 @@ Populate the "Virtual Users Session" file:
 
 Include the following keys and values:
 
-<span style="color:green,background-color:gray">
+<span font-size="-2">
 locustfile
 : Path to the 'BAWVirtualUsersTool.py' file.
 
