@@ -28,43 +28,41 @@ Populate the "Virtual Users Session" file:
 
 Include the following keys and values:
 
-<span style="color:red; font-size:10px;">
-locustfile
+**locustfile**
 : Path to the 'BAWVirtualUsersTool.py' file.
 
-headless
+**headless**
 : Execution mode of the Locust tool (true or false).
 
-host
+**host**
 : A reference URL (e.g., http://nowhere.net).
 
-only-summary
+**only-summary**
 : Type of final report produced by locust (true or false).
 
-users
+**users**
 : Number of virtual users to start in the session.
 
-spawn-rate
+**spawn-rate**
 : Number of users started every second.
 
-run-time
+**run-time**
 : Maximum time execution in minutes.
 
-loglevel
+**loglevel**
 : Log verbosity level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
 
-BAW_ENV
+**BAW_ENV**
 : Path to the runtime environment configuration file.
 
-BAW_USERS
+**BAW_USERS**
 : Path to the user credentials file.
 
-BAW_TASK_SUBJECTS
+**BAW_TASK_SUBJECTS**
 : Path to the TaskSubjects configuration file.
 
-BAW_USER_TASK_SUBJECTS
+**BAW_USER_TASK_SUBJECTS**
 : Path to the configuration file for associating Users to TaskSubjects.
-</span>
 
 <u>_2) Create the "Runtime Environment" file:_</u>
 
