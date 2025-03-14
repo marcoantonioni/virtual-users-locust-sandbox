@@ -13,19 +13,19 @@ To prepare a test scenario, you must complete the following steps:
 1. Analyze the results
 
 
-## 1. Configure runtime sandobox
+## 1. Configure runtime sandbox
 
 To prepare a configuration file for BAWVUT, follow these steps:
 
 ---
+### 1.1 - Create the "Virtual Users Session" file
 ---
-### STEP 1 - Create the "Virtual Users Session" file:
 
 This file should have a KEY=VALUE structure.
 It must reference four other files: 'BAWVirtualUsersTool.py', 'env.properties', 'creds.csv', and 'TS.csv'.
 The file extension should be '.conf'.
 The file must be referenced as the value of the '--config' parameter for the 'locust' command.
-Populate the "Virtual Users Session" file:
+Populate the "Virtual Users Session" file
 
 #### Include the following keys and values:
 ---
@@ -66,15 +66,15 @@ Populate the "Virtual Users Session" file:
 : Path to the configuration file for associating Users to TaskSubjects.
 
 ---
+### 1.2 - Create the "Runtime Environment" file
 ---
-### STEP 2 - Create the "Runtime Environment" file:
 
 This file should also have a KEY=VALUE structure.
 It is referenced by the variable 
 BAW_ENV
 .
 It contains dedicated sections with sets of 'key=values' statements.
-Populate the "Runtime Environment" file:
+Populate the "Runtime Environment" file
 
 
 #### Include the following sections and keys:
@@ -193,8 +193,8 @@ BAW_UNIT_TEST_ASSERTS_MANAGER
 : Full pathname of python dynamically loaded module.
 
 ---
+### 1.3 - Create the "Name Password Email" file
 ---
-### STEP 3 - Create the "Name Password Email" file:
 
 This file should have a CSV structure.
 It is referenced by the variable 
@@ -208,8 +208,8 @@ Each row should contain three columns names (email value is optional):
 All users listed in this file must be present in the authentication domain configured for the runtime environment.
 
 ---
+### 1.4 - Create the "Task Subjects" file
 ---
-### STEP 4 - Create the "Task Subjects" file:
 
 This file should have a CSV structure.
 It is referenced by the variable 
@@ -220,8 +220,8 @@ It should contain two columns (both not empty):
 - SUBJECT_TEXT
 
 ---
+### 1.5 - Create the "Users and Task Subjects" file:
 ---
-### STEP 5 - Create the "Users and Task Subjects" file:
 
 This file should have a CSV structure.
 It is referenced by the variable 
