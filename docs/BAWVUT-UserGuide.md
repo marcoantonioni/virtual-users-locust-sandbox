@@ -18,7 +18,8 @@ To prepare a test scenario, you must complete the following steps:
 To prepare a configuration file for BAWVUT, follow these steps:
 
 ---
-### <u>_1) Create the "Virtual Users Session" file:_</u>
+---
+### STEP 1 - Create the "Virtual Users Session" file:
 
 This file should have a KEY=VALUE structure.
 It must reference four other files: 'BAWVirtualUsersTool.py', 'env.properties', 'creds.csv', and 'TS.csv'.
@@ -65,7 +66,8 @@ Populate the "Virtual Users Session" file:
 : Path to the configuration file for associating Users to TaskSubjects.
 
 ---
-### <u>_2) Create the "Runtime Environment" file:_</u>
+---
+### STEP 2 - Create the "Runtime Environment" file:
 
 This file should also have a KEY=VALUE structure.
 It is referenced by the variable 
@@ -191,7 +193,8 @@ BAW_UNIT_TEST_ASSERTS_MANAGER
 : Full pathname of python dynamically loaded module.
 
 ---
-### <u>_3) Create the "Name Password Email" file:_</u>
+---
+### STEP 3 - Create the "Name Password Email" file:
 
 This file should have a CSV structure.
 It is referenced by the variable 
@@ -205,7 +208,8 @@ Each row should contain three columns names (email value is optional):
 All users listed in this file must be present in the authentication domain configured for the runtime environment.
 
 ---
-### <u>_4) Create the "Task Subjects" file:_</u>
+---
+### STEP 4 - Create the "Task Subjects" file:
 
 This file should have a CSV structure.
 It is referenced by the variable 
@@ -216,7 +220,8 @@ It should contain two columns (both not empty):
 - SUBJECT_TEXT
 
 ---
-### <u>_5) Create the "Users and Task Subjects" file:_<u>
+---
+### STEP 5 - Create the "Users and Task Subjects" file:
 
 This file should have a CSV structure.
 It is referenced by the variable 
