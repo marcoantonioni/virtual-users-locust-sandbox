@@ -17,7 +17,8 @@ To prepare a test scenario, you must complete the following steps:
 
 To prepare a configuration file for BAWVUT, follow these steps:
 
-<u>_1) Create the "Virtual Users Session" file:_</u>
+---
+### <u>_1) Create the "Virtual Users Session" file:_</u>
 
 This file should have a KEY=VALUE structure.
 It must reference four other files: 'BAWVirtualUsersTool.py', 'env.properties', 'creds.csv', and 'TS.csv'.
@@ -25,9 +26,8 @@ The file extension should be '.conf'.
 The file must be referenced as the value of the '--config' parameter for the 'locust' command.
 Populate the "Virtual Users Session" file:
 
-
-Include the following keys and values:
-
+#### Include the following keys and values:
+---
 **locustfile**
 : Path to the 'BAWVirtualUsersTool.py' file.
 
@@ -64,7 +64,8 @@ Include the following keys and values:
 **BAW_USER_TASK_SUBJECTS**
 : Path to the configuration file for associating Users to TaskSubjects.
 
-<u>_2) Create the "Runtime Environment" file:_</u>
+---
+### <u>_2) Create the "Runtime Environment" file:_</u>
 
 This file should also have a KEY=VALUE structure.
 It is referenced by the variable 
@@ -74,8 +75,8 @@ It contains dedicated sections with sets of 'key=values' statements.
 Populate the "Runtime Environment" file:
 
 
-Include the following sections and keys:
-
+#### Include the following sections and keys:
+---
 Runtime environment values:
 
 BAW_IAM_HOST
@@ -93,6 +94,7 @@ BAW_DEPLOYMENT_MODE
 BAW_TASK_LIST_STRATEGY
 : Task list strategy (STANDALONE, FEDERATEDPORTAL).
 
+---
 Admin and power user credentials:
 
 BAW_POWER_USER_NAME
@@ -107,6 +109,7 @@ BAW_IAM_USER_NAME
 BAW_IAM_USER_PASSWORD
 : Password for the PAK administrator user.
 
+---
 Users configuration:
 
 BAW_USERS_STRATEGY
@@ -130,6 +133,7 @@ BAW_VU_IDLE_NOTIFY
 BAW_VU_IDLE_NOTIFY_AFTER_NUM_INTERACTIONS
 : Logs idle virtual users after N iterations.
 
+---
 Application configuration:
 
 BAW_PROCESS_APPLICATION_NAME
@@ -144,6 +148,7 @@ BAW_PROCESS_APPLICATION_SNAPSHOT_NAME
 BAW_PROCESS_APPLICATION_SNAPSHOT_USE_TIP
 : Tip mode in dev env (true, false).
 
+---
 Processes and actions configuration:
 
 BAW_PROCESS_NAMES
@@ -152,6 +157,7 @@ BAW_PROCESS_NAMES
 BAW_VU_ACTIONS
 : Comma-separated list of actions (LOGIN, CLAIM, COMPLETE, GETDATA, SETDATA, RELEASE, CREATEPROCESS).
 
+---
 Run configuration:
 
 BAW_RUN_MODE
@@ -163,6 +169,7 @@ BAW_PAYLOAD_MANAGER
 BAW_PROCESS_INSTANCES_MAX
 : Max number of process instances created during the run.
 
+---
 Unit Test Scenario:
 
 BAW_UNIT_TEST_MAX_DURATION
@@ -183,33 +190,47 @@ BAW_UNIT_TEST_RUN_ASSERTS_MANAGER
 BAW_UNIT_TEST_ASSERTS_MANAGER
 : Full pathname of python dynamically loaded module.
 
-<u>_3) Create the "Name Password Email" file:_</u>
+---
+### <u>_3) Create the "Name Password Email" file:_</u>
 
 This file should have a CSV structure.
 It is referenced by the variable 
 BAW_USERS
 .
-Each row should contain the user-id, password, and email.
+Each row should contain three columns names (email value is optional):
+- NAME
+- PASSWORD 
+- EMAIL
+
 All users listed in this file must be present in the authentication domain configured for the runtime environment.
 
-<u>_4) Create the "Task Subjects" file:_</u>
+---
+### <u>_4) Create the "Task Subjects" file:_</u>
 
 This file should have a CSV structure.
 It is referenced by the variable 
 BAW_TASK_SUBJECTS
 .
-It should contain two columns: TASK_SUBJECTS and SUBJECT_TEXT.
+It should contain two columns (both not empty): 
+- TASK_SUBJECTS 
+- SUBJECT_TEXT
 
-<u>_5) Create the "Users and Task Subjects" file:_<u>
+---
+### <u>_5) Create the "Users and Task Subjects" file:_<u>
 
 This file should have a CSV structure.
 It is referenced by the variable 
 BAW_USER_TASK_SUBJECTS
 .
-It should contain two or more columns: USER and TSN(n).
+It should contain two or more columns (TSN columns may be empty): 
+- USER 
+- TSN1
+- TSNn...
 
+---
 After preparing all the configuration files, ensure that the paths in the "Virtual Users Session" file correctly reference the other files. Then, you can start your BAWVUT run session using the 'locust' command with the '--config' parameter pointing to the "Virtual Users Session" file.
 
+---
 ## 2. Configure virtual users
 
 For CP4BA IDP configuration see git repo [cp4ba-idp-ldap](https://github.com/marcoantonioni/cp4ba-idp-ldap)
