@@ -230,7 +230,7 @@ python generateLDIFForVirtualUsers.py -c ../virtual-users-locust-test-configs/co
 ```
 
 ### Onboard users into CP4BA IAM
-This command onboards the users defined in the .csv file into the CP4BA deployment. It must be run after the deployment/configuration of LDAP server user for *.ldif* domain and after the IDP configuration pointing to LDAP.
+This command onboards the users defined in the .csv file into the CP4BA deployment. It must be run after the deployment/configuration of LDAP server user for *.ldif* domain and after the IDP configuration pointing to LDAP. For CP4BA IDP configuration see git repo [cp4ba-idp-ldap](https://github.com/marcoantonioni/cp4ba-idp-ldap)
 ```
 python ./iamOnboardUsers.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -d vuxdomain -f ../virtual-users-locust-test-configs/configurations/creds-cfg1.csv
 ```
