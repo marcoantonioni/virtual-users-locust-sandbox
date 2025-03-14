@@ -265,7 +265,6 @@ APPLICATION=../zips/VirtualUsersSandbox-0.3.11.zip
 ./install-application.sh -n ${TNS} -b ${BAW_NAME} -c ${CR_CP4BA} -u ${PAKADMIN_USER} -p ${PAKADMIN_PASSWORD} -a ${APPLICATION}
 ```
 
-
 ## 4. Configure BPM Groups and Application Teams
 
 ## 5. Export application Data Model and Code Template for payload manager and assert manager
