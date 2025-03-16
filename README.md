@@ -94,10 +94,6 @@ Clone all 3 repositories to have the following structure on the file system:
 └── virtual-users-locust-test-configs
 </pre>
 
-## Main modules descriptions
-
-[BAWVUT Main modules descriptions](./docs/BAWVUT-Modules-descriptions.md)
-
 ## Program structure
 
 Description of most important python files.
@@ -121,9 +117,11 @@ The <b>SequenceOfBpmTasks</b> class extends SequentialTaskSet [from locust] and 
 
 The <b>UnitTestScenario</b> class extends SequenceOfBpmTasks and defines the <b>bawCreateScenarioInstances</b> method for creating and cataloging process instances that will be the object of unit tests. The cataloged process instances will then be exported to the SQLite database at the end of the run.
 
-The methods defined by the <b>SequenceOfBpmTasks<b> class allow you to perform the functions of reading the available tasks (task list), reading and updating the data of a human task, executing the claim, releasing, completing a human task. Log in and create a new process instance.
+The methods defined by the <b>SequenceOfBpmTasks</b> class allow you to perform the functions of reading the available tasks (task list), reading and updating the data of a human task, executing the claim, releasing, completing a human task. Log in and create a new process instance.
 
 The methods that generate a task data update and that start a new process instance make dynamic use of the payload manager defined by <b>bpmDynamicModule</b>.
+
+For a detailed description of python modules see [BAWVUT Main modules descriptions](./docs/BAWVUT-Modules-descriptions.md)
 
 ## Configuration files
 
