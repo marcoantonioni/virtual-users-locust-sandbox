@@ -1,3 +1,0 @@
-# BAWVUT Data Model and Code Template
-
-work in progress...

@@ -251,7 +251,7 @@ For CP4BA IDP/LDAP configuration see git repo [cp4ba-idp-ldap](https://github.co
 
 ## 3. Deploy your application
 
-To deploy a BAW application in CP4BA production-like environment use the command '' from repository [virtual-users-locust-apps](https://github.com/marcoantonioni/virtual-users-locust-apps)
+To deploy a BAW application in CP4BA production-like environment use the command 'install-application.sh'. See repository [virtual-users-locust-apps](https://github.com/marcoantonioni/virtual-users-locust-apps)
 
 example:
 ```
@@ -267,7 +267,71 @@ APPLICATION=../zips/VirtualUsersSandbox-0.3.11.zip
 
 ## 4. Configure BPM Groups and Application Teams
 
+After installing the application, you move on to configuring BPM groups and teams.
+
+The need to configure BPM groups depends on the settings you want to define for Teams in the deployment environment.
+The configuration of BPM groups allows you to associate a single element to the Team, thus simplifying the administrative management of Teams.
+The BPM group allows you to decouple the Team from the contents of each runtime environment and its specific IDPs.
+Teams must always be configured with specific user-ids and/or BPM group names.
+
+In a development environment, Teams can be configured with the administration tool only for snapshots placed in the "Activated" state; the Tip does not allow the configuration of Teams.
+
+See configuration examples in the files 'groups*.csv' and 'teams*.csv'
+
+example: Add users and groups to Teams
+```
+python ./manageGroupsAndTeams.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1-0.3.11.properties -g ../virtual-users-locust-test-configs/configurations/groups-vu-cfg1.csv -t ../virtual-users-locust-test-configs/configurations/teams-vu-cfg1.csv -o add
+```
+
 ## 5. Export application Data Model and Code Template for payload manager and assert manager
+
+To generate payloads in the operations of completing and updating the data of the human task, you must write application code inside a specific module that follows the templated structure defined in 'TEMPLATE_PAYLOAD_MANAGER.yp'
+
+To validate a UNIT_TEST run you need to write code in the file inside a specific module that follows the templated structure defined in 'TEMPLATE_ASSERT_MANAGER.yp'
+
+The 'payload-manager' module is responsible for creating a specific payload contextual to the task subject (text that a human user would see in the portal task list).
+This module is also responsible for creating the payload to start a new process instance if necessary.
+The customization of the module code will therefore have to include a sequence of sections like the one presented in the following section
+```
+    if text.find('Start-VUSLoanRequest') != -1:
+        rndVal : int = random.randint(0, 100) + 1
+        retObject["jsonObject"] = {
+            'loanRequest': {
+                'userName': 'customer'+str(rndVal), 
+                'amountRequested': 100000, 
+                'loanDurationMonths': 36, 
+                'requestorAnnualNetIncome': 300000,
+                'activeLoans': 0,
+                'badPayer': False,
+                'challengeYourLuck': False
+            }
+        }
+        retObject["thinkTime"] = random.randint(0, 5)
+
+    if text.find('Evaluate Loan Request Data') != -1:
+        rndVal : int = random.randint(0, 1)
+        if preExistPayload != None:
+            loanRequest = preExistPayload["loanRequest"]
+            installmentAmount = preExistPayload["installmentAmount"]
+            requestorMonthlyNetIncome = preExistPayload["requestorMonthlyNetIncome"]
+            riskLevel = preExistPayload["riskLevel"]
+            print(json.dumps(loanRequest, indent=2))
+            print("installmentAmount", installmentAmount)
+            print("requestorMonthlyNetIncome", requestorMonthlyNetIncome)
+            print("riskLevel", riskLevel)
+        rejected = False
+        if rndVal == 1:
+            rejected = True
+        retObject["jsonObject"] = {'rejected': rejected} 
+        retObject["thinkTime"] = random.randint(0, 5)
+```
+In the module there will be as many 'if' as necessary to answer the various task subjects.
+
+The 'Start-VUSLoanRequest' case identifies a payload request to start a new process instance with the name 'VUSLoanRequest'.
+
+It is also possible to generate a variable 'thinkTime' in override to the static configuration.
+
+The object returned to the caller 'retObject' has two internal attributes, a 'jsonObject' that specifies the business payload for the task, a 'thinkTime' of type integer that defines the think time that the virtual user must wait before executing the operation.
 
 ## 6. Customize python code for payload and assert managers
 
