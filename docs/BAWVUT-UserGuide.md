@@ -289,6 +289,35 @@ To generate payloads in the operations of completing and updating the data of th
 
 To validate a UNIT_TEST run you need to write code in the file inside a specific module that follows the templated structure defined in 'TEMPLATE_ASSERT_MANAGER.yp'
 
+The following example generates python code managers and data model schemas for all configured BPM processes into a target folder. 
+```
+python ./generateCodeFromTemplates.py -e ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties -o ../virtual-users-locust-test-configs/configurations/managers
+```
+
+In addition to the payload managers, two python modules are generated that contain 'accelerator' code and data model schema in JSON format.
+
+example of accelerator to centralize the building of a new complex type object.
+```
+def newLoanRequestData():
+    return {"activeLoans": 0, "amountRequested": 0.0, "badPayer": False, "challengeYourLuck": False, "loanDurationMonths": 0, "requestorAnnualNetIncome": 0.0, "userName": ""}
+```
+
+example of json schema object.
+```
+jschema_AuthorizationData= {
+    "name": "AuthorizationData",
+    "properties": {
+        "authorized": {"type": "boolean"},
+        "comments": {"type": "string"},
+        "review": {"type": "boolean"}},
+    "additionalProperties": False
+}
+```
+
+## 6. Customize python code for payload and assert managers
+
+### Payload Manager
+
 The 'payload-manager' module is responsible for creating a specific payload contextual to the task subject (text that a human user would see in the portal task list).
 This module is also responsible for creating the payload to start a new process instance if necessary.
 The customization of the module code will therefore have to include a sequence of sections like the one presented in the following section
@@ -333,7 +362,9 @@ It is also possible to generate a variable 'thinkTime' in override to the static
 
 The object returned to the caller 'retObject' has two internal attributes, a 'jsonObject' that specifies the business payload for the task, a 'thinkTime' of type integer that defines the think time that the virtual user must wait before executing the operation.
 
-## 6. Customize python code for payload and assert managers
+### Assert Manager
+
+...
 
 ## 7. Update run configuration with generated python file names
 
