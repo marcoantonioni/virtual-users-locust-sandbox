@@ -1,7 +1,7 @@
 
 # BAWVUT Docker
 
-work in progress...
+work in progress...k8s
 
 ## Base images
 
