@@ -4,7 +4,7 @@
 
 <img src="./docs/images/agent2.jpg" width="350" height="350">
 
-Last update: 2025-03-13
+Last update: 2025-03-16
 
 ## Brief introduction
 It is a tool written in Python language for simulating interactions between users and tasks of applications deployed in IBM Business Automation Workflow (both Traditional and CP4BA deployments).

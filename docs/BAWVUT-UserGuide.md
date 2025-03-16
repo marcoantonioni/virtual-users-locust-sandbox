@@ -364,7 +364,21 @@ The object returned to the caller 'retObject' has two internal attributes, a 'js
 
 ### Assert Manager
 
-...
+The structure of the assert manager is very simple, it is made up of a single function 'executeAsserts' inside which you add the specific assertions that you want to use in order to validate the unit test.
+
+example of assertions
+```
+def executeAsserts(asserter: scenAssert.ScenarioAsserter, listOfInstances):
+
+    # Usage sample
+    logging.info("======> executeAsserts, tot instances: %d %s", len(listOfInstances), json.dumps(listOfInstances, indent=2))
+
+    asserter.assertItemsCountEquals(listOfInstances, 1)
+    asserter.assertItemsCountNotEquals(listOfInstances, 2)
+    .
+    .
+    .
+```
 
 ## 7. Update run configuration with generated python file names
 
