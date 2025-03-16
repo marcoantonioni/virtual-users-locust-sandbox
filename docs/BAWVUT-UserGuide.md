@@ -380,6 +380,23 @@ def executeAsserts(asserter: scenAssert.ScenarioAsserter, listOfInstances):
     .
 ```
 
-## 7. Update run configuration with generated python file names
+## 7. Update run configuration with generated file names
+
+Update the 4 env vars in your '.conf' file with newly generated and configured file names.
+
+example:
+```
+BAW_ENV = ../virtual-users-locust-test-configs/configurations/baw-cp4ba/env1.properties 
+BAW_USERS = ../virtual-users-locust-test-configs/configurations/users/creds-cfg1.csv 
+BAW_TASK_SUBJECTS = ../virtual-users-locust-test-configs/configurations/users/TS-TEST1.csv 
+BAW_USER_TASK_SUBJECTS = ../virtual-users-locust-test-configs/configurations/users/US-TS-TEST1.csv 
+```
 
 ## 8. Run LOAD_TEST or UNIT_TEST scenario
+
+Now you are ready to run a test/load session
+
+example:
+```
+locust --config=../virtual-users-locust-test-configs/configurations/baw-cp4ba/baw-vu-cfg-1.conf
+```
