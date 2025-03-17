@@ -1,6 +1,7 @@
 # BAW Virtual Users Tool in Docker image
 
-FROM registry.redhat.io/rhel8/python-38:latest
+# FROM registry.redhat.io/rhel8/python-38:latest
+FROM registry.redhat.io/ubi9/python-312:9.5-1742197730
 
 #ENV BAWVUT_USER=1001
 ENV BAWVUT_USER=root
@@ -18,12 +19,12 @@ RUN dnf install -y iputils telnet \
 
 RUN mkdir -p /bawvut/{bawsys,configurations,outputdata}
 WORKDIR /bawvut
-ADD ./bawsys/*.py ./bawsys/
-ADD ./bawsys/*.yp ./bawsys/
-ADD ./*.py ./
+ADD ./bawsys/*.py /bawvut/bawsys/
+ADD ./bawsys/*.yp /bawvut/bawsys/
+ADD ./*.py /bawvut/
 #RUN chown -R ${BAWVUT_USER}:root /bawvut
-RUN echo "echo -e '\nUsage:\nlocust --config=path-to-cfg-file\n'" > ./usage.sh \
-    && chmod a+x ./usage.sh
+RUN echo "echo -e '\nUsage:\nlocust --config=path-to-cfg-file\n'" > /bawvut/usage.sh \
+    && chmod a+x /bawvut/usage.sh
 
 #USER ${BAWVUT_USER}
-CMD ["./usage.sh"]
+CMD ["/bawvut/usage.sh"]
