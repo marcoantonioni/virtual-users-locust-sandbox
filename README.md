@@ -115,6 +115,12 @@ For a detailed description of python modules see [BAWVUT Main modules descriptio
   
   b) containerized scenario
 
+## [TBD] Unit test, query sqlite
+
+## [TBD] Interactive run (headless=false)
+
+## [TBD] K8S run configuration 
+
 ## Limitations in this version
 
   a) the tool does not manage the start of optional Activities

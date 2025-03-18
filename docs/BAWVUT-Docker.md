@@ -75,7 +75,7 @@ cp ../virtual-users-locust-test-configs/configurations/managers/payloadManager-t
 cp ../virtual-users-locust-test-configs/configurations/managers/assertsManager-type1.py ../test-configs/conf1/
 ```
 
-modify paths in **../test-configs/conf1/baw-vu-cfg-1.conf** to poin to to container internal folder **/bawvut/configurations**
+modify paths in **../test-configs/conf1/baw-vu-cfg-1.conf** to poin to container internal folder **/bawvut/configurations**
 
 example for **../test-configs/conf1/baw-vu-cfg-1.conf**
 ```
