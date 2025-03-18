@@ -59,30 +59,6 @@ The source code of BAWVirtualUsersTool has been documented using by **IBM watson
 - for the CP4BA containerized scenario there are simplification tools for LDAP deployment dedicated to virtual users and relative automatic IDP configuration
 - the tool does not offer any mocking solutions for any services integrated by the processes being tested
 
-## Tool description
-
-- [TBD] description of demo applications and their run configurations (test/load)
-
-- [TBD] how to configure and implement a test/load scenario
-
-  a) custom payload modules and assert managers
-  
-  b) configuration of virtual users
-  
-  c) assignment of virtual users to task subjects
-
-- [TBD] configuration needed for test scenarios
-
-  a) traditional scenario
-  
-  b) containerized scenario
-
-- [TBD] run examples with docker image
-
-- Limitations in this version
-
-  a) the tool does not manage the start of optional Activities
-
 ## Companion repositories
 
 This repository is accompanied by two other repos that contain the BAW applications (virtual-users-locust-apps) and the configurations used for the run tests (virtual-users-locust-test-configs).
@@ -130,6 +106,18 @@ For a detailed description of python modules see [BAWVUT Main modules descriptio
 ## Docker image
 
 [BAWVUT-Docker](./docs/BAWVUT-Docker.md)
+
+## [TBD] description of demo applications 
+
+## [TBD] configuration for test scenarios
+
+  a) traditional scenario
+  
+  b) containerized scenario
+
+## Limitations in this version
+
+  a) the tool does not manage the start of optional Activities
 
 ## Development environment setup and configuration (Linux env)
 
